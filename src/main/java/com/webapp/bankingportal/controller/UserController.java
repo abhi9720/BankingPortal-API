@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.webapp.bankingportal.dto.LoginRequest;
 import com.webapp.bankingportal.dto.UserResponse;
 import com.webapp.bankingportal.entity.User;
@@ -36,21 +37,19 @@ public class UserController {
     }
     
     @PostMapping("/register")
-    public ResponseEntity<User> registerUser(@RequestBody User user) {
+    public ResponseEntity<UserResponse> registerUser(@RequestBody User user) {
         User registeredUser = userService.registerUser(user);
-        
         
         UserResponse userResponse = new UserResponse();
         userResponse.setName(registeredUser.getName());
         userResponse.setEmail(registeredUser.getEmail());
-        userResponse.setAddress(registeredUser.getAddress());
-        userResponse.setPhone_number(registeredUser.getPhone_number());
         userResponse.setAccountNumber(registeredUser.getAccount().getAccountNumber());
-        userResponse.setAccountNumber(registeredUser.getAccount().getIFSC_code());
-        userResponse.setAccountNumber(registeredUser.getAccount().getBranch());
-        userResponse.setAccountNumber(registeredUser.getAccount().getAccount_type());
+        userResponse.setIFSC_code(registeredUser.getAccount().getIFSC_code());
+        userResponse.setBranch(registeredUser.getAccount().getBranch());
+        userResponse.setAccount_type(registeredUser.getAccount().getAccount_type());
         
-        return ResponseEntity.ok(registeredUser);
+
+        return ResponseEntity.ok(userResponse);
     }
     
     @PostMapping("/login")
@@ -67,6 +66,7 @@ public class UserController {
 
         // If authentication successful, generate JWT token
         UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getAccountNumber());
+        System.out.println(userDetails);
         String token = jwtTokenUtil.generateToken(userDetails);
 
         // Return the JWT token in the response

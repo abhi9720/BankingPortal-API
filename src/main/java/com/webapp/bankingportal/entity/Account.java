@@ -12,9 +12,12 @@ public class Account {
 	    @Column(unique = true)
 	    private String accountNumber;
 	    private double balance;
-	    private String account_type;
-	    private String branch;
-	    private String IFSC_code;
+	    private String account_type="Saving";
+	    private String branch="Bhind";
+	    private String IFSC_code="BHI001";
+	    private String Pin;
+	    private String accountstatus;
+	    
 
 	    @OneToOne
 	    @JoinColumn(name = "user_id")
@@ -76,6 +79,20 @@ public class Account {
 
 		public void setUser(User user) {
 			this.user = user;
+		}
+
+		@Override
+		public String toString() {
+			return "Account [id=" + id + ", accountNumber=" + accountNumber + ", balance=" + balance + ", account_type="
+					+ account_type + ", branch=" + branch + ", IFSC_code=" + IFSC_code + ", user=" + user + "]";
+		}
+
+		public String getPin() {
+			return Pin;
+		}
+
+		public void setPin(String pin) {
+			this.Pin = pin;
 		}
 	    
 	    

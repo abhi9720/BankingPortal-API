@@ -1,13 +1,12 @@
 package com.webapp.bankingportal.service;
 
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.webapp.bankingportal.entity.Account;
 import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.repository.UserRepository;
-import com.webapp.bankingportal.security.JwtTokenUtil;
+
 @Service
 public class UserServiceImpl implements UserService{
 
@@ -22,6 +21,7 @@ public class UserServiceImpl implements UserService{
         this.passwordEncoder =  passwordEncoder;
     }
     
+    @Override
     public User registerUser(User user) {
         
     	 String encodedPassword = passwordEncoder.encode(user.getPassword());
@@ -31,8 +31,15 @@ public class UserServiceImpl implements UserService{
         User savedUser = userRepository.save(user);
 
         // Create an account for the user
-        accountService.createAccount(savedUser);
+        Account account = accountService.createAccount(savedUser);
 
+        savedUser.setAccount(account);
+        userRepository.save(savedUser);
+        
+        System.out.println(savedUser.getAccount().getAccountNumber());
+        System.out.println(account.getUser().getName());
+
+        
         return savedUser;
     }
 
