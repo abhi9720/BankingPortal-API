@@ -73,14 +73,3 @@ The API implements global exception handling for common error scenarios, such as
 ## Contribution
 
 Contributions to the project are welcome! If you find any issues or have suggestions for improvements, feel free to open an issue or submit a pull request.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Contact
-
-For inquiries, please contact [email@example.com](mailto:email@example.com).
-
----
-Please replace the placeholder URLs with the actual URLs for the logo and screenshots. Also, make sure to update the installation instructions and contact information with appropriate details. The README.md file serves as the entry point for users who want to understand, use, and contribute to your API project.
