@@ -34,18 +34,17 @@ public class AccountServiceImpl implements AccountService {
         Account account = new Account();
         account.setAccountNumber(accountNumber);
         account.setBalance(0.0);
-
         return accountRepository.save(account);
     }
 	
 	@Override
-    public boolean checkAccountPIN(String accountNumber, String pin) {
+    public boolean isPinCreated(String accountNumber) {
         Account account = accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
             throw new NotFoundException("Account not found");
         }
 
-        return passwordEncoder.matches(pin, account.getPin());
+        return account.getPin()!=null;
     }
     
     private String generateUniqueAccountNumber() {
@@ -75,8 +74,10 @@ public class AccountServiceImpl implements AccountService {
         accountRepository.save(account);
     }
     
-    
+    @Override
     public void updatePIN(String accountNumber, String oldPIN, String password, String newPIN) {
+    	System.out.println(accountNumber+"  "+oldPIN+" "+newPIN+"  "+password);
+    	
         Account account = accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
             throw new NotFoundException("Account not found");

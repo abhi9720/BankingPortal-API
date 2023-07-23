@@ -1,5 +1,8 @@
 package com.webapp.bankingportal.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.webapp.bankingportal.dto.LoginRequest;
 import com.webapp.bankingportal.dto.UserResponse;
 import com.webapp.bankingportal.entity.User;
@@ -68,9 +70,10 @@ public class UserController {
         UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getAccountNumber());
         System.out.println(userDetails);
         String token = jwtTokenUtil.generateToken(userDetails);
-
+        Map<String, String> result =  new HashMap<>();
+        result.put("token", token);
         // Return the JWT token in the response
-        return ResponseEntity.ok(token);
+        return new ResponseEntity<>(result , HttpStatus.OK);
     }
 
 

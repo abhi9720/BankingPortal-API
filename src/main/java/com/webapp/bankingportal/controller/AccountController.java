@@ -1,8 +1,13 @@
 package com.webapp.bankingportal.controller;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,7 +17,9 @@ import com.webapp.bankingportal.dto.AmountRequest;
 import com.webapp.bankingportal.dto.FundTransferRequest;
 import com.webapp.bankingportal.dto.PinRequest;
 import com.webapp.bankingportal.dto.PinUpdateRequest;
+import com.webapp.bankingportal.dto.TransactionDTO;
 import com.webapp.bankingportal.service.AccountService;
+import com.webapp.bankingportal.service.TransactionService;
 import com.webapp.bankingportal.util.LoginUser;
 
 @RestController
@@ -21,48 +28,88 @@ public class AccountController {
 
     @Autowired
     private AccountService accountService;
+    
+    @Autowired
+    private TransactionService transactionService;
 
 
+     
 
-    // Existing APIs ...
+    @GetMapping("/pin/check")
+    public ResponseEntity<?> checkAccountPIN() {
+        boolean isPINValid = accountService.isPinCreated(LoginUser.getAccountNumber());
+        
+        
+        Map<String, Object> result =  new HashMap<>();
+        result.put("hasPIN",isPINValid );
 
-    @PostMapping("/pin/check")
-    public ResponseEntity<String> checkAccountPIN(@RequestBody PinRequest pinRequest) {
-        boolean isPINValid = accountService.checkAccountPIN(LoginUser.getAccountNumber(), pinRequest.getPin());
         if (isPINValid) {
-            return ResponseEntity.ok("PIN is valid");
+        	result.put("msg", "PIN Created");
+        	
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid PIN");
+        	result.put("msg", "Pin Not Created");
         }
+        
+        return new ResponseEntity<>( result, HttpStatus.OK);
     }
 
     @PostMapping("/pin/create")
-    public ResponseEntity<String> createPIN(@RequestBody PinRequest pinRequest) {
+    public ResponseEntity<?> createPIN(@RequestBody PinRequest pinRequest) {
         accountService.createPIN(LoginUser.getAccountNumber(), pinRequest.getPassword(), pinRequest.getPin());
-        return ResponseEntity.ok("PIN created successfully");
+      
+        Map<String, String> response =  new HashMap<>();
+        response.put("msg", "PIN created successfully");
+        
+        return new ResponseEntity<>( response, HttpStatus.OK);
+        
+
     }
 
     @PostMapping("/pin/update")
-    public ResponseEntity<String> updatePIN(@RequestBody PinUpdateRequest pinUpdateRequest) {
+    public ResponseEntity<?> updatePIN(@RequestBody PinUpdateRequest pinUpdateRequest) {
         accountService.updatePIN(LoginUser.getAccountNumber(), pinUpdateRequest.getOldPin(), pinUpdateRequest.getPassword(), pinUpdateRequest.getNewPin());
-        return ResponseEntity.ok("PIN updated successfully");
-    }
+        
+        Map<String, String> response =  new HashMap<>();
+        response.put("msg", "PIN updated successfully");
+        
+        return new ResponseEntity<>( response, HttpStatus.OK);
+        
+     }
 
     @PostMapping("/deposit")
-    public ResponseEntity<String> cashDeposit(@RequestBody AmountRequest amountRequest) {
+    public ResponseEntity<?> cashDeposit(@RequestBody AmountRequest amountRequest) {
         accountService.cashDeposit(LoginUser.getAccountNumber(), amountRequest.getPin(), amountRequest.getAmount());
-        return ResponseEntity.ok("Cash deposited successfully");
-    }
+        
+        Map<String, String> response =  new HashMap<>();
+        response.put("msg", "Cash deposited successfully");
+        
+        return new ResponseEntity<>( response, HttpStatus.OK);
+        
+     }
 
     @PostMapping("/withdraw")
-    public ResponseEntity<String> cashWithdrawal(@RequestBody AmountRequest amountRequest) {
+    public ResponseEntity<?> cashWithdrawal(@RequestBody AmountRequest amountRequest) {
         accountService.cashWithdrawal(LoginUser.getAccountNumber(), amountRequest.getPin(), amountRequest.getAmount());
-        return ResponseEntity.ok("Cash withdrawn successfully");
+        
+        Map<String, String> response =  new HashMap<>();
+        response.put("msg", "Cash withdrawn successfully");
+        
+        return new ResponseEntity<>( response, HttpStatus.OK);
     }
 
     @PostMapping("/fund-transfer")
-    public ResponseEntity<String> fundTransfer(@RequestBody FundTransferRequest fundTransferRequest) {
+    public ResponseEntity<?> fundTransfer(@RequestBody FundTransferRequest fundTransferRequest) {
         accountService.fundTransfer(LoginUser.getAccountNumber(), fundTransferRequest.getTargetAccountNumber(), fundTransferRequest.getPin(), fundTransferRequest.getAmount());
-        return ResponseEntity.ok("Fund transferred successfully");
+       Map<String, String> response =  new HashMap<>();
+        response.put("msg", "Fund transferred successfully");
+        
+        return new ResponseEntity<>( response, HttpStatus.OK);
+    }
+    
+    
+    @GetMapping("/transactions")
+    public ResponseEntity<List<TransactionDTO>> getAllTransactionsByAccountNumber() {
+        List<TransactionDTO> transactions = transactionService.getAllTransactionsByAccountNumber(LoginUser.getAccountNumber());
+        return ResponseEntity.ok(transactions);
     }
 }

@@ -8,9 +8,7 @@ import com.webapp.bankingportal.exception.NotFoundException;
 
 public class LoginUser {
 
-	public LoginUser() {
-		// TODO Auto-generated constructor stub
-	}
+
 	
 	 public static String getAccountNumber() {
 	        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

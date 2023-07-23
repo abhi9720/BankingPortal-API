@@ -17,8 +17,6 @@ public class Account {
 	    private String IFSC_code="BHI001";
 	    private String Pin;
 	    private String accountstatus;
-	    
-
 	    @OneToOne
 	    @JoinColumn(name = "user_id")
 	    private User user;
@@ -93,6 +91,14 @@ public class Account {
 
 		public void setPin(String pin) {
 			this.Pin = pin;
+		}
+
+		public String getAccountstatus() {
+			return accountstatus;
+		}
+
+		public void setAccountstatus(String accountstatus) {
+			this.accountstatus = accountstatus;
 		}
 	    
 	    

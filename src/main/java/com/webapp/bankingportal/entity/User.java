@@ -15,6 +15,7 @@ public class User {
     private String address;
     private String phone_number;
     
+    
     // Establishing a one-to-one relationship with the account
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Account account;
