@@ -43,6 +43,10 @@ The Banking Portal API provides a set of endpoints for managing user accounts, f
 - `/api/dashboard/user`: Get details of the authenticated user.
 - `/api/dashboard/account`: Get details of the user's account.
 
+## API Documentation
+
+  https://github.com/abhi9720/BankingPortal-API/wiki
+
 ## Authentication
 
 The API endpoints require bearer token authentication. To access protected endpoints, include a valid access token in the "Authorization" header with the "Bearer" scheme.
