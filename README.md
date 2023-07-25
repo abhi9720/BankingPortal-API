@@ -1,5 +1,17 @@
-## Banking Portal API
+## Banking Portal Rest API Using Spring Boot & Spring Security
 
+<div style="display: flex;">
+    <!-- GitHub Repository Badges -->
+    <a href="https://github.com/abhi9720/BankingPortal-UI" target="_blank">
+      <img alt="GitHub Repo" src="https://img.shields.io/badge/GitHub-UI%20Repo-blue.svg?style=flat-square">
+    </a>
+    <a href="https://github.com/abhi9720/BankingPortal-API" target="_blank">
+      <img alt="GitHub Repo" src="https://img.shields.io/badge/GitHub-API%20Repo-blue.svg?style=flat-square">
+    </a>
+   <a href="https://github.com/abhi9720/BankingPortal-APIe" target="_blank">
+      <img alt="View" src="https://img.shields.io/badge/View-blue.svg?style=flat-square">
+    </a>
+  </div>
 <img width="948" alt="image" src="https://github.com/abhi9720/BankingPortal-API/assets/68281476/237694d9-6e8d-48e8-a7a2-982b9f8ca671">
 
 ## API Documentation
