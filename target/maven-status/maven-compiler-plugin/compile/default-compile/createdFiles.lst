@@ -16,13 +16,11 @@ com\webapp\bankingportal\service\UserServiceImpl.class
 com\webapp\bankingportal\config\CorsConfig.class
 com\webapp\bankingportal\dto\LoginRequest.class
 com\webapp\bankingportal\repository\TransactionRepository.class
-META-INF\MANIFEST.MF
 com\webapp\bankingportal\exception\NotFoundException.class
 com\webapp\bankingportal\security\JwtAuthenticationFilter.class
 com\webapp\bankingportal\service\AccountServiceImpl.class
 com\webapp\bankingportal\controller\UserController.class
 com\webapp\bankingportal\dto\AccountResponse.class
-META-INF\maven\com.webapp\bankingportal\pom.xml
 com\webapp\bankingportal\service\DashboardServiceImpl.class
 com\webapp\bankingportal\controller\AccountController.class
 com\webapp\bankingportal\service\JWTUserDetailsService.class
@@ -30,7 +28,6 @@ com\webapp\bankingportal\controller\DashboardController.class
 com\webapp\bankingportal\config\WebSecurityConfig.class
 com\webapp\bankingportal\repository\UserRepository.class
 com\webapp\bankingportal\dto\PinUpdateRequest.class
-META-INF\maven\com.webapp\bankingportal\pom.properties
 com\webapp\bankingportal\service\TransactionService.class
 com\webapp\bankingportal\dto\UserResponse.class
 com\webapp\bankingportal\security\JwtTokenUtil.class
