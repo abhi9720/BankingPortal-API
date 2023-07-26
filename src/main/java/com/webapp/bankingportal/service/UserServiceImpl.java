@@ -22,6 +22,12 @@ public class UserServiceImpl implements UserService{
     }
     
     @Override
+    public User getUserByAccountNumber(String account_no) {
+    	return userRepository.findByAccountAccountNumber(account_no);
+    }
+    
+    
+    @Override
     public User registerUser(User user) {
         
     	 String encodedPassword = passwordEncoder.encode(user.getPassword());
@@ -42,6 +48,12 @@ public class UserServiceImpl implements UserService{
         
         return savedUser;
     }
+
+	@Override
+	public void saveUser(User user) {
+		userRepository.save(user);
+		
+	}
 
 
 }
