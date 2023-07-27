@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.webapp.bankingportal.exception.InsufficientBalanceException;
+import com.webapp.bankingportal.exception.InvalidJwtTokenException;
 import com.webapp.bankingportal.exception.InvalidOTPException;
 import com.webapp.bankingportal.exception.NotFoundException;
 import com.webapp.bankingportal.exception.OtpRetryLimitExceededException;
@@ -22,6 +23,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<String> handleUnauthorizedException(UnauthorizedException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidJwtTokenException.class)
+    public ResponseEntity<String> handleInvalidJwtTokenException(InvalidJwtTokenException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
     @ExceptionHandler(InsufficientBalanceException.class)
