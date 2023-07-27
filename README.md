@@ -1,6 +1,24 @@
-## Banking Portal API
+## Banking Portal Rest API Using Spring Boot & Spring Security
 
-<img width="960" alt="Screenshot 2023-07-23 212110" src="https://github.com/abhi9720/BankingPortal-API/assets/68281476/13e15e7b-a8c5-4ba9-99e3-31bed25d8b3c">
+<div style="display: flex;">
+    <!-- GitHub Repository Badges -->
+    <a href="https://github.com/abhi9720/BankingPortal-UI" target="_blank">
+      <img alt="GitHub Repo" src="https://img.shields.io/badge/GitHub-UI%20Repo-blue.svg?style=flat-square">
+    </a>
+    <a href="https://github.com/abhi9720/BankingPortal-API" target="_blank">
+      <img alt="GitHub Repo" src="https://img.shields.io/badge/GitHub-API%20Repo-blue.svg?style=flat-square">
+    </a>
+   <a href="https://github.com/abhi9720/BankingPortal-APIe" target="_blank">
+      <img alt="View" src="https://img.shields.io/badge/View-blue.svg?style=flat-square">
+    </a>
+  </div>
+<img width="948" alt="image" src="https://github.com/abhi9720/BankingPortal-API/assets/68281476/237694d9-6e8d-48e8-a7a2-982b9f8ca671">
+
+## API Documentation
+- https://github.com/abhi9720/BankingPortal-API/wiki
+
+## Banking Portal UI
+- https://github.com/abhi9720/BankingPortal-UI
 
 ***
 
@@ -43,9 +61,6 @@ The Banking Portal API provides a set of endpoints for managing user accounts, f
 - `/api/dashboard/user`: Get details of the authenticated user.
 - `/api/dashboard/account`: Get details of the user's account.
 
-## API Documentation
-
-  https://github.com/abhi9720/BankingPortal-API/wiki
 
 ## Authentication
 
@@ -57,6 +72,10 @@ The API endpoints require bearer token authentication. To access protected endpo
 ---
 
 <img width="959" alt="Screenshot 2023-07-23 212415" src="https://github.com/abhi9720/BankingPortal-API/assets/68281476/277e50f5-43b6-403d-b336-3431655dfe8a">
+
+---
+
+<img width="960" alt="Screenshot 2023-07-23 212110" src="https://github.com/abhi9720/BankingPortal-API/assets/68281476/13e15e7b-a8c5-4ba9-99e3-31bed25d8b3c">
 
 ---
 
