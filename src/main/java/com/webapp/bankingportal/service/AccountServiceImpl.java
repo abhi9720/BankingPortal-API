@@ -2,6 +2,7 @@ package com.webapp.bankingportal.service;
 
 import java.util.Date;
 import java.util.Random;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -47,16 +48,16 @@ public class AccountServiceImpl implements AccountService {
         return account.getPin()!=null;
     }
     
-    private String generateUniqueAccountNumber() {
-        String accountNumber;
-        do {
-            // Generate a 6-digit random number as the account number
-            int randomAccountNumber = new Random().nextInt(900000) + 100000;
-            accountNumber = String.valueOf(randomAccountNumber);
-        } while (accountRepository.findByAccountNumber(accountNumber) != null);
+	private String generateUniqueAccountNumber() {
+	    String accountNumber;
+	    do {
+	        // Generate a UUID as the account number
+	        accountNumber = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 6);
+	    } while (accountRepository.findByAccountNumber(accountNumber) != null);
 
-        return accountNumber;
-    }
+	    return accountNumber;
+	}
+
     
     
     @Override
