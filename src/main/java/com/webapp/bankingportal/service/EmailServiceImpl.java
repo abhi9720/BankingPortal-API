@@ -1,7 +1,7 @@
 package com.webapp.bankingportal.service;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -9,6 +9,7 @@ import javax.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,7 +23,10 @@ public class EmailServiceImpl implements EmailService{
 	    }
 
 	    @Override
-	    public void sendEmail(String to, String subject, String text) {
+	    @Async
+	    public CompletableFuture<Void> sendEmail(String to, String subject, String text) {
+	        CompletableFuture<Void> future = new CompletableFuture<>();
+
 	        try {
 	            MimeMessage message = mailSender.createMimeMessage();
 	            MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -31,35 +35,35 @@ public class EmailServiceImpl implements EmailService{
 	            helper.setSubject(subject);
 	            helper.setText(text, true); // Set the second parameter to true to send HTML content
 	            mailSender.send(message);
+
+	            future.complete(null); // Indicate that the email sending is successful
 	        } catch (MessagingException e) {
 	            e.printStackTrace();
+	            future.completeExceptionally(e); // Indicate that the email sending failed
 	        }
+
+	        return future;
 	    }
 	    
-	    public String getOtpLoginEmailTemplate(String name ,String accountNumber, String otp) {
+	    
+	    public String getOtpLoginEmailTemplate(String name, String accountNumber, String otp) {
 	        // Create the formatted email template with the provided values
-	    	String emailTemplate = "<html>"
-	    		    + "<head>"
-	    		    + "<title>OTP Verification</title>"
-	    		    + "</head>"
-	    		    + "<body>"
-	    		    + "<h3 style='color: #0066cc;'>Hello, "+name+"</h3>"
-	    		    + "<p>You are receiving this email because you requested to login using OTP.</p>"
-	    		    + "<table style='border-collapse: collapse;'>"
-	    		    + "<tr>"
-	    		    + "<th style='border: 1px solid black; padding: 10px;'>Account Number</th>"
-	    		    + "<td style='border: 1px solid black; padding: 10px;'>"+accountNumber+"</td>"
-	    		    + "</tr>"
-	    		    + "<tr>"
-	    		    + "<th style='border: 1px solid black; padding: 10px;'>OTP</th>"
-	    		    + "<td style='border: 1px solid black; padding: 10px; background-color: #f2f2f2; font-weight: bold;'>"+otp+"</td>"
-	    		    + "</tr>"
-	    		    + "</table>"
-	    		    + "<p>Please use this OTP to log in.</p>"
-	    		    + "<p>Best regards,<br>Your Banking Portal Team</p>"
-	    		    + "<p><a href='https://onestopbank.netlify.app/' style='background-color: #0066cc; color: white; padding: 10px 20px; text-decoration: none;'>Visit OneStopBank</a></p>"
-	    		    + "</body>"
-	    		    + "</html>";
+	        String emailTemplate = "<div style=\"font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2\">"
+	                + "<div style=\"margin:50px auto;width:70%;padding:20px 0\">"
+	                + "<div style=\"border-bottom:1px solid #eee\">"
+	                + "<a href=\"https://onestopbank.netlify.app/\" style=\"font-size:1.4em;color: #00466a;text-decoration:none;font-weight:600\">OneStopBank</a>"
+	                + "</div>"
+	                + "<p style=\"font-size:1.1em\">Hi, " + name + "</p>"
+	                + "<p style=\"font-size:0.9em;\">Account Number: " + accountNumber + "</p>"
+	                + "<p>Thank you for choosing OneStopBank. Use the following OTP to complete your Log In procedures. OTP is valid for 5 minutes</p>"
+	                + "<h2 style=\"background: #00466a;margin: 0 auto;width: max-content;padding: 0 10px;color: #fff;border-radius: 4px;\">" + otp + "</h2>"
+	                + "<p style=\"font-size:0.9em;\">Regards,<br />OneStopBank</p>"
+	                + "<hr style=\"border:none;border-top:1px solid #eee\" />"
+	                + "<p>OneStopBank Inc</p>"
+	                + "<p>1600 Amphitheatre Parkway</p>"
+	                + "<p>California</p>"
+	                + "</div>"
+	                + "</div>";
 
 	        return emailTemplate;
 	    }

@@ -2,6 +2,7 @@ package com.webapp.bankingportal.service;
 
 import java.time.LocalDateTime;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
@@ -117,20 +118,20 @@ public class OTPServiceImpl implements OTPService {
 		return otp;
 	}
 
-	@Override
-	public boolean sendOTPByEmail(String email, String name, String accountNumber, String otp) {
-		try {
-			// Compose the email content
-			String subject = "OTP Verification";
-			String emailText = emailService.getOtpLoginEmailTemplate(name, "xxx" + accountNumber.substring(3), otp);
-			// Send the email using the EmailService
-			emailService.sendEmail(email, subject, emailText);
-			return true;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
+	 @Override
+	    public CompletableFuture<Boolean> sendOTPByEmail(String email, String name, String accountNumber, String otp) {
+	        // Compose the email content
+	        String subject = "OTP Verification";
+	        String emailText = emailService.getOtpLoginEmailTemplate(name, "xxx" + accountNumber.substring(3), otp);
+
+	        CompletableFuture<Void> emailSendingFuture = emailService.sendEmail(email, subject, emailText);
+
+	        return emailSendingFuture.thenApplyAsync(result -> true)
+	                                .exceptionally(ex -> {
+	                                    ex.printStackTrace();
+	                                    return false;
+	                                });
+	    }
 
 	@Override
 	public boolean validateOTP(String accountNumber, String otp) {

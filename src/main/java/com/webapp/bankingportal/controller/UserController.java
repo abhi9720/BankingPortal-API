@@ -2,6 +2,8 @@ package com.webapp.bankingportal.controller;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -81,31 +83,44 @@ public class UserController {
         return new ResponseEntity<>(result , HttpStatus.OK);
     }
     
+    
     @PostMapping("/generate-otp")
     public ResponseEntity<?> generateOtp(@RequestBody OtpRequest otpRequest) {
-        String accountNumber = otpRequest.getAccountNumber();
 
-        // Fetch the user by account number to get the associated email
-        User user = userService.getUserByAccountNumber(accountNumber);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User not found for the given account number");
-        }
+    	 String accountNumber = otpRequest.getAccountNumber();
 
-        // Generate OTP and save it in the database
-        String otp = otpService.generateOTP(accountNumber);
+         // Fetch the user by account number to get the associated email
+         User user = userService.getUserByAccountNumber(accountNumber);
+         if (user == null) {
+             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User not found for the given account number");
+         }
 
-        // Send the OTP to the user's email address
-        boolean otpSent = otpService.sendOTPByEmail(user.getEmail(),user.getName(),accountNumber, otp);
+         // Generate OTP and save it in the database
+         String otp = otpService.generateOTP(accountNumber);
 
-        if (otpSent) {
-            // Return JSON response with success message
-            return ResponseEntity.ok().body("{\"message\": \"OTP sent successfully\"}");
-        } else {
+
+        // Send the OTP to the user's email address asynchronously
+        CompletableFuture<Boolean> emailSendingFuture = otpService.sendOTPByEmail(user.getEmail(), user.getName(), accountNumber, otp);
+
+        // Wait for the email sending process to complete and handle the response
+        try {
+            boolean otpSent = emailSendingFuture.get(); // This will block until the email sending is complete
+
+            if (otpSent) {
+                // Return JSON response with success message
+                return ResponseEntity.ok().body("{\"message\": \"OTP sent successfully\"}");
+            } else {
+                // Return JSON response with error message
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"message\": \"Failed to send OTP\"}");
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
             // Return JSON response with error message
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"message\": \"Failed to send OTP\"}");
         }
     }
 
+    
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOtpAndLogin(@RequestBody OtpVerificationRequest otpVerificationRequest) {
         String accountNumber = otpVerificationRequest.getAccountNumber();
