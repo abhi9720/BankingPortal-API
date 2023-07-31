@@ -1,7 +1,6 @@
 package com.webapp.bankingportal.service;
 
 import java.util.Date;
-import java.util.Random;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;

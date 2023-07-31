@@ -6,7 +6,7 @@ import org.springframework.security.core.userdetails.User;
 
 import com.webapp.bankingportal.exception.NotFoundException;
 
-public class LoginUser {
+public class LoggedinUser {
 
 
 	
