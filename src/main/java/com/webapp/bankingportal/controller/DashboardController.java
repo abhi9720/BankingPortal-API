@@ -11,7 +11,7 @@ import com.webapp.bankingportal.dto.AccountResponse;
 import com.webapp.bankingportal.dto.UserResponse;
 
 import com.webapp.bankingportal.service.DashboardService;
-import com.webapp.bankingportal.util.LoginUser;
+import com.webapp.bankingportal.util.LoggedinUser;
 
 @RestController
 @RequestMapping("/api/dashboard")
@@ -22,14 +22,14 @@ public class DashboardController {
 
     @GetMapping("/user")
     public ResponseEntity<UserResponse> getUserDetails() {
-        String accountNumber = LoginUser.getAccountNumber();
+        String accountNumber = LoggedinUser.getAccountNumber();
         UserResponse userResponse = dashboardService.getUserDetails(accountNumber);
         return ResponseEntity.ok(userResponse);
     }
 
     @GetMapping("/account")
     public ResponseEntity<AccountResponse> getAccountDetails() {
-        String accountNumber = LoginUser.getAccountNumber();
+        String accountNumber = LoggedinUser.getAccountNumber();
         AccountResponse accountResponse = dashboardService.getAccountDetails(accountNumber);
         return ResponseEntity.ok(accountResponse);
     }

@@ -5,20 +5,20 @@ import javax.persistence.*;
 
 @Entity
 public class Transaction {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private double amount;
-    private String transaction_type;
-    private Date transaction_date;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+	private double amount;
+	private String transaction_type;
+	private Date transaction_date;
 
-    @ManyToOne
-    @JoinColumn(name = "source_account_id")
-    private Account sourceAccount;
+	@ManyToOne
+	@JoinColumn(name = "source_account_id")
+	private Account sourceAccount;
 
-    @ManyToOne
-    @JoinColumn(name = "target_account_id")
-    private Account targetAccount;
+	@ManyToOne
+	@JoinColumn(name = "target_account_id")
+	private Account targetAccount;
 
 	public Long getId() {
 		return id;
@@ -73,6 +73,6 @@ public class Transaction {
 		return "Transaction [id=" + id + ", amount=" + amount + ", transaction_type=" + transaction_type
 				+ ", transaction_date=" + transaction_date + ", sourceAccount=" + sourceAccount + ", targetAccount="
 				+ targetAccount + "]";
-	} 
-    
+	}
+
 }

@@ -25,9 +25,9 @@ public class CacheConfig {
         return cacheManager;
     }
 
-    public Caffeine caffeineConfig() {
+    public Caffeine<Object, Object> caffeineConfig() {
         return Caffeine.newBuilder()
-                .expireAfterWrite(30, TimeUnit.MINUTES) // Cache entries expire after 30 minutes
+                .expireAfterWrite(15, TimeUnit.MINUTES) // Cache entries expire after 15 minutes
                 .maximumSize(100) // Maximum of 100 entries in the cache
                 .recordStats(); // For monitoring cache statistics (optional)
     }
