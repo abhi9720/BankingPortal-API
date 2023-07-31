@@ -20,7 +20,7 @@ import com.webapp.bankingportal.dto.PinUpdateRequest;
 import com.webapp.bankingportal.dto.TransactionDTO;
 import com.webapp.bankingportal.service.AccountService;
 import com.webapp.bankingportal.service.TransactionService;
-import com.webapp.bankingportal.util.LoginUser;
+import com.webapp.bankingportal.util.LoggedinUser;
 
 @RestController
 @RequestMapping("/api/account")
@@ -37,7 +37,7 @@ public class AccountController {
 
     @GetMapping("/pin/check")
     public ResponseEntity<?> checkAccountPIN() {
-        boolean isPINValid = accountService.isPinCreated(LoginUser.getAccountNumber());
+        boolean isPINValid = accountService.isPinCreated(LoggedinUser.getAccountNumber());
         
         
         Map<String, Object> result =  new HashMap<>();
@@ -55,7 +55,7 @@ public class AccountController {
 
     @PostMapping("/pin/create")
     public ResponseEntity<?> createPIN(@RequestBody PinRequest pinRequest) {
-        accountService.createPIN(LoginUser.getAccountNumber(), pinRequest.getPassword(), pinRequest.getPin());
+        accountService.createPIN(LoggedinUser.getAccountNumber(), pinRequest.getPassword(), pinRequest.getPin());
       
         Map<String, String> response =  new HashMap<>();
         response.put("msg", "PIN created successfully");
@@ -67,7 +67,7 @@ public class AccountController {
 
     @PostMapping("/pin/update")
     public ResponseEntity<?> updatePIN(@RequestBody PinUpdateRequest pinUpdateRequest) {
-        accountService.updatePIN(LoginUser.getAccountNumber(), pinUpdateRequest.getOldPin(), pinUpdateRequest.getPassword(), pinUpdateRequest.getNewPin());
+        accountService.updatePIN(LoggedinUser.getAccountNumber(), pinUpdateRequest.getOldPin(), pinUpdateRequest.getPassword(), pinUpdateRequest.getNewPin());
         
         Map<String, String> response =  new HashMap<>();
         response.put("msg", "PIN updated successfully");
@@ -78,7 +78,7 @@ public class AccountController {
 
     @PostMapping("/deposit")
     public ResponseEntity<?> cashDeposit(@RequestBody AmountRequest amountRequest) {
-        accountService.cashDeposit(LoginUser.getAccountNumber(), amountRequest.getPin(), amountRequest.getAmount());
+        accountService.cashDeposit(LoggedinUser.getAccountNumber(), amountRequest.getPin(), amountRequest.getAmount());
         
         Map<String, String> response =  new HashMap<>();
         response.put("msg", "Cash deposited successfully");
@@ -89,7 +89,7 @@ public class AccountController {
 
     @PostMapping("/withdraw")
     public ResponseEntity<?> cashWithdrawal(@RequestBody AmountRequest amountRequest) {
-        accountService.cashWithdrawal(LoginUser.getAccountNumber(), amountRequest.getPin(), amountRequest.getAmount());
+        accountService.cashWithdrawal(LoggedinUser.getAccountNumber(), amountRequest.getPin(), amountRequest.getAmount());
         
         Map<String, String> response =  new HashMap<>();
         response.put("msg", "Cash withdrawn successfully");
@@ -99,7 +99,7 @@ public class AccountController {
 
     @PostMapping("/fund-transfer")
     public ResponseEntity<?> fundTransfer(@RequestBody FundTransferRequest fundTransferRequest) {
-        accountService.fundTransfer(LoginUser.getAccountNumber(), fundTransferRequest.getTargetAccountNumber(), fundTransferRequest.getPin(), fundTransferRequest.getAmount());
+        accountService.fundTransfer(LoggedinUser.getAccountNumber(), fundTransferRequest.getTargetAccountNumber(), fundTransferRequest.getPin(), fundTransferRequest.getAmount());
        Map<String, String> response =  new HashMap<>();
         response.put("msg", "Fund transferred successfully");
         
@@ -109,7 +109,7 @@ public class AccountController {
     
     @GetMapping("/transactions")
     public ResponseEntity<List<TransactionDTO>> getAllTransactionsByAccountNumber() {
-        List<TransactionDTO> transactions = transactionService.getAllTransactionsByAccountNumber(LoginUser.getAccountNumber());
+        List<TransactionDTO> transactions = transactionService.getAllTransactionsByAccountNumber(LoggedinUser.getAccountNumber());
         return ResponseEntity.ok(transactions);
     }
 }
