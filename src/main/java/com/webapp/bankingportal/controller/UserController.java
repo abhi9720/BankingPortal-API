@@ -148,5 +148,20 @@ public class UserController {
         }
     }
 
+    @PostMapping("/update")
+    public ResponseEntity<UserResponse> updateUser(@RequestBody User user) {
+        User updateUser = userService.updateUser(user);
+
+        UserResponse userResponse = new UserResponse();
+        userResponse.setName(updateUser.getName());
+        userResponse.setEmail(updateUser.getEmail());
+        userResponse.setAccountNumber(updateUser.getAccount().getAccountNumber());
+        userResponse.setIFSC_code(updateUser.getAccount().getIFSC_code());
+        userResponse.setBranch(updateUser.getAccount().getBranch());
+        userResponse.setAccount_type(updateUser.getAccount().getAccount_type());
+
+
+        return ResponseEntity.ok(userResponse);
+    }
 
 }
