@@ -1,5 +1,7 @@
 package com.webapp.bankingportal.service;
 
+import com.webapp.bankingportal.exception.UserValidation;
+import com.webapp.bankingportal.util.LoggedinUser;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -54,6 +56,33 @@ public class UserServiceImpl implements UserService{
 		userRepository.save(user);
 		
 	}
+
+    @Override
+    public User updateUser(User user) {
+        User existingUser = userRepository.findByAccountAccountNumber(LoggedinUser.getAccountNumber());
+        if(user.getEmail() != null){
+            if(user.getEmail().isEmpty())
+                throw new UserValidation("Email can't be empty");
+            else
+                existingUser.setEmail(user.getEmail());
+        }
+        if(user.getName() != null){
+            if(user.getName().isEmpty())
+                throw new UserValidation("Name can't be empty");
+            else
+                existingUser.setName(user.getName());
+        }
+        if(user.getPhone_number() != null){
+            if(user.getPhone_number().isEmpty())
+                throw new UserValidation("Phone number can't be empty");
+            else
+                existingUser.setPhone_number(user.getPhone_number());
+        }
+        if(user.getAddress() != null){
+            existingUser.setAddress(user.getAddress());
+        }
+        return userRepository.save(existingUser);
+    }
 
 
 }
