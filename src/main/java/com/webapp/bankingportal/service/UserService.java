@@ -8,4 +8,6 @@ public interface UserService {
 	User getUserByAccountNumber(String account_no);
 
 	public void saveUser(User user);
+
+	User updateUser(User user);
 }
