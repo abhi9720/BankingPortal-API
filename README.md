@@ -134,3 +134,31 @@ We welcome and encourage developers to contribute to the project and help us mak
 👉🏻**Wait for Review**: Your pull request will be reviewed by the project maintainers. Make any necessary changes based on their feedback.
 
 **👏🏻👏🏻 Congratulations! 🎉🎊** Your contribution has been accepted and merged into the main repository. You are now a contributor to the project.
+
+--- 
+## sample Application.properties file
+```
+server.port=8180
+spring.datasource.url=jdbc:mysql://localhost:3306/bankingapp
+spring.datasource.username=root
+spring.datasource.password=root
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.jpa.database-platform = org.hibernate.dialect.MySQL5Dialect
+spring.jpa.generate-ddl=true
+spring.jpa.show-sql=true
+spring.jpa.hibernate.ddl-auto = update
+spring.main.allow-circular-references=true
+server.error.include-message=always
+# JWT Configuration
+jwt.secret=your-secret-key
+jwt.expiration=86400000 # Token expiration time in milliseconds (e.g., 24 hours)
+jwt.header=Authorization
+jwt.prefix=Bearer
+```
+
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=example@gmail.com
+spring.mail.password=x88p99qxzmdvgmdu
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true 
