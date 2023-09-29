@@ -47,6 +47,13 @@ The Banking Portal API provides a set of endpoints for managing user accounts, f
 - Maven for project management
 - Postman for API testing
 
+## TODO
+- UI Fix for Dashboard Charts
+- Pagination in table
+- Save JWT Token in db and remove on logout
+- Email trigger on account login
+- Send Bank Statement on Email
+  
 ## Installation and Setup
 
 1. Clone the repository: `git clone https://github.com/yourusername/banking-portal-api.git`
@@ -134,6 +141,10 @@ We welcome and encourage developers to contribute to the project and help us mak
 👉🏻**Wait for Review**: Your pull request will be reviewed by the project maintainers. Make any necessary changes based on their feedback.
 
 **👏🏻👏🏻 Congratulations! 🎉🎊** Your contribution has been accepted and merged into the main repository. You are now a contributor to the project.
+
+---
+
+
 
 --- 
 ## sample Application.properties file
