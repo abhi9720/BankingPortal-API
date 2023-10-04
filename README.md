@@ -61,23 +61,6 @@ The Banking Portal API provides a set of endpoints for managing user accounts, f
 3. Configure MySQL: Set up a MySQL database and update the database credentials in `application.properties`.
 4. Build and run the project: `mvn spring-boot:run`
 
-## API Endpoints
-
-- `/api/account/pin/check`: Check if a PIN is created for the user's account.
-- `/api/account/pin/create`: Create a new PIN for the user's account.
-- `/api/account/pin/update`: Update the existing PIN for the user's account.
-- `/api/account/withdraw`: Withdraw cash from the user's account.
-- `/api/account/deposit`: Deposit cash into the user's account.
-- `/api/account/fund-transfer`: Transfer funds to another user's account.
-- `/api/account/transactions`: Get the list of transactions for the user's account.
-- `/api/dashboard/user`: Get details of the authenticated user.
-- `/api/dashboard/account`: Get details of the user's account.
-
-
-## Authentication
-
-The API endpoints require bearer token authentication. To access protected endpoints, include a valid access token in the "Authorization" header with the "Bearer" scheme.
-
 ## Screenshots
 <img width="960" alt="Screenshot 2023-07-23 200531" src="https://github.com/abhi9720/BankingPortal-API/assets/68281476/1c3a614b-a87d-4603-9eb8-0a21da6e1ee2">
 
@@ -144,9 +127,6 @@ We welcome and encourage developers to contribute to the project and help us mak
 
 ---
 
-
-
---- 
 ## sample Application.properties file
 ```
 server.port=8180
