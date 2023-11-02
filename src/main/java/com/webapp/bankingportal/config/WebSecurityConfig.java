@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -51,20 +52,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-                .authorizeRequests()
-                .antMatchers("/api/users/register").permitAll()
-                .antMatchers("/api/users/login").permitAll()
-                .antMatchers("/api/users/generate-otp").permitAll()
-                .antMatchers("/api/users/verify-otp").permitAll()
-                .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .anyRequest().authenticated()
-                .and()
+        http.csrf(AbstractHttpConfigurer::disable)
+                .authorizeRequests(req -> req
+                                   .requestMatchers("/api/users/register").permitAll()
+                                   .requestMatchers("/api/users/login").permitAll()
+                                   .requestMatchers("/api/users/generate-otp").permitAll()
+                                   .requestMatchers("/api/users/verify-otp").permitAll()
+                                   .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                   .anyRequest().authenticated()
+                                   )
+                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                .and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     }
     
     
