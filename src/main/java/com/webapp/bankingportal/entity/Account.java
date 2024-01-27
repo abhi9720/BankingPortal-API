@@ -1,6 +1,12 @@
 package com.webapp.bankingportal.entity;
 
-import javax.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 
 @Entity
 public class Account {
@@ -13,8 +19,8 @@ public class Account {
 	private String accountNumber;
 	private double balance;
 	private String account_type = "Saving";
-	private String branch = "Bhind";
-	private String IFSC_code = "BHI001";
+	private String branch = "NIT";
+	private String IFSC_code = "NIT001";
 	private String Pin;
 	private String accountstatus;
 	@OneToOne

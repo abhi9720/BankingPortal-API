@@ -2,10 +2,12 @@ package com.webapp.bankingportal.dto;
 
 import java.util.Date;
 
+import com.webapp.bankingportal.entity.TransactionType;
+
 public class TransactionDTO {
     private Long id; 
     private double amount;
-    private String transaction_type;
+    private TransactionType transaction_type;
     private Date transaction_date;
     private String sourceAccountNumber;
     private String targetAccountNumber;
@@ -23,10 +25,10 @@ public class TransactionDTO {
 	public void setAmount(double amount) {
 		this.amount = amount;
 	}
-	public String getTransaction_type() {
+	public TransactionType getTransaction_type() {
 		return transaction_type;
 	}
-	public void setTransaction_type(String transaction_type) {
+	public void setTransaction_type(TransactionType transaction_type) {
 		this.transaction_type = transaction_type;
 	}
 	public Date getTransaction_date() {

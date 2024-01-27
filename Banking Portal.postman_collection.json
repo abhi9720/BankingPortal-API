@@ -1,0 +1,397 @@
+{
+	"info": {
+		"_postman_id": "2c745177-6ae9-474e-9034-54d8904c5a12",
+		"name": "Banking Portal",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Account",
+			"item": [
+				{
+					"name": "check pin created",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyMzY0ODAiLCJleHAiOjE2OTAxMjY3OTksImlhdCI6MTY5MDEwODc5OX0.PZ5rIbZ9aa3fXoSXOObSJ3BD-AX3KT3CsCTU7WztAWwV77-tmiu94vLKyDC9nd6nTXsI4TWWCO1resfZY8INzg",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"pin\":\"12345\",\r\n    \"password\":\"secretpassword\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8180/api/account/pin/check",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8180",
+							"path": [
+								"api",
+								"account",
+								"pin",
+								"check"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create pin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI1NTY3MDQiLCJleHAiOjE2OTAxMjE5MTQsImlhdCI6MTY5MDEwMzkxNH0.rX5c-yPdOM1aWHSkb6DhxjuqEzy3MHRwD5Ijg0xYcVj2Fr6O20VkcoN_gpi1-_CUFwlUcFkl03KWhSCxAoKG9A",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"pin\":\"1234\",\r\n    \"password\":\"secretpassword1\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8180/api/account/pin/create",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8180",
+							"path": [
+								"api",
+								"account",
+								"pin",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update pin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI1NTY3MDQiLCJleHAiOjE2OTAxMjE5MTQsImlhdCI6MTY5MDEwMzkxNH0.rX5c-yPdOM1aWHSkb6DhxjuqEzy3MHRwD5Ijg0xYcVj2Fr6O20VkcoN_gpi1-_CUFwlUcFkl03KWhSCxAoKG9A",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"oldPin\":\"4321\",\r\n    \"newPin\":\"1234\",\r\n    \"password\":\"secretpassword1\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8180/api/account/pin/update",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8180",
+							"path": [
+								"api",
+								"account",
+								"pin",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "withdraw",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI1NTIzOTgiLCJleHAiOjE2OTAwNjQ3NzYsImlhdCI6MTY5MDA0Njc3Nn0.0hd9nARbU2lPlDhRFIPAE9T0nU1QPCtgFnThzDO6xVio0o22uC7IYlsJDbQU9Nhr9UuDO7m0YOmfp8wN9NIpog",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "    {\r\n        \"amount\":\"10\",\r\n        \"pin\":\"4321\"\r\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8180/api/account/withdraw",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8180",
+							"path": [
+								"api",
+								"account",
+								"withdraw"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deposit",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI1NTIzOTgiLCJleHAiOjE2OTAwNjQ3NzYsImlhdCI6MTY5MDA0Njc3Nn0.0hd9nARbU2lPlDhRFIPAE9T0nU1QPCtgFnThzDO6xVio0o22uC7IYlsJDbQU9Nhr9UuDO7m0YOmfp8wN9NIpog",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"amount\":\"100\",\r\n    \"pin\":\"4321\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8180/api/account/deposit",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8180",
+							"path": [
+								"api",
+								"account",
+								"deposit"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "fund-transfer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI1NTIzOTgiLCJleHAiOjE2OTAwNjQ3NzYsImlhdCI6MTY5MDA0Njc3Nn0.0hd9nARbU2lPlDhRFIPAE9T0nU1QPCtgFnThzDO6xVio0o22uC7IYlsJDbQU9Nhr9UuDO7m0YOmfp8wN9NIpog",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"amount\":\"10\",\r\n    \"pin\":\"4321\",\r\n    \"targetAccountNumber\":556704\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8180/api/account/fund-transfer",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8180",
+							"path": [
+								"api",
+								"account",
+								"fund-transfer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "transactions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI1NTY3MDQiLCJleHAiOjE2OTAxMjE5MTQsImlhdCI6MTY5MDEwMzkxNH0.rX5c-yPdOM1aWHSkb6DhxjuqEzy3MHRwD5Ijg0xYcVj2Fr6O20VkcoN_gpi1-_CUFwlUcFkl03KWhSCxAoKG9A",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8180/api/account/transactions",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8180",
+							"path": [
+								"api",
+								"account",
+								"transactions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "account details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI1NTY3MDQiLCJleHAiOjE2OTAxMTAyMjAsImlhdCI6MTY5MDA5MjIyMH0.p3sXubRtcsit_iRV8a-dz1SOw6yWvpB0JR0Ic5-XerMVXNxCecjzdXzGzfzWfcsKY5-yYceSr1puFwGQRayEhg",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8180/api/dashboard/account",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8180",
+							"path": [
+								"api",
+								"dashboard",
+								"account"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Register User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Abhishek a\",\r\n    \"password\": \"secretpassword2\",\r\n    \"email\": \"jonoe@gmail.com\",\r\n    \"address\": \"123 Main Street\",\r\n    \"phone_number\": \"134566690\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8180/api/users/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8180",
+					"path": [
+						"api",
+						"users",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get user details",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI1NTY3MDQiLCJleHAiOjE2OTAxMTAyMjAsImlhdCI6MTY5MDA5MjIyMH0.p3sXubRtcsit_iRV8a-dz1SOw6yWvpB0JR0Ic5-XerMVXNxCecjzdXzGzfzWfcsKY5-yYceSr1puFwGQRayEhg",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8180/api/dashboard/user",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8180",
+					"path": [
+						"api",
+						"dashboard",
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"accountNumber\": \"236480\",\r\n    \"password\": \"secretpassword2\"\r\n    \r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8180/api/users/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8180",
+					"path": [
+						"api",
+						"users",
+						"login"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "AuthTkdn",
+			"value": "eyJhbGciOiJIUzUxMiJ9"
+		},
+		{
+			"key": "JWTtken",
+			"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI1NTY3MDQiLCJleHAiOjE2OTAxMDU1NTAsImlhdCI6MTY5MDA4NzU1MH0._tB_nSy0fdIH2ZSeua1lfQLCOlCwf-sq892rZPhJZGG-CLcOfTjf2Eh_LP_KsbLzdHyLVuAWxP_JOqP4e36zeg"
+		}
+	]
+}
