@@ -28,7 +28,6 @@ public class UserServiceImpl implements UserService{
     	return userRepository.findByAccountAccountNumber(account_no);
     }
     
-    
     @Override
     public User registerUser(User user) {
         

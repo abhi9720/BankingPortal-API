@@ -12,7 +12,7 @@ public class TransactionMapper {
         TransactionDTO dto = new TransactionDTO();
         dto.setId(transaction.getId());
         dto.setAmount(transaction.getAmount());
-        dto.setTransaction_type(transaction.getTransaction_type());
+        dto.setTransaction_type(transaction.getTransactionType());
         dto.setTransaction_date(transaction.getTransaction_date());
         dto.setSourceAccountNumber(transaction.getSourceAccount().getAccountNumber());
         if (transaction.getTargetAccount() != null) {
