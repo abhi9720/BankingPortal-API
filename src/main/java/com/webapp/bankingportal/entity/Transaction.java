@@ -1,7 +1,15 @@
 package com.webapp.bankingportal.entity;
 
 import java.util.Date;
-import javax.persistence.*;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Transaction {
@@ -9,7 +17,10 @@ public class Transaction {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private double amount;
-	private String transaction_type;
+	
+	@Enumerated(EnumType.STRING)
+	private TransactionType transactionType;
+	
 	private Date transaction_date;
 
 	@ManyToOne
@@ -35,13 +46,13 @@ public class Transaction {
 	public void setAmount(double amount) {
 		this.amount = amount;
 	}
-
-	public String getTransaction_type() {
-		return transaction_type;
+	
+	public TransactionType getTransactionType() {
+		return transactionType;
 	}
 
-	public void setTransaction_type(String transaction_type) {
-		this.transaction_type = transaction_type;
+	public void setTransactionType(TransactionType transactionType) {
+		this.transactionType = transactionType;
 	}
 
 	public Date getTransaction_date() {
@@ -70,9 +81,10 @@ public class Transaction {
 
 	@Override
 	public String toString() {
-		return "Transaction [id=" + id + ", amount=" + amount + ", transaction_type=" + transaction_type
+		return "Transaction [id=" + id + ", amount=" + amount + ", transactionType=" + transactionType
 				+ ", transaction_date=" + transaction_date + ", sourceAccount=" + sourceAccount + ", targetAccount="
 				+ targetAccount + "]";
 	}
+
 
 }

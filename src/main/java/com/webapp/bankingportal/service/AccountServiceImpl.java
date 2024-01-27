@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.webapp.bankingportal.entity.Account;
 import com.webapp.bankingportal.entity.Transaction;
+import com.webapp.bankingportal.entity.TransactionType;
 import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.exception.InsufficientBalanceException;
 import com.webapp.bankingportal.exception.NotFoundException;
@@ -113,7 +114,7 @@ public class AccountServiceImpl implements AccountService {
 
         Transaction transaction = new Transaction();
         transaction.setAmount(amount);
-        transaction.setTransaction_type("Deposit");
+        transaction.setTransactionType(TransactionType.CASH_DEPOSIT);;
         transaction.setTransaction_date(new Date());
         transaction.setSourceAccount(account);
         transactionRepository.save(transaction);
@@ -121,6 +122,7 @@ public class AccountServiceImpl implements AccountService {
     
     @Override
     public void cashWithdrawal(String accountNumber, String pin, double amount) {
+    	
         Account account = accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
             throw new NotFoundException("Account not found");
@@ -141,7 +143,7 @@ public class AccountServiceImpl implements AccountService {
 
         Transaction transaction = new Transaction();
         transaction.setAmount(amount);
-        transaction.setTransaction_type("Withdrawal");
+        transaction.setTransactionType(TransactionType.CASH_WITHDRAWAL);
         transaction.setTransaction_date(new Date());
         transaction.setSourceAccount(account);
         transactionRepository.save(transaction);
@@ -179,7 +181,7 @@ public class AccountServiceImpl implements AccountService {
 
         Transaction transaction = new Transaction();
         transaction.setAmount(amount);
-        transaction.setTransaction_type("Fund Transfer");
+        transaction.setTransactionType(TransactionType.CASH_TRANSFER);
         transaction.setTransaction_date(new Date());
         transaction.setSourceAccount(sourceAccount);
         transaction.setTargetAccount(targetAccount);
