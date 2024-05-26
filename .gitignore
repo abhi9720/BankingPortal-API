@@ -24,6 +24,9 @@ dependency-reduced-pom.xml
 *.iml
 *.iws
 
+# VS Code
+.vscode/
+
 # OS specific
 .DS_Store
 Thumbs.db
