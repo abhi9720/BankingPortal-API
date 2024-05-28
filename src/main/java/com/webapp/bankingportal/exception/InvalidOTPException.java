@@ -1,14 +1,8 @@
 package com.webapp.bankingportal.exception;
 
-public class InvalidOTPException  extends RuntimeException  {
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 9176543614742615822L;
+public class InvalidOTPException extends RuntimeException {
 
-	public InvalidOTPException(String msg) {
-		super(msg);
-	}
-
+    public InvalidOTPException(String msg) {
+        super(msg);
+    }
 }
