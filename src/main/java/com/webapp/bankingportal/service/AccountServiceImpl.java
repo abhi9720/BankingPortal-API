@@ -3,6 +3,8 @@ package com.webapp.bankingportal.service;
 import java.util.Date;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,16 +22,18 @@ import com.webapp.bankingportal.repository.TransactionRepository;
 @Service
 public class AccountServiceImpl implements AccountService {
 
-	@Autowired
-    private  AccountRepository accountRepository;
-	
-	@Autowired
+    @Autowired
+    private AccountRepository accountRepository;
+
+    @Autowired
     private TransactionRepository transactionRepository;
-	
-	@Autowired
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
-	@Override
+    private static final Logger logger = LoggerFactory.getLogger(AccountServiceImpl.class);
+
+    @Override
     public Account createAccount(User user) {
         String accountNumber = generateUniqueAccountNumber();
         Account account = new Account();
@@ -37,29 +41,27 @@ public class AccountServiceImpl implements AccountService {
         account.setBalance(0.0);
         return accountRepository.save(account);
     }
-	
-	@Override
+
+    @Override
     public boolean isPinCreated(String accountNumber) {
         Account account = accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
             throw new NotFoundException("Account not found");
         }
 
-        return account.getPin()!=null;
+        return account.getPin() != null;
     }
-    
-	private String generateUniqueAccountNumber() {
-	    String accountNumber;
-	    do {
-	        // Generate a UUID as the account number
-	        accountNumber = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 6);
-	    } while (accountRepository.findByAccountNumber(accountNumber) != null);
 
-	    return accountNumber;
-	}
+    private String generateUniqueAccountNumber() {
+        String accountNumber;
+        do {
+            // Generate a UUID as the account number
+            accountNumber = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 6);
+        } while (accountRepository.findByAccountNumber(accountNumber) != null);
 
-    
-    
+        return accountNumber;
+    }
+
     @Override
     public void createPIN(String accountNumber, String password, String pin) {
         Account account = accountRepository.findByAccountNumber(accountNumber);
@@ -74,11 +76,11 @@ public class AccountServiceImpl implements AccountService {
         account.setPin(passwordEncoder.encode(pin));
         accountRepository.save(account);
     }
-    
+
     @Override
     public void updatePIN(String accountNumber, String oldPIN, String password, String newPIN) {
-    	System.out.println(accountNumber+"  "+oldPIN+" "+newPIN+"  "+password);
-    	
+        logger.info("Updating PIN for account: {}", accountNumber);
+
         Account account = accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
             throw new NotFoundException("Account not found");
@@ -95,7 +97,7 @@ public class AccountServiceImpl implements AccountService {
         account.setPin(passwordEncoder.encode(newPIN));
         accountRepository.save(account);
     }
-    
+
     @Override
     public void cashDeposit(String accountNumber, String pin, double amount) {
         Account account = accountRepository.findByAccountNumber(accountNumber);
@@ -114,15 +116,14 @@ public class AccountServiceImpl implements AccountService {
 
         Transaction transaction = new Transaction();
         transaction.setAmount(amount);
-        transaction.setTransactionType(TransactionType.CASH_DEPOSIT);;
+        transaction.setTransactionType(TransactionType.CASH_DEPOSIT);
         transaction.setTransaction_date(new Date());
         transaction.setSourceAccount(account);
         transactionRepository.save(transaction);
     }
-    
+
     @Override
     public void cashWithdrawal(String accountNumber, String pin, double amount) {
-    	
         Account account = accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
             throw new NotFoundException("Account not found");
@@ -148,7 +149,7 @@ public class AccountServiceImpl implements AccountService {
         transaction.setSourceAccount(account);
         transactionRepository.save(transaction);
     }
-    
+
     @Override
     public void fundTransfer(String sourceAccountNumber, String targetAccountNumber, String pin, double amount) {
         Account sourceAccount = accountRepository.findByAccountNumber(sourceAccountNumber);
