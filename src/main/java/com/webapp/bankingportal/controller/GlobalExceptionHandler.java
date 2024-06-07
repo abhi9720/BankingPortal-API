@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
     
     @ExceptionHandler(InvalidOTPException.class)
     public ResponseEntity<String> handleInvalidOTPException(InvalidOTPException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
     }
 }
 

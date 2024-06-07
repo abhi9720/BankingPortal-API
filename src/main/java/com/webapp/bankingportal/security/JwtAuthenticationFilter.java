@@ -1,7 +1,6 @@
 package com.webapp.bankingportal.security;
 
 import java.io.IOException;
-import java.util.Enumeration;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
@@ -42,54 +41,52 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Request Headers:");
-            Enumeration<String> headerNames = request.getHeaderNames();
-            while (headerNames.hasMoreElements()) {
-                String name = headerNames.nextElement();
-                logger.debug("\t" + name + ": " + request.getHeader(name));
-            }
-        }
-
         String requestTokenHeader = request.getHeader("Authorization");
         String username = null;
         String token;
 
         if (requestTokenHeader == null) {
-            logger.info("No JWT Token found in Request Headers");
-        } else if (!requestTokenHeader.startsWith("Bearer")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (!requestTokenHeader.startsWith("Bearer")) {
             logger.info("JWT header does not begin with 'Bearer' prefix");
             logger.info("JWT header: " + requestTokenHeader);
+            
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        token = requestTokenHeader.substring(7);
+
+        try {
+            username = jwtTokenUtil.getUsernameFromToken(token);
+        } catch (IllegalArgumentException e) {
+            logger.info("Unable to get token");
+        } catch (ExpiredJwtException e) {
+            logger.info("JWT Token Expired");
+        } catch (MalformedJwtException e) {
+            logger.info("Malformed JWT Token");
+        }
+
+        if (username == null) {
+            logger.info("User not found in JWT Token");
+        } else if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            logger.info("User is already authenticated");
         } else {
-            token = requestTokenHeader.substring(7);
-            try {
-                username = jwtTokenUtil.getUsernameFromToken(token);
-            } catch (IllegalArgumentException e) {
-                logger.info("Unable to get token");
-            } catch (ExpiredJwtException e) {
-                logger.info("JWT Token Expired");
-            } catch (MalformedJwtException e) {
-                logger.info("Malformed JWT Token");
-            }
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            if (username == null) {
-                logger.info("User not found in JWT Token");
-            } else if (SecurityContextHolder.getContext().getAuthentication() != null) {
-                logger.info("User is already authenticated");
+            if (jwtTokenUtil.validateToken(token, userDetails)) {
+                logger.info("Valid JWT Token for account: " + username);
+
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
             } else {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-                if (jwtTokenUtil.validateToken(token, userDetails)) {
-                    logger.info("Valid JWT Token for account: " + username);
-
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                } else {
-                    logger.info("Invalid JWT Token");
-                }
+                logger.info("Invalid JWT Token");
             }
         }
 

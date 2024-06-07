@@ -1,66 +1,93 @@
 package com.webapp.bankingportal.dto;
 
+import com.webapp.bankingportal.entity.User;
 
-public class UserResponse  {
-    
+public class UserResponse {
+
     private String name;
     private String email;
     private String address;
-    private String phone_number;
+    private String phoneNumber;
     private String accountNumber;
-    private String IFSC_code;
+    private String ifscCode;
     private String branch;
-    private String account_type;
-    
-    
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
-	public String getEmail() {
-		return email;
-	}
-	public void setEmail(String email) {
-		this.email = email;
-	}
-	public String getAddress() {
-		return address;
-	}
-	public void setAddress(String address) {
-		this.address = address;
-	}
-	public String getPhone_number() {
-		return phone_number;
-	}
-	public void setPhone_number(String phone_number) {
-		this.phone_number = phone_number;
-	}
-	public String getAccountNumber() {
-		return accountNumber;
-	}
-	public void setAccountNumber(String accountNumber) {
-		this.accountNumber = accountNumber;
-	}
-	public String getIFSC_code() {
-		return IFSC_code;
-	}
-	public void setIFSC_code(String iFSC_code) {
-		IFSC_code = iFSC_code;
-	}
-	public String getBranch() {
-		return branch;
-	}
-	public void setBranch(String branch) {
-		this.branch = branch;
-	}
-	public String getAccount_type() {
-		return account_type;
-	}
-	public void setAccount_type(String account_type) {
-		this.account_type = account_type;
-	}
-    
-    
+    private String accountType;
+
+    public UserResponse() {}
+
+    public UserResponse(User user) {
+        this.name = user.getName();
+        this.email = user.getEmail();
+        this.address = user.getAddress();
+        this.phoneNumber = user.getPhoneNumber();
+        this.accountNumber = user.getAccount().getAccountNumber();
+        this.ifscCode = user.getAccount().getIfscCode();
+        this.branch = user.getAccount().getBranch();
+        this.accountType = user.getAccount().getAccountType();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
+    }
+
+    public String getIfscCode() {
+        return ifscCode;
+    }
+
+    public void setIfscCode(String ifscCode) {
+        this.ifscCode =ifscCode;
+    }
+
+    public String getBranch() {
+        return branch;
+    }
+
+    public void setBranch(String branch) {
+        this.branch = branch;
+    }
+
+    public String getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(String accountType) {
+        this.accountType = accountType;
+    }
+
 }

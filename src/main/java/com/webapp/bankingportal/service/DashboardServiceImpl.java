@@ -30,8 +30,11 @@ public class DashboardServiceImpl implements DashboardService {
         userResponse.setName(user.getName());
         userResponse.setEmail(user.getEmail());
         userResponse.setAddress(user.getAddress());
-        userResponse.setPhone_number(user.getPhone_number());
+        userResponse.setPhoneNumber(user.getPhoneNumber());
         userResponse.setAccountNumber(user.getAccount().getAccountNumber());
+        userResponse.setIfscCode(user.getAccount().getIfscCode());
+        userResponse.setBranch(user.getAccount().getBranch());
+        userResponse.setAccountType(user.getAccount().getAccountType());
 
         return userResponse;
     }
@@ -47,10 +50,10 @@ public class DashboardServiceImpl implements DashboardService {
         // Map the account entity to AccountResponse DTO
         AccountResponse accountResponse = new AccountResponse();
         accountResponse.setAccountNumber(account.getAccountNumber());
-        accountResponse.setAccountType(account.getAccount_type());
+        accountResponse.setAccountType(account.getAccountType());
         accountResponse.setBalance(account.getBalance());
         accountResponse.setBranch(account.getBranch());
-        accountResponse.setIFSCCode(account.getIFSC_code());
+        accountResponse.setIfscCode(account.getIfscCode());
 
         return accountResponse;
     }

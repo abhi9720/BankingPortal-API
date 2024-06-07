@@ -5,7 +5,7 @@ public class AccountResponse {
     private double balance;
     private String accountType;
     private String branch;
-    private String IFSCCode;
+    private String ifscCode;
 
     // Getters and setters
 
@@ -41,11 +41,11 @@ public class AccountResponse {
         this.branch = branch;
     }
 
-    public String getIFSCCode() {
-        return IFSCCode;
+    public String getIfscCode() {
+        return ifscCode;
     }
 
-    public void setIFSCCode(String IFSCCode) {
-        this.IFSCCode = IFSCCode;
+    public void setIfscCode(String ifscCode) {
+        this.ifscCode =ifscCode;
     }
 }

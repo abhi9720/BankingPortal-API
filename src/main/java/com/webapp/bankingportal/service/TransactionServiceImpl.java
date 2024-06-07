@@ -26,7 +26,7 @@ public class TransactionServiceImpl implements TransactionService {
 
         List<TransactionDTO> transactionDTOs = transactions.stream()
                 .map(transactionMapper::toDto)
-                .sorted((t1, t2) -> t2.getTransaction_date().compareTo(t1.getTransaction_date()))
+                .sorted((t1, t2) -> t2.getTransactionDate().compareTo(t1.getTransactionDate()))
                 .collect(Collectors.toList());
 
         return transactionDTOs;
