@@ -12,6 +12,10 @@ public interface UserService {
 
     public User updateUser(User user);
 
+    public boolean doesEmailExist(String email);
+
+    public boolean doesPhoneNumberExist(String phoneNumber);
+
     public boolean doesAccountExist(String accountNumber);
 
     public Optional<User> getUserByAccountNumber(String accountNumber);
