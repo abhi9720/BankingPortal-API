@@ -18,7 +18,7 @@ public class Account {
 	@Column(unique = true)
 	private String accountNumber;
 	private double balance;
-	private String accountType = "Saving";
+	private String accountType = "Savings";
 	private String branch = "NIT";
 	private String ifscCode = "NIT001";
 	private String Pin;
