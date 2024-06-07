@@ -13,7 +13,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
 import com.webapp.bankingportal.entity.OtpInfo;
-import com.webapp.bankingportal.exception.AccountDoesNotExists;
+import com.webapp.bankingportal.exception.AccountDoesNotExistException;
 import com.webapp.bankingportal.exception.InvalidOTPException;
 import com.webapp.bankingportal.exception.OtpRetryLimitExceededException;
 import com.webapp.bankingportal.repository.OtpInfoRepository;
@@ -45,7 +45,7 @@ public class OTPServiceImpl implements OTPService {
     @Override
     public String generateOTP(String accountNumber) {
         if (!userService.doesAccountExist(accountNumber)) {
-            throw new AccountDoesNotExists("Account does not exist");
+            throw new AccountDoesNotExistException("Account does not exist");
         }
 
         OtpInfo existingOtpInfo = otpInfoRepository.findByAccountNumber(accountNumber);
@@ -109,7 +109,7 @@ public class OTPServiceImpl implements OTPService {
 
     private void incrementOtpAttempts(String accountNumber) {
         if (!userService.doesAccountExist(accountNumber)) {
-            throw new AccountDoesNotExists("Account does not exist");
+            throw new AccountDoesNotExistException("Account does not exist");
         }
 
         Cache cache = cacheManager.getCache("otpAttempts");

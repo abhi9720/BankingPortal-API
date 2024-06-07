@@ -18,11 +18,11 @@ public class Account {
 	@Column(unique = true)
 	private String accountNumber;
 	private double balance;
-	private String account_type = "Saving";
+	private String accountType = "Saving";
 	private String branch = "NIT";
-	private String IFSC_code = "NIT001";
+	private String ifscCode = "NIT001";
 	private String Pin;
-	private String accountstatus;
+	private String accountStatus;
 	@OneToOne
 	@JoinColumn(name = "user_id")
 	private User user;
@@ -51,12 +51,12 @@ public class Account {
 		this.balance = balance;
 	}
 
-	public String getAccount_type() {
-		return account_type;
+	public String getAccountType() {
+		return accountType;
 	}
 
-	public void setAccount_type(String account_type) {
-		this.account_type = account_type;
+	public void setAccountType(String accountType) {
+		this.accountType = accountType;
 	}
 
 	public String getBranch() {
@@ -67,12 +67,12 @@ public class Account {
 		this.branch = branch;
 	}
 
-	public String getIFSC_code() {
-		return IFSC_code;
+	public String getIfscCode() {
+		return ifscCode;
 	}
 
-	public void setIFSC_code(String iFSC_code) {
-		IFSC_code = iFSC_code;
+	public void setIfscCode(String ifscCode) {
+		this.ifscCode = ifscCode;
 	}
 
 	public User getUser() {
@@ -85,8 +85,8 @@ public class Account {
 
 	@Override
 	public String toString() {
-		return "Account [id=" + id + ", accountNumber=" + accountNumber + ", balance=" + balance + ", account_type="
-				+ account_type + ", branch=" + branch + ", IFSC_code=" + IFSC_code + ", user=" + user + "]";
+		return "Account [id=" + id + ", accountNumber=" + accountNumber + ", balance=" + balance + ", accountType="
+				+ accountType + ", branch=" + branch + ", ifscCode=" + ifscCode + ", user=" + user + "]";
 	}
 
 	public String getPin() {
@@ -97,12 +97,12 @@ public class Account {
 		this.Pin = pin;
 	}
 
-	public String getAccountstatus() {
-		return accountstatus;
+	public String getAccountStatus() {
+		return accountStatus;
 	}
 
-	public void setAccountstatus(String accountstatus) {
-		this.accountstatus = accountstatus;
+	public void setAccountStatus(String accountStatus) {
+		this.accountStatus = accountStatus;
 	}
 
 }

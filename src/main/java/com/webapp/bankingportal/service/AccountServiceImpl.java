@@ -117,7 +117,7 @@ public class AccountServiceImpl implements AccountService {
         Transaction transaction = new Transaction();
         transaction.setAmount(amount);
         transaction.setTransactionType(TransactionType.CASH_DEPOSIT);
-        transaction.setTransaction_date(new Date());
+        transaction.setTransactionDate(new Date());
         transaction.setSourceAccount(account);
         transactionRepository.save(transaction);
     }
@@ -145,7 +145,7 @@ public class AccountServiceImpl implements AccountService {
         Transaction transaction = new Transaction();
         transaction.setAmount(amount);
         transaction.setTransactionType(TransactionType.CASH_WITHDRAWAL);
-        transaction.setTransaction_date(new Date());
+        transaction.setTransactionDate(new Date());
         transaction.setSourceAccount(account);
         transactionRepository.save(transaction);
     }
@@ -183,7 +183,7 @@ public class AccountServiceImpl implements AccountService {
         Transaction transaction = new Transaction();
         transaction.setAmount(amount);
         transaction.setTransactionType(TransactionType.CASH_TRANSFER);
-        transaction.setTransaction_date(new Date());
+        transaction.setTransactionDate(new Date());
         transaction.setSourceAccount(sourceAccount);
         transaction.setTargetAccount(targetAccount);
         transactionRepository.save(transaction);

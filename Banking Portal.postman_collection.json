@@ -303,7 +303,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"Abhishek a\",\r\n    \"password\": \"secretpassword2\",\r\n    \"email\": \"jonoe@gmail.com\",\r\n    \"address\": \"123 Main Street\",\r\n    \"phone_number\": \"134566690\"\r\n}\r\n",
+					"raw": "{\r\n    \"name\": \"Abhishek a\",\r\n    \"password\": \"secretpassword2\",\r\n    \"email\": \"jonoe@gmail.com\",\r\n    \"address\": \"123 Main Street\",\r\n    \"phoneNumber\": \"134566690\"\r\n}\r\n",
 					"options": {
 						"raw": {
 							"language": "json"

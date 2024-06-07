@@ -7,19 +7,34 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
 
 @Entity
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotEmpty
     private String name;
+
+    @NotEmpty
     private String password;
 
+    @Email
+    @NotEmpty
     @Column(unique = true)
     private String email;
+
+    @NotEmpty
     private String address;
-    private String phone_number;
+
+    // TODO: Add country code
+
+    @NotEmpty
+    @Column(unique = true)
+    private String phoneNumber;
 
     // Establishing a one-to-one relationship with the account
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
@@ -65,12 +80,12 @@ public class User {
         this.address = address;
     }
 
-    public String getPhone_number() {
-        return phone_number;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setPhone_number(String phone_number) {
-        this.phone_number = phone_number;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public Account getAccount() {
