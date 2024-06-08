@@ -11,7 +11,7 @@ import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.repository.UserRepository;
 
 @Service
-public class JWTUserDetailsService implements UserDetailsService {
+public class JwtUserDetailsService implements UserDetailsService {
 
     @Autowired
     private UserRepository userRepository;

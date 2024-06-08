@@ -2,6 +2,7 @@ package com.webapp.bankingportal;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javafaker.Faker;
 import com.jayway.jsonpath.JsonPath;
+
 import com.webapp.bankingportal.dto.LoginRequest;
 import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.repository.UserRepository;
@@ -42,12 +44,12 @@ public class DashboardControllerTests {
     private static final int MAX_PASSWORD_LENGTH = 127;
 
     @BeforeAll
-    public static void setup(){
+    public static void setup() {
         faker = new Faker();
         objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
-    
+
     private void createAndLoginUser() throws Exception {
         if (isLoggedIn) {
             return;

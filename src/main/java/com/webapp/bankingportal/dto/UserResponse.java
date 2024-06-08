@@ -13,7 +13,8 @@ public class UserResponse {
     private String branch;
     private String accountType;
 
-    public UserResponse() {}
+    public UserResponse() {
+    }
 
     public UserResponse(User user) {
         this.name = user.getName();
@@ -71,7 +72,7 @@ public class UserResponse {
     }
 
     public void setIfscCode(String ifscCode) {
-        this.ifscCode =ifscCode;
+        this.ifscCode = ifscCode;
     }
 
     public String getBranch() {
@@ -90,4 +91,15 @@ public class UserResponse {
         this.accountType = accountType;
     }
 
+    @Override
+    public String toString() {
+        return "{ \"name\": \"" + name
+                + "\", \"email\": \"" + email
+                + "\", \"address\": \"" + address
+                + "\", \"phoneNumber\": \"" + phoneNumber
+                + "\", \"accountNumber\": \"" + accountNumber
+                + "\", \"ifscCode\": \"" + ifscCode
+                + "\", \"branch\": \"" + branch
+                + "\", \"accountType\": \"" + accountType + "\" }";
+    }
 }

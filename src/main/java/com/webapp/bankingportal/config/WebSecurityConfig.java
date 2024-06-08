@@ -18,7 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.webapp.bankingportal.security.JwtAuthenticationEntryPoint;
 import com.webapp.bankingportal.security.JwtAuthenticationFilter;
-import com.webapp.bankingportal.service.JWTUserDetailsService;
+import com.webapp.bankingportal.service.JwtUserDetailsService;
 
 @Configuration
 @EnableWebSecurity
@@ -29,7 +29,7 @@ public class WebSecurityConfig {
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Autowired
-    private JWTUserDetailsService jwtUserDetailsService;
+    private JwtUserDetailsService jwtUserDetailsService;
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
