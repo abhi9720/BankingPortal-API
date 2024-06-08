@@ -2,7 +2,7 @@ package com.webapp.bankingportal.service;
 
 import java.util.concurrent.CompletableFuture;
 
-public interface OTPService {
+public interface OtpService {
 
 	String generateOTP(String accountNumber);
 

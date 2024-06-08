@@ -6,7 +6,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.webapp.bankingportal.service.EmailService;
-import com.webapp.bankingportal.service.OTPServiceImpl;
+import com.webapp.bankingportal.service.OtpServiceImpl;
 
 @Service
 public class EmailServiceMock implements EmailService {
@@ -31,7 +31,7 @@ public class EmailServiceMock implements EmailService {
                 + "<p style=\"font-size:1.1em\">Hi, " + name + "</p>"
                 + "<p style=\"font-size:0.9em;\">Account Number: " + accountNumber + "</p>"
                 + "<p>Thank you for choosing OneStopBank. Use the following OTP to complete your Log In procedures. OTP is valid for "
-                + OTPServiceImpl.OTP_EXPIRY_MINUTES + " minutes</p>"
+                + OtpServiceImpl.OTP_EXPIRY_MINUTES + " minutes</p>"
                 + "<h2 style=\"background: #00466a;margin: 0 auto;width: max-content;padding: 0 10px;color: #fff;border-radius: 4px;\">"
                 + otp + "</h2>"
                 + "<p style=\"font-size:0.9em;\">Regards,<br />OneStopBank</p>"
