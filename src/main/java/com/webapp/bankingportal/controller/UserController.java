@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,18 +16,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.webapp.bankingportal.dto.LoginRequest;
 import com.webapp.bankingportal.dto.OtpRequest;
 import com.webapp.bankingportal.dto.OtpVerificationRequest;
 import com.webapp.bankingportal.dto.UserResponse;
 import com.webapp.bankingportal.entity.User;
-import com.webapp.bankingportal.exception.InvalidOTPException;
-import com.webapp.bankingportal.exception.UserInvalidException;
 import com.webapp.bankingportal.security.JwtTokenUtil;
-import com.webapp.bankingportal.service.OTPService;
+import com.webapp.bankingportal.service.OtpService;
 import com.webapp.bankingportal.service.UserService;
 import com.webapp.bankingportal.util.LoggedinUser;
 
@@ -40,9 +34,7 @@ public class UserController {
     private final JwtTokenUtil jwtTokenUtil;
     private final UserDetailsService userDetailsService;
     private final UserService userService;
-    private final OTPService otpService;
-
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private final OtpService otpService;
 
     private static final Logger logger = LoggerFactory.getLogger(
             UserController.class);
@@ -52,7 +44,7 @@ public class UserController {
             AuthenticationManager authenticationManager,
             JwtTokenUtil jwtTokenUtil,
             UserDetailsService userDetailsService,
-            OTPService otpService) {
+            OtpService otpService) {
 
         this.userService = userService;
         this.authenticationManager = authenticationManager;
@@ -63,38 +55,18 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody User user) {
-        try {
-            User registeredUser = userService.registerUser(user);
-            UserResponse userResponse = new UserResponse(registeredUser);
+        User registeredUser = userService.registerUser(user);
+        UserResponse userResponse = new UserResponse(registeredUser);
 
-            return ResponseEntity.ok(objectMapper.writeValueAsString(userResponse));
-
-        } catch (UserInvalidException e) {
-
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-
-        } catch (JsonProcessingException e) {
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to register user");
-        }
+        return ResponseEntity.ok(userResponse.toString());
     }
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
-        try {
-            // Authenticate the user with the account number and password
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                    loginRequest.getAccountNumber(),
-                    loginRequest.getPassword()));
-
-        } catch (BadCredentialsException e) {
-
-            // Invalid credentials, return 401 Unauthorized
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(e.getMessage());
-        }
+        // Authenticate the user with the account number and password
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                loginRequest.getAccountNumber(),
+                loginRequest.getPassword()));
 
         // If authentication successful, generate JWT token
         UserDetails userDetails = userDetailsService
@@ -154,17 +126,10 @@ public class UserController {
         }
 
         // Validate OTP against the stored OTP in the database
-        try {
-            boolean isValidOtp = otpService.validateOTP(accountNumber, otp);
-
-            if (!isValidOtp) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("OTP has expired");
-            }
-        } catch (InvalidOTPException e) {
-
+        boolean isValidOtp = otpService.validateOTP(accountNumber, otp);
+        if (!isValidOtp) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(e.getMessage());
+                    .body("OTP has expired");
         }
 
         // If OTP is valid, generate and return a JWT token
@@ -176,37 +141,20 @@ public class UserController {
 
     @PostMapping("/update")
     public ResponseEntity<String> updateUser(@RequestBody User user) {
-        try {
-            String accountNumber = LoggedinUser.getAccountNumber();
+        String accountNumber = LoggedinUser.getAccountNumber();
 
-            logger.info("Authenticating account: {} ...", accountNumber);
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                    accountNumber,
-                    user.getPassword()));
-            logger.info("Account: {} authenticated successfully", accountNumber);
+        logger.info("Authenticating account: {} ...", accountNumber);
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                accountNumber,
+                user.getPassword()));
+        logger.info("Account: {} authenticated successfully", accountNumber);
 
-            logger.info("Updating account: {} ...", accountNumber);
-            User updatedUser = userService.updateUser(user);
-            logger.info("Account: {} is updated successfully", accountNumber);
+        logger.info("Updating account: {} ...", accountNumber);
+        User updatedUser = userService.updateUser(user);
+        logger.info("Account: {} is updated successfully", accountNumber);
 
-            UserResponse userResponse = new UserResponse(updatedUser);
+        UserResponse userResponse = new UserResponse(updatedUser);
 
-            return ResponseEntity.ok(objectMapper.writeValueAsString(userResponse));
-
-        } catch (BadCredentialsException e) {
-
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid password");
-
-        } catch (UserInvalidException e) {
-
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-
-        } catch (JsonProcessingException e) {
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to update user");
-        }
+        return ResponseEntity.ok(userResponse.toString());
     }
 }

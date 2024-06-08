@@ -14,12 +14,12 @@ import org.springframework.stereotype.Service;
 
 import com.webapp.bankingportal.entity.OtpInfo;
 import com.webapp.bankingportal.exception.AccountDoesNotExistException;
-import com.webapp.bankingportal.exception.InvalidOTPException;
+import com.webapp.bankingportal.exception.InvalidOtpException;
 import com.webapp.bankingportal.exception.OtpRetryLimitExceededException;
 import com.webapp.bankingportal.repository.OtpInfoRepository;
 
 @Service
-public class OTPServiceImpl implements OTPService {
+public class OtpServiceImpl implements OtpService {
 
     public static final int OTP_ATTEMPTS_LIMIT = 3;
     public static final int OTP_EXPIRY_MINUTES = 5;
@@ -40,7 +40,7 @@ public class OTPServiceImpl implements OTPService {
     @Autowired
     private CacheManager cacheManager;
 
-    private static final Logger logger = LoggerFactory.getLogger(OTPServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(OtpServiceImpl.class);
 
     @Override
     public String generateOTP(String accountNumber) {
@@ -174,7 +174,7 @@ public class OTPServiceImpl implements OTPService {
     public boolean validateOTP(String accountNumber, String otp) {
         OtpInfo otpInfo = otpInfoRepository.findByAccountNumberAndOtp(accountNumber, otp);
         if (otpInfo == null) {
-            throw new InvalidOTPException("Invalid OTP");
+            throw new InvalidOtpException("Invalid OTP");
         }
         otpInfoRepository.delete(otpInfo);
 

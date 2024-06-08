@@ -15,7 +15,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.javafaker.Faker;
 import com.jayway.jsonpath.JsonPath;
 
 import com.webapp.bankingportal.dto.LoginRequest;
@@ -23,7 +22,7 @@ import com.webapp.bankingportal.dto.OtpRequest;
 import com.webapp.bankingportal.dto.OtpVerificationRequest;
 import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.repository.UserRepository;
-import com.webapp.bankingportal.service.OTPService;
+import com.webapp.bankingportal.service.OtpService;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -37,47 +36,18 @@ public class UserControllerTests {
     private UserRepository userRepository;
 
     @Autowired
-    private OTPService otpService;
+    private OtpService otpService;
 
-    private static Faker faker;
     private static ObjectMapper objectMapper;
-
-    private static final int MIN_PASSWORD_LENGTH = 8;
-    private static final int MAX_PASSWORD_LENGTH = 127;
 
     @BeforeAll
     public static void setup() {
-        faker = new Faker();
         objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
-    private static String getRandomPassword() {
-        return "!" + faker.internet().password(
-                MAX_PASSWORD_LENGTH - 2,
-                MAX_PASSWORD_LENGTH - 1,
-                true,
-                true);
-    }
-
-    private static String getRandomPhoneNumber() {
-        return "+2010" + faker.number().digits(8);
-    }
-
-    private static User createUser() {
-        User user = new User();
-
-        user.setName(faker.name().fullName());
-        user.setPassword(getRandomPassword());
-        user.setEmail(faker.internet().safeEmailAddress());
-        user.setAddress(faker.address().fullAddress());
-        user.setPhoneNumber(getRandomPhoneNumber());
-
-        return user;
-    }
-
     private User createAndRegisterUser() throws Exception {
-        User user = createUser();
+        User user = TestUtil.createUser();
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -94,7 +64,7 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_empty_name() throws Exception {
-        User user = createUser();
+        User user = TestUtil.createUser();
         user.setName("");
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
@@ -107,7 +77,7 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_missing_name() throws Exception {
-        User user = createUser();
+        User user = TestUtil.createUser();
         user.setName(null);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
@@ -120,7 +90,7 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_empty_address() throws Exception {
-        User user = createUser();
+        User user = TestUtil.createUser();
         user.setAddress("");
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
@@ -133,7 +103,7 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_missing_address() throws Exception {
-        User user = createUser();
+        User user = TestUtil.createUser();
         user.setAddress(null);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
@@ -146,7 +116,7 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_empty_email() throws Exception {
-        User user = createUser();
+        User user = TestUtil.createUser();
         user.setEmail("");
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
@@ -159,7 +129,7 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_missing_email() throws Exception {
-        User user = createUser();
+        User user = TestUtil.createUser();
         user.setEmail(null);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
@@ -172,7 +142,7 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_empty_phone_number() throws Exception {
-        User user = createUser();
+        User user = TestUtil.createUser();
         user.setPhoneNumber("");
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
@@ -185,7 +155,7 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_missing_phone_number() throws Exception {
-        User user = createUser();
+        User user = TestUtil.createUser();
         user.setPhoneNumber(null);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
@@ -199,7 +169,7 @@ public class UserControllerTests {
     @Test
     public void test_register_user_with_duplicate_email() throws Exception {
         User user1 = createAndRegisterUser();
-        User user2 = createUser();
+        User user2 = TestUtil.createUser();
         user2.setEmail(user1.getEmail());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
@@ -213,7 +183,7 @@ public class UserControllerTests {
     @Test
     public void test_register_user_with_duplicate_phone_number() throws Exception {
         User user1 = createAndRegisterUser();
-        User user2 = createUser();
+        User user2 = TestUtil.createUser();
         user2.setPhoneNumber(user1.getPhoneNumber());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
@@ -226,8 +196,8 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_invalid_email() throws Exception {
-        User user = createUser();
-        user.setEmail(faker.lorem().word());
+        User user = TestUtil.createUser();
+        user.setEmail(TestUtil.faker.lorem().word());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -239,8 +209,8 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_invalid_phone_number() throws Exception {
-        User user = createUser();
-        user.setPhoneNumber(faker.numerify("###"));
+        User user = TestUtil.createUser();
+        user.setPhoneNumber(TestUtil.faker.number().digits(3));
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -252,7 +222,7 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_empty_password() throws Exception {
-        User user = createUser();
+        User user = TestUtil.createUser();
         user.setPassword("");
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
@@ -265,7 +235,7 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_missing_password() throws Exception {
-        User user = createUser();
+        User user = TestUtil.createUser();
         user.setPassword(null);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
@@ -278,10 +248,10 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_short_password() throws Exception {
-        User user = createUser();
-        user.setPassword(faker.internet().password(
+        User user = TestUtil.createUser();
+        user.setPassword(TestUtil.faker.internet().password(
                 1,
-                MIN_PASSWORD_LENGTH - 1,
+                TestUtil.MIN_PASSWORD_LENGTH - 1,
                 true,
                 true));
 
@@ -295,10 +265,10 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_long_password() throws Exception {
-        User user = createUser();
-        user.setPassword(faker.internet().password(
-                MAX_PASSWORD_LENGTH + 1,
-                MAX_PASSWORD_LENGTH * 2,
+        User user = TestUtil.createUser();
+        user.setPassword(TestUtil.faker.internet().password(
+                TestUtil.MAX_PASSWORD_LENGTH + 1,
+                TestUtil.MAX_PASSWORD_LENGTH * 2,
                 true,
                 true));
 
@@ -312,8 +282,8 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_password_containing_whitespace() throws Exception {
-        User user = createUser();
-        user.setPassword(faker.lorem().sentence());
+        User user = TestUtil.createUser();
+        user.setPassword(TestUtil.faker.lorem().sentence());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -325,10 +295,10 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_password_missing_uppercase_letters() throws Exception {
-        User user = createUser();
-        user.setPassword(faker.internet().password(
-                MAX_PASSWORD_LENGTH - 1,
-                MAX_PASSWORD_LENGTH,
+        User user = TestUtil.createUser();
+        user.setPassword(TestUtil.faker.internet().password(
+                TestUtil.MAX_PASSWORD_LENGTH - 1,
+                TestUtil.MAX_PASSWORD_LENGTH,
                 false,
                 true));
 
@@ -342,10 +312,10 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_password_missing_lowercase_letters() throws Exception {
-        User user = createUser();
-        user.setPassword(faker.internet().password(
-                MAX_PASSWORD_LENGTH - 1,
-                MAX_PASSWORD_LENGTH,
+        User user = TestUtil.createUser();
+        user.setPassword(TestUtil.faker.internet().password(
+                TestUtil.MAX_PASSWORD_LENGTH - 1,
+                TestUtil.MAX_PASSWORD_LENGTH,
                 true,
                 true)
                 .toUpperCase());
@@ -360,9 +330,9 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_password_missing_digits() throws Exception {
-        User user = createUser();
-        user.setPassword("!" + faker.lorem().characters(
-                MAX_PASSWORD_LENGTH - 1,
+        User user = TestUtil.createUser();
+        user.setPassword("!" + TestUtil.faker.lorem().characters(
+                TestUtil.MAX_PASSWORD_LENGTH - 1,
                 true,
                 false));
 
@@ -376,10 +346,10 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_password_missing_special_characters() throws Exception {
-        User user = createUser();
-        user.setPassword(faker.internet().password(
-                MAX_PASSWORD_LENGTH - 1,
-                MAX_PASSWORD_LENGTH,
+        User user = TestUtil.createUser();
+        user.setPassword(TestUtil.faker.internet().password(
+                TestUtil.MAX_PASSWORD_LENGTH - 1,
+                TestUtil.MAX_PASSWORD_LENGTH,
                 true,
                 false));
 
@@ -413,11 +383,8 @@ public class UserControllerTests {
     @Test
     public void test_login_with_invalid_account_number() throws Exception {
         LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setAccountNumber(faker.lorem().characters(
-                6,
-                false,
-                true));
-        loginRequest.setPassword(getRandomPassword());
+        loginRequest.setAccountNumber(TestUtil.getRandomAccountNumber());
+        loginRequest.setPassword(TestUtil.getRandomPassword());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -436,7 +403,7 @@ public class UserControllerTests {
 
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setAccountNumber(accountNumber);
-        loginRequest.setPassword(getRandomPassword());
+        loginRequest.setPassword(TestUtil.getRandomPassword());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -448,7 +415,7 @@ public class UserControllerTests {
     public void test_login_with_missing_account_number() throws Exception {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setAccountNumber("");
-        loginRequest.setPassword(getRandomPassword());
+        loginRequest.setPassword(TestUtil.getRandomPassword());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -498,10 +465,7 @@ public class UserControllerTests {
     @Test
     public void test_generate_otp_with_invalid_account_number() throws Exception {
         OtpRequest otpRequest = new OtpRequest();
-        otpRequest.setAccountNumber(faker.lorem().characters(
-                6,
-                false,
-                true));
+        otpRequest.setAccountNumber(TestUtil.getRandomAccountNumber());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/generate-otp")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -555,7 +519,7 @@ public class UserControllerTests {
 
         OtpVerificationRequest otpVerificationRequest = new OtpVerificationRequest();
         otpVerificationRequest.setAccountNumber(accountNumber);
-        otpVerificationRequest.setOtp(faker.number().digits(6));
+        otpVerificationRequest.setOtp(TestUtil.getRandomOtp());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/verify-otp")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -569,7 +533,7 @@ public class UserControllerTests {
     public void test_verify_otp_with_missing_account_number() throws Exception {
         OtpVerificationRequest otpVerificationRequest = new OtpVerificationRequest();
         otpVerificationRequest.setAccountNumber("");
-        otpVerificationRequest.setOtp(faker.number().digits(6));
+        otpVerificationRequest.setOtp(TestUtil.getRandomOtp());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/verify-otp")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -623,7 +587,7 @@ public class UserControllerTests {
         String responseBody = loginResult.getResponse().getContentAsString();
         String token = JsonPath.read(responseBody, "$.token");
 
-        User updatedUser = createUser();
+        User updatedUser = TestUtil.createUser();
         updatedUser.setPassword(user.getPassword());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/update")
@@ -664,7 +628,7 @@ public class UserControllerTests {
         String responseBody = loginResult.getResponse().getContentAsString();
         String token = JsonPath.read(responseBody, "$.token");
 
-        User updatedUser = createUser();
+        User updatedUser = TestUtil.createUser();
         updatedUser.setName("");
         updatedUser.setPassword(user.getPassword());
 
@@ -700,7 +664,7 @@ public class UserControllerTests {
         String responseBody = loginResult.getResponse().getContentAsString();
         String token = JsonPath.read(responseBody, "$.token");
 
-        User updatedUser = createUser();
+        User updatedUser = TestUtil.createUser();
         updatedUser.setAddress("");
         updatedUser.setPassword(user.getPassword());
 
@@ -736,7 +700,7 @@ public class UserControllerTests {
         String responseBody = loginResult.getResponse().getContentAsString();
         String token = JsonPath.read(responseBody, "$.token");
 
-        User updatedUser = createUser();
+        User updatedUser = TestUtil.createUser();
         updatedUser.setEmail("");
         updatedUser.setPassword(user.getPassword());
 
@@ -772,7 +736,7 @@ public class UserControllerTests {
         String responseBody = loginResult.getResponse().getContentAsString();
         String token = JsonPath.read(responseBody, "$.token");
 
-        User updatedUser = createUser();
+        User updatedUser = TestUtil.createUser();
         updatedUser.setPhoneNumber("");
         updatedUser.setPassword(user.getPassword());
 

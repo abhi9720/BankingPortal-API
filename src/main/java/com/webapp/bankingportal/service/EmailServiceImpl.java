@@ -62,7 +62,7 @@ public class EmailServiceImpl implements EmailService {
 	                "<div style=\"padding: 20px;\">" +
 	                "<p style=\"font-size: 1.2em; color: #333;\">Hi, " + name + ",</p>" +
 	                "<p style=\"font-size: 1em; color: #555;\">Account Number: <strong style=\"color: #3f51b5;\">" + accountNumber + "</strong></p>" +
-	                "<p style=\"font-size: 1em; color: #333;\">Thank you for choosing OneStopBank. Use the following OTP to complete your login procedures. The OTP is valid for " + OTPServiceImpl.OTP_EXPIRY_MINUTES + " minutes:</p>" +
+	                "<p style=\"font-size: 1em; color: #333;\">Thank you for choosing OneStopBank. Use the following OTP to complete your login procedures. The OTP is valid for " + OtpServiceImpl.OTP_EXPIRY_MINUTES + " minutes:</p>" +
 	                "<h2 style=\"background: #3f51b5; margin: 20px 0; width: max-content; padding: 10px 20px; color: #fff; border-radius: 4px;\">" + otp + "</h2>" +
 	                "<p style=\"font-size: 1em; color: #555;\">Regards,<br />The OneStopBank Team</p>" +
 	                "</div>" +
