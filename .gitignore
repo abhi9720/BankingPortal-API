@@ -1,32 +1,52 @@
-HELP.md
-src/main/resources/application.properties
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+# Ignore Maven & Gradle directories
+target/
 build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-src/main/resources/application.properties
+# Ignore Maven & Gradle specific files
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+*.log
+*.gz
+*.war
+*.ear
 
-### VS Code ###
-.vscode/
-/target/
+# Eclipse
+.project
+.classpath
+.settings/
+
+# IDEA
+.idea/
+*.iml
+*.iws
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Spring Boot specific
+spring.log
+
+# Application properties
+# You might want to ignore application.properties if it contains sensitive information
+application.properties
+application.yml
+application-*.properties
+application-*.yml
+
+# Database
+*.h2.db
+*.mv.db
+
+# Node modules if you have frontend files
+node_modules/
+
+# Test reports
+test-output/
