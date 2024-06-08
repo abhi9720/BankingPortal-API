@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,8 @@ import com.webapp.bankingportal.entity.Transaction;
 import com.webapp.bankingportal.entity.TransactionType;
 import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.exception.InsufficientBalanceException;
+import com.webapp.bankingportal.exception.InvalidAmountException;
+import com.webapp.bankingportal.exception.InvalidPinException;
 import com.webapp.bankingportal.exception.NotFoundException;
 import com.webapp.bankingportal.exception.UnauthorizedException;
 import com.webapp.bankingportal.repository.AccountRepository;
@@ -62,15 +65,55 @@ public class AccountServiceImpl implements AccountService {
         return accountNumber;
     }
 
-    @Override
-    public void createPIN(String accountNumber, String password, String pin) {
+    private void validatePin(String accountNumber, String pin) {
         Account account = accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
             throw new NotFoundException("Account not found");
         }
 
+        if (account.getPin() == null) {
+            throw new UnauthorizedException("PIN not created");
+        }
+
+        if (pin == null || pin.isEmpty()) {
+            throw new UnauthorizedException("PIN cannot be empty");
+        }
+
+        if (!passwordEncoder.matches(pin, account.getPin())) {
+            throw new UnauthorizedException("Invalid PIN");
+        }
+    }
+
+    private void validatePassword(String accountNumber, String password) {
+        Account account = accountRepository.findByAccountNumber(accountNumber);
+        if (account == null) {
+            throw new NotFoundException("Account not found");
+        }
+
+        if (password == null || password.isEmpty()) {
+            throw new UnauthorizedException("Password cannot be empty");
+        }
+
         if (!passwordEncoder.matches(password, account.getUser().getPassword())) {
             throw new UnauthorizedException("Invalid password");
+        }
+    }
+
+    @Override
+    public void createPin(String accountNumber, String password, String pin) {
+        validatePassword(accountNumber, password);
+
+        Account account = accountRepository.findByAccountNumber(accountNumber);
+        if (account.getPin() != null) {
+            throw new UnauthorizedException("PIN already created");
+        }
+
+        if (pin == null || pin.isEmpty()) {
+            throw new InvalidPinException("PIN cannot be empty");
+        }
+
+        if (pin.length() != 4) {
+            throw new InvalidPinException("PIN must be 4 digits");
         }
 
         account.setPin(passwordEncoder.encode(pin));
@@ -78,37 +121,46 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public void updatePIN(String accountNumber, String oldPIN, String password, String newPIN) {
+    public void updatePin(String accountNumber, String oldPin, String password, String newPin) {
         logger.info("Updating PIN for account: {}", accountNumber);
 
+        validatePassword(accountNumber, password);
+        validatePin(accountNumber, oldPin);
+
         Account account = accountRepository.findByAccountNumber(accountNumber);
-        if (account == null) {
-            throw new NotFoundException("Account not found");
+
+        if (newPin == null || newPin.isEmpty()) {
+            throw new InvalidPinException("New PIN cannot be empty");
         }
 
-        if (!passwordEncoder.matches(oldPIN, account.getPin())) {
-            throw new UnauthorizedException("Invalid PIN");
+        if (newPin.length() != 4) {
+            throw new InvalidPinException("New PIN must be 4 digits");
         }
 
-        if (!passwordEncoder.matches(password, account.getUser().getPassword())) {
-            throw new UnauthorizedException("Invalid password");
-        }
-
-        account.setPin(passwordEncoder.encode(newPIN));
+        account.setPin(passwordEncoder.encode(newPin));
         accountRepository.save(account);
+    }
+
+    private void validateAmount(double amount) {
+        if (amount <= 0) {
+            throw new InvalidAmountException("Amount must be greater than 0");
+        }
+
+        if (amount % 100 != 0) {
+            throw new InvalidAmountException("Amount must be in multiples of 100");
+        }
+
+        if (amount > 100000) {
+            throw new InvalidAmountException("Amount cannot be greater than 100,000");
+        }
     }
 
     @Override
     public void cashDeposit(String accountNumber, String pin, double amount) {
+        validatePin(accountNumber, pin);
+        validateAmount(amount);
+
         Account account = accountRepository.findByAccountNumber(accountNumber);
-        if (account == null) {
-            throw new NotFoundException("Account not found");
-        }
-
-        if (!passwordEncoder.matches(pin, account.getPin())) {
-            throw new UnauthorizedException("Invalid PIN");
-        }
-
         double currentBalance = account.getBalance();
         double newBalance = currentBalance + amount;
         account.setBalance(newBalance);
@@ -124,15 +176,10 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void cashWithdrawal(String accountNumber, String pin, double amount) {
+        validatePin(accountNumber, pin);
+        validateAmount(amount);
+
         Account account = accountRepository.findByAccountNumber(accountNumber);
-        if (account == null) {
-            throw new NotFoundException("Account not found");
-        }
-
-        if (!passwordEncoder.matches(pin, account.getPin())) {
-            throw new UnauthorizedException("Invalid PIN");
-        }
-
         double currentBalance = account.getBalance();
         if (currentBalance < amount) {
             throw new InsufficientBalanceException("Insufficient balance");
@@ -152,20 +199,15 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void fundTransfer(String sourceAccountNumber, String targetAccountNumber, String pin, double amount) {
-        Account sourceAccount = accountRepository.findByAccountNumber(sourceAccountNumber);
-        if (sourceAccount == null) {
-            throw new NotFoundException("Source account not found");
-        }
+        validatePin(sourceAccountNumber, pin);
+        validateAmount(amount);
 
         Account targetAccount = accountRepository.findByAccountNumber(targetAccountNumber);
         if (targetAccount == null) {
             throw new NotFoundException("Target account not found");
         }
-
-        if (!passwordEncoder.matches(pin, sourceAccount.getPin())) {
-            throw new UnauthorizedException("Invalid PIN");
-        }
-
+        
+        Account sourceAccount = accountRepository.findByAccountNumber(sourceAccountNumber);
         double sourceBalance = sourceAccount.getBalance();
         if (sourceBalance < amount) {
             throw new InsufficientBalanceException("Insufficient balance");
