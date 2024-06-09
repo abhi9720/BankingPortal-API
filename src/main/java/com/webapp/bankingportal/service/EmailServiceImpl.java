@@ -46,9 +46,9 @@ public class EmailServiceImpl implements EmailService{
 	    }
 	    
 	    public String getOtpLoginEmailTemplate(String name, String accountNumber, String otp) {
-	        // Create the formatted email template with the provided values
-	        return "<div style=\"font-family: Helvetica, Arial, sans-serif; min-width: 320px; max-width: 1000px; margin: 0 auto; overflow: auto; line-height: 2; background-color: #fff; padding: 20px;\">" +
-	                "<div style=\"margin: 50px auto; width: 100%; max-width: 600px; padding: 20px; background-color: #ffffff; border-radius: 8px; border:1px solid #f6f6f8;\">" +
+
+	    	return "<div style=\"font-family: Helvetica, Arial, sans-serif; min-width: 320px; max-width: 1000px; margin: 0 auto; overflow: auto; line-height: 2; background-color: #f1f1f1; padding: 20px;\">" +
+	                "<div style=\"margin: 50px auto; width: 100%; max-width: 600px; padding: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);\">" +
 	                "<div style=\"border-bottom: 1px solid #ddd; padding-bottom: 10px; text-align: center;\">" +
 	                "<a href=\"https://onestopbank.netlify.app/\" style=\"text-decoration: none;\">" +
 	                "<img src=\"https://onestopbank.netlify.app/assets/onestoplogo.jpg\" alt=\"OneStopBank\" style=\"height: 50px; margin-bottom: 10px;\">" +
@@ -73,8 +73,8 @@ public class EmailServiceImpl implements EmailService{
 	                "</div>" +
 	                "</div>" +
 	                "</div>";
-	    }  
-	  
+	    }
+	    
 	    public void sendEmailWithAttachment(String to, String subject, String text, String attachmentFilePath) {
 	        try {
 	            MimeMessage message = mailSender.createMimeMessage();
