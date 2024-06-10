@@ -51,7 +51,7 @@ public class AccountController {
 
     @PostMapping("/pin/create")
     public ResponseEntity<?> createPIN(@RequestBody PinRequest pinRequest) {
-        accountService.createPIN(
+        accountService.createPin(
                 LoggedinUser.getAccountNumber(),
                 pinRequest.getPassword(),
                 pinRequest.getPin());
@@ -64,7 +64,7 @@ public class AccountController {
 
     @PostMapping("/pin/update")
     public ResponseEntity<?> updatePIN(@RequestBody PinUpdateRequest pinUpdateRequest) {
-        accountService.updatePIN(
+        accountService.updatePin(
                 LoggedinUser.getAccountNumber(),
                 pinUpdateRequest.getOldPin(),
                 pinUpdateRequest.getPassword(),
