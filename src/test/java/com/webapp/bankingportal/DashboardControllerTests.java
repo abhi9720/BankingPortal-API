@@ -1,30 +1,25 @@
 package com.webapp.bankingportal;
 
-import org.junit.jupiter.api.BeforeAll;
+import java.util.HashMap;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.javafaker.Faker;
-import com.jayway.jsonpath.JsonPath;
-
-import com.webapp.bankingportal.dto.LoginRequest;
-import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.repository.UserRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class DashboardControllerTests {
 
@@ -34,75 +29,33 @@ public class DashboardControllerTests {
     @Autowired
     private UserRepository userRepository;
 
-    private static Faker faker;
-    private static ObjectMapper objectMapper;
-    private static User user;
-    private static String accountNumber;
-    private static String token;
-    private static boolean isLoggedIn = false;
+    private HashMap<String, String> userDetails = null;
 
-    private static final int MAX_PASSWORD_LENGTH = 127;
+    private TestUtil testUtil;
 
-    @BeforeAll
-    public static void setup() {
-        faker = new Faker();
-        objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    @BeforeEach
+    public void setup() {
+        testUtil = new TestUtil(mockMvc, userRepository);
     }
 
-    private void createAndLoginUser() throws Exception {
-        if (isLoggedIn) {
-            return;
+    private HashMap<String, String> createAndLoginUser() throws Exception {
+        if (userDetails == null) {
+            userDetails = testUtil.createAndLoginUser();
         }
 
-        user = new User();
-        user.setName(faker.name().fullName());
-        user.setEmail(faker.internet().safeEmailAddress());
-        user.setAddress(faker.address().fullAddress());
-        user.setPhoneNumber("+2010" + faker.number().digits(8));
-        user.setPassword("!" + faker.internet().password(
-                MAX_PASSWORD_LENGTH - 2,
-                MAX_PASSWORD_LENGTH - 1,
-                true,
-                true));
-
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
-                .andExpect(MockMvcResultMatchers.status().isOk());
-
-        accountNumber = userRepository
-                .findByEmail(user.getEmail())
-                .get()
-                .getAccount()
-                .getAccountNumber();
-
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setAccountNumber(accountNumber);
-        loginRequest.setPassword(user.getPassword());
-
-        MvcResult loginResult = mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/users/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn();
-
-        String responseBody = loginResult.getResponse().getContentAsString();
-        token = JsonPath.read(responseBody, "$.token");
-
-        isLoggedIn = true;
+        return userDetails;
     }
 
     @Test
     public void test_get_account_details_authorized() throws Exception {
         createAndLoginUser();
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/dashboard/account")
-                .header("Authorization", "Bearer " + token))
+        mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/dashboard/account")
+                .header("Authorization", "Bearer " + userDetails.get("token")))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.accountNumber")
-                        .value(accountNumber))
+                        .value(userDetails.get("accountNumber")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.balance")
                         .value(0.0))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.accountType")
@@ -111,7 +64,8 @@ public class DashboardControllerTests {
 
     @Test
     public void test_get_account_details_unauthorized() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/dashboard/account"))
+        mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/dashboard/account"))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
@@ -119,23 +73,25 @@ public class DashboardControllerTests {
     public void test_get_user_details_authorized() throws Exception {
         createAndLoginUser();
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/dashboard/user")
-                .header("Authorization", "Bearer " + token))
+        mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/dashboard/user")
+                .header("Authorization", "Bearer " + userDetails.get("token")))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name")
-                        .value(user.getName()))
+                        .value(userDetails.get("name")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.email")
-                        .value(user.getEmail()))
+                        .value(userDetails.get("email")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.address")
-                        .value(user.getAddress()))
+                        .value(userDetails.get("address")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.phoneNumber")
-                        .value(user.getPhoneNumber()));
+                        .value(userDetails.get("phoneNumber")));
     }
 
     @Test
     public void test_get_user_details_unauthorized() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/dashboard/user"))
+        mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/dashboard/user"))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 }

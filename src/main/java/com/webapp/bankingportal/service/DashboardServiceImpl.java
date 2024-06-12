@@ -23,20 +23,10 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     public UserResponse getUserDetails(String accountNumber) {
         User user = userRepository.findByAccountAccountNumber(accountNumber)
-                .orElseThrow(() -> new NotFoundException("User not found for the provided account number."));
+                .orElseThrow(() -> new NotFoundException(
+                        "User not found for the provided account number."));
 
-        // Map the user entity to UserResponse DTO
-        UserResponse userResponse = new UserResponse();
-        userResponse.setName(user.getName());
-        userResponse.setEmail(user.getEmail());
-        userResponse.setAddress(user.getAddress());
-        userResponse.setPhoneNumber(user.getPhoneNumber());
-        userResponse.setAccountNumber(user.getAccount().getAccountNumber());
-        userResponse.setIfscCode(user.getAccount().getIfscCode());
-        userResponse.setBranch(user.getAccount().getBranch());
-        userResponse.setAccountType(user.getAccount().getAccountType());
-
-        return userResponse;
+        return new UserResponse(user);
     }
 
     @Override

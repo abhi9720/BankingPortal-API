@@ -28,13 +28,14 @@ public class User {
     private String email;
 
     @NotEmpty
-    private String address;
-
-    // TODO: Add country code
+    private String country;
 
     @NotEmpty
     @Column(unique = true)
     private String phoneNumber;
+
+    @NotEmpty
+    private String address;
 
     // Establishing a one-to-one relationship with the account
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
@@ -72,12 +73,12 @@ public class User {
         this.email = email;
     }
 
-    public String getAddress() {
-        return address;
+    public String getCountry() {
+        return country;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setCountry(String country) {
+        this.country = country;
     }
 
     public String getPhoneNumber() {
@@ -86,6 +87,14 @@ public class User {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public Account getAccount() {

@@ -105,6 +105,10 @@ public class UserServiceImpl implements UserService {
             throw new UserInvalidException("Name cannot be empty");
         }
 
+        if (user.getCountry() == null || user.getCountry().isEmpty()) {
+            throw new UserInvalidException("Country cannot be empty");
+        }
+
         if (user.getAddress() == null || user.getAddress().isEmpty()) {
             throw new UserInvalidException("Address cannot be empty");
         }
@@ -119,37 +123,28 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        validatePhoneNumber(user.getPhoneNumber());
+        validatePhoneNumber(user.getPhoneNumber(), user.getCountry());
 
         validatePassword(user.getPassword());
     }
 
-    // TODO: Modify when country code is added
-    private void validatePhoneNumber(String phoneNumber) {
+    private void validatePhoneNumber(String phoneNumber, String countryCode) {
         if (phoneNumber == null || phoneNumber.isEmpty()) {
             throw new UserInvalidException("Phone number cannot be empty");
         }
 
         PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
+        String exceptionMessage = "Invalid phone number: " + phoneNumber;
         try {
-            PhoneNumber parsedNumber = phoneNumberUtil.parse(phoneNumber, "ZZ");
+            PhoneNumber parsedNumber = phoneNumberUtil.parse(phoneNumber, countryCode);
             if (phoneNumberUtil.isValidNumber(parsedNumber)) {
                 return;
             }
-        } catch (NumberParseException ignored) {
+        } catch (NumberParseException e) {
+            exceptionMessage = e.getMessage();
         }
 
-        for (String region : phoneNumberUtil.getSupportedRegions()) {
-            try {
-                PhoneNumber parsedNumber = phoneNumberUtil.parse(phoneNumber, region);
-                if (phoneNumberUtil.isValidNumber(parsedNumber)) {
-                    return;
-                }
-            } catch (NumberParseException ignored) {
-            }
-        }
-
-        throw new UserInvalidException("Invalid phone number");
+        throw new UserInvalidException(exceptionMessage);
     }
 
     private void validatePassword(String password) {

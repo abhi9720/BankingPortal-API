@@ -6,8 +6,9 @@ public class UserResponse {
 
     private String name;
     private String email;
-    private String address;
+    private String country;
     private String phoneNumber;
+    private String address;
     private String accountNumber;
     private String ifscCode;
     private String branch;
@@ -19,8 +20,9 @@ public class UserResponse {
     public UserResponse(User user) {
         this.name = user.getName();
         this.email = user.getEmail();
-        this.address = user.getAddress();
+        this.country = user.getCountry();
         this.phoneNumber = user.getPhoneNumber();
+        this.address = user.getAddress();
         this.accountNumber = user.getAccount().getAccountNumber();
         this.ifscCode = user.getAccount().getIfscCode();
         this.branch = user.getAccount().getBranch();
@@ -43,12 +45,12 @@ public class UserResponse {
         this.email = email;
     }
 
-    public String getAddress() {
-        return address;
+    public String getCountry() {
+        return country;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setCountry(String country) {
+        this.country = country;
     }
 
     public String getPhoneNumber() {
@@ -57,6 +59,14 @@ public class UserResponse {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public String getAccountNumber() {
