@@ -1,5 +1,7 @@
 package com.webapp.bankingportal;
 
+import java.util.HashMap;
+
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -416,22 +418,7 @@ public class UserControllerTests {
 
     @Test
     public void test_login_with_valid_credentials() throws Exception {
-        User user = testUtil.createAndRegisterUser();
-        String accountNumber = userRepository
-                .findByEmail(user.getEmail())
-                .get()
-                .getAccount()
-                .getAccountNumber();
-
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setAccountNumber(accountNumber);
-        loginRequest.setPassword(user.getPassword());
-
-        mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/users/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(MockMvcResultMatchers.status().isOk());
+        testUtil.createAndLoginUser();
     }
 
     @Test
@@ -648,34 +635,15 @@ public class UserControllerTests {
 
     @Test
     public void test_update_user_with_valid_details() throws Exception {
-        User user = testUtil.createAndRegisterUser();
-        String accountNumber = userRepository
-                .findByEmail(user.getEmail())
-                .get()
-                .getAccount()
-                .getAccountNumber();
-
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setAccountNumber(accountNumber);
-        loginRequest.setPassword(user.getPassword());
-
-        MvcResult loginResult = mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/users/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn();
-
-        String responseBody = loginResult.getResponse().getContentAsString();
-        String token = JsonPath.read(responseBody, "$.token");
+        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
 
         User updatedUser = TestUtil.createUser();
-        updatedUser.setPassword(user.getPassword());
+        updatedUser.setPassword(userDetails.get("password"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/update")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", "Bearer " + userDetails.get("token"))
                 .content(TestUtil.objectMapper.writeValueAsString(updatedUser)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name")
@@ -690,35 +658,16 @@ public class UserControllerTests {
 
     @Test
     public void test_update_user_with_invalid_name() throws Exception {
-        User user = testUtil.createAndRegisterUser();
-        String accountNumber = userRepository
-                .findByEmail(user.getEmail())
-                .get()
-                .getAccount()
-                .getAccountNumber();
-
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setAccountNumber(accountNumber);
-        loginRequest.setPassword(user.getPassword());
-
-        MvcResult loginResult = mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/users/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn();
-
-        String responseBody = loginResult.getResponse().getContentAsString();
-        String token = JsonPath.read(responseBody, "$.token");
+        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
 
         User updatedUser = TestUtil.createUser();
         updatedUser.setName("");
-        updatedUser.setPassword(user.getPassword());
+        updatedUser.setPassword(userDetails.get("password"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/update")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", "Bearer " + userDetails.get("token"))
                 .content(TestUtil.objectMapper.writeValueAsString(updatedUser)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
@@ -727,35 +676,16 @@ public class UserControllerTests {
 
     @Test
     public void test_update_user_with_invalid_address() throws Exception {
-        User user = testUtil.createAndRegisterUser();
-        String accountNumber = userRepository
-                .findByEmail(user.getEmail())
-                .get()
-                .getAccount()
-                .getAccountNumber();
-
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setAccountNumber(accountNumber);
-        loginRequest.setPassword(user.getPassword());
-
-        MvcResult loginResult = mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/users/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn();
-
-        String responseBody = loginResult.getResponse().getContentAsString();
-        String token = JsonPath.read(responseBody, "$.token");
+        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
 
         User updatedUser = TestUtil.createUser();
         updatedUser.setAddress("");
-        updatedUser.setPassword(user.getPassword());
+        updatedUser.setPassword(userDetails.get("password"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/update")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", "Bearer " + userDetails.get("token"))
                 .content(TestUtil.objectMapper.writeValueAsString(updatedUser)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
@@ -764,35 +694,16 @@ public class UserControllerTests {
 
     @Test
     public void test_update_user_with_invalid_email() throws Exception {
-        User user = testUtil.createAndRegisterUser();
-        String accountNumber = userRepository
-                .findByEmail(user.getEmail())
-                .get()
-                .getAccount()
-                .getAccountNumber();
-
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setAccountNumber(accountNumber);
-        loginRequest.setPassword(user.getPassword());
-
-        MvcResult loginResult = mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/users/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn();
-
-        String responseBody = loginResult.getResponse().getContentAsString();
-        String token = JsonPath.read(responseBody, "$.token");
+        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
 
         User updatedUser = TestUtil.createUser();
         updatedUser.setEmail("");
-        updatedUser.setPassword(user.getPassword());
+        updatedUser.setPassword(userDetails.get("password"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/update")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", "Bearer " + userDetails.get("token"))
                 .content(TestUtil.objectMapper.writeValueAsString(updatedUser)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
@@ -801,35 +712,16 @@ public class UserControllerTests {
 
     @Test
     public void test_update_user_with_invalid_phone_number() throws Exception {
-        User user = testUtil.createAndRegisterUser();
-        String accountNumber = userRepository
-                .findByEmail(user.getEmail())
-                .get()
-                .getAccount()
-                .getAccountNumber();
-
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setAccountNumber(accountNumber);
-        loginRequest.setPassword(user.getPassword());
-
-        MvcResult loginResult = mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/users/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn();
-
-        String responseBody = loginResult.getResponse().getContentAsString();
-        String token = JsonPath.read(responseBody, "$.token");
+        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
 
         User updatedUser = TestUtil.createUser();
         updatedUser.setPhoneNumber("");
-        updatedUser.setPassword(user.getPassword());
+        updatedUser.setPassword(userDetails.get("password"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/update")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", "Bearer " + userDetails.get("token"))
                 .content(TestUtil.objectMapper.writeValueAsString(updatedUser)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
@@ -838,26 +730,7 @@ public class UserControllerTests {
 
     @Test
     public void test_update_user_with_invalid_password() throws Exception {
-        User user = testUtil.createAndRegisterUser();
-        String accountNumber = userRepository
-                .findByEmail(user.getEmail())
-                .get()
-                .getAccount()
-                .getAccountNumber();
-
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setAccountNumber(accountNumber);
-        loginRequest.setPassword(user.getPassword());
-
-        MvcResult loginResult = mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/users/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn();
-
-        String responseBody = loginResult.getResponse().getContentAsString();
-        String token = JsonPath.read(responseBody, "$.token");
+        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
 
         User updatedUser = TestUtil.createUser();
         updatedUser.setPassword("");
@@ -865,10 +738,21 @@ public class UserControllerTests {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/update")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", "Bearer " + userDetails.get("token"))
                 .content(TestUtil.objectMapper.writeValueAsString(updatedUser)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Bad credentials"));
+    }
+
+    @Test
+    public void test_update_user_without_authentication() throws Exception {
+        User updatedUser = TestUtil.createUser();
+
+        mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/users/update")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtil.objectMapper.writeValueAsString(updatedUser)))
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 }

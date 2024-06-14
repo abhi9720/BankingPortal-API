@@ -147,7 +147,7 @@ public class UserServiceImpl implements UserService {
         try {
             parsedNumber = phoneNumberUtil.parse(phoneNumber, countryCode);
         } catch (NumberParseException e) {
-            throw new UserInvalidException(e.getMessage());
+            throw new UserInvalidException("Invalid phone number: " + e.getMessage());
         }
 
         if (!phoneNumberUtil.isValidNumber(parsedNumber)) {

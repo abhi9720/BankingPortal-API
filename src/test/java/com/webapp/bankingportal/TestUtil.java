@@ -70,7 +70,7 @@ public class TestUtil {
         String operatorPrefix;
         String randomDigits;
 
-        for (int i = 0; i < 10; ++i) {
+        for (int i = 0; i < 30; ++i) {
             nationalNumber = String.valueOf(phoneNumber.getNationalNumber());
             operatorPrefix = nationalNumber.substring(0, 3);
             randomDigits = faker.number().digits(nationalNumber.length() - 3);
@@ -128,15 +128,7 @@ public class TestUtil {
     }
 
     public HashMap<String, String> createAndLoginUser() throws Exception {
-        HashMap<String, String> userDetails = new HashMap<>();
-        User user = createUser();
-
-        mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/users/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
-                .andExpect(MockMvcResultMatchers.status().isOk());
-
+        User user = createAndRegisterUser();
         String accountNumber = userRepository
                 .findByEmail(user.getEmail())
                 .get()
@@ -157,6 +149,7 @@ public class TestUtil {
         String responseBody = loginResult.getResponse().getContentAsString();
         String token = JsonPath.read(responseBody, "$.token");
 
+        HashMap<String, String> userDetails = new HashMap<>();
         userDetails.put("name", user.getName());
         userDetails.put("email", user.getEmail());
         userDetails.put("countryCode", user.getCountryCode());
