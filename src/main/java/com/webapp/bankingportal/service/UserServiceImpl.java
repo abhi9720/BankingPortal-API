@@ -27,6 +27,8 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
+    private static final PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
+
     public UserServiceImpl(UserRepository userRepository, AccountService accountService,
             PasswordEncoder passwordEncoder, UserMapper userMapper) {
         this.userRepository = userRepository;
@@ -47,6 +49,7 @@ public class UserServiceImpl implements UserService {
 
         validateUserDetails(user);
 
+        user.setCountryCode(user.getCountryCode().toUpperCase());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         User savedUser = saveUser(user);
 
@@ -96,17 +99,13 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByAccountAccountNumber(accountNo);
     }
 
-    private void validateUserDetails(User user) {
+    private static void validateUserDetails(User user) {
         if (user == null) {
             throw new UserInvalidException("User details cannot be empty");
         }
 
         if (user.getName() == null || user.getName().isEmpty()) {
             throw new UserInvalidException("Name cannot be empty");
-        }
-
-        if (user.getCountry() == null || user.getCountry().isEmpty()) {
-            throw new UserInvalidException("Country cannot be empty");
         }
 
         if (user.getAddress() == null || user.getAddress().isEmpty()) {
@@ -123,31 +122,40 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        validatePhoneNumber(user.getPhoneNumber(), user.getCountry());
-
+        validateCountryCode(user.getCountryCode());
+        validatePhoneNumber(user.getPhoneNumber(), user.getCountryCode());
         validatePassword(user.getPassword());
     }
 
-    private void validatePhoneNumber(String phoneNumber, String countryCode) {
+    private static void validateCountryCode(String countryCode) {
+        if (countryCode == null || countryCode.isEmpty()) {
+            throw new UserInvalidException("Country cannot be empty");
+        }
+
+        if (!phoneNumberUtil.getSupportedRegions().contains(countryCode)) {
+            throw new UserInvalidException("Invalid country code: " + countryCode);
+        }
+    }
+
+    private static void validatePhoneNumber(String phoneNumber, String countryCode) {
         if (phoneNumber == null || phoneNumber.isEmpty()) {
             throw new UserInvalidException("Phone number cannot be empty");
         }
 
-        PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
-        String exceptionMessage = "Invalid phone number: " + phoneNumber;
+        PhoneNumber parsedNumber = null;
+
         try {
-            PhoneNumber parsedNumber = phoneNumberUtil.parse(phoneNumber, countryCode);
-            if (phoneNumberUtil.isValidNumber(parsedNumber)) {
-                return;
-            }
+            parsedNumber = phoneNumberUtil.parse(phoneNumber, countryCode);
         } catch (NumberParseException e) {
-            exceptionMessage = e.getMessage();
+            throw new UserInvalidException(e.getMessage());
         }
 
-        throw new UserInvalidException(exceptionMessage);
+        if (!phoneNumberUtil.isValidNumber(parsedNumber)) {
+            throw new UserInvalidException("Invalid phone number: " + parsedNumber);
+        }
     }
 
-    private void validatePassword(String password) {
+    private static void validatePassword(String password) {
         if (password == null || password.isEmpty()) {
             throw new UserInvalidException("Password cannot be empty");
         }

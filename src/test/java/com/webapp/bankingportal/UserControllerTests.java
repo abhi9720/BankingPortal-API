@@ -1,5 +1,6 @@
 package com.webapp.bankingportal;
 
+import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,6 +20,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.webapp.bankingportal.dto.LoginRequest;
 import com.webapp.bankingportal.dto.OtpRequest;
 import com.webapp.bankingportal.dto.OtpVerificationRequest;
+import com.webapp.bankingportal.dto.PinRequest;
 import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.repository.UserRepository;
 import com.webapp.bankingportal.service.OtpService;
@@ -107,9 +109,9 @@ public class UserControllerTests {
     }
 
     @Test
-    public void test_register_user_with_empty_country() throws Exception {
+    public void test_register_user_with_empty_country_code() throws Exception {
         User user = TestUtil.createUser();
-        user.setCountry("");
+        user.setCountryCode("");
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
@@ -121,9 +123,9 @@ public class UserControllerTests {
     }
 
     @Test
-    public void test_register_user_with_missing_country() throws Exception {
+    public void test_register_user_with_missing_country_code() throws Exception {
         User user = TestUtil.createUser();
-        user.setCountry(null);
+        user.setCountryCode(null);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
@@ -235,6 +237,20 @@ public class UserControllerTests {
     }
 
     @Test
+    public void test_register_user_with_invalid_country_code() throws Exception {
+        User user = TestUtil.createUser();
+        user.setCountryCode(TestUtil.faker.lorem().word());
+
+        mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/users/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtil.objectMapper.writeValueAsString(user)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.content()
+                        .string("Invalid country code: " + user.getCountryCode()));
+    }
+
+    @Test
     public void test_register_user_with_invalid_phone_number() throws Exception {
         User user = TestUtil.createUser();
         user.setPhoneNumber(TestUtil.faker.number().digits(3));
@@ -244,8 +260,8 @@ public class UserControllerTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestUtil.objectMapper.writeValueAsString(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.content()
-                        .string("Missing or invalid default region."));
+                .andExpect(MockMvcResultMatchers.content().string(
+                        StringContains.containsString("Invalid phone number")));
     }
 
     @Test
@@ -546,12 +562,29 @@ public class UserControllerTests {
         otpVerificationRequest.setAccountNumber(accountNumber);
         otpVerificationRequest.setOtp(otpService.generateOTP(accountNumber));
 
-        mockMvc.perform(MockMvcRequestBuilders
+        MvcResult loginResult = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/verify-otp")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestUtil.objectMapper.writeValueAsString(otpVerificationRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.token").exists());
+                .andReturn();
+
+        String responseBody = loginResult.getResponse().getContentAsString();
+        String token = JsonPath.read(responseBody, "$.token");
+
+        PinRequest pinRequest = new PinRequest();
+        pinRequest.setAccountNumber(accountNumber);
+        pinRequest.setPassword(user.getPassword());
+        pinRequest.setPin(TestUtil.getRandomPin());
+
+        mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/account/pin/create")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtil.objectMapper.writeValueAsString(pinRequest)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.msg")
+                        .value("PIN created successfully"));
     }
 
     @Test
@@ -801,5 +834,41 @@ public class UserControllerTests {
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Phone number cannot be empty"));
+    }
+
+    @Test
+    public void test_update_user_with_invalid_password() throws Exception {
+        User user = testUtil.createAndRegisterUser();
+        String accountNumber = userRepository
+                .findByEmail(user.getEmail())
+                .get()
+                .getAccount()
+                .getAccountNumber();
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setAccountNumber(accountNumber);
+        loginRequest.setPassword(user.getPassword());
+
+        MvcResult loginResult = mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/users/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtil.objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        String responseBody = loginResult.getResponse().getContentAsString();
+        String token = JsonPath.read(responseBody, "$.token");
+
+        User updatedUser = TestUtil.createUser();
+        updatedUser.setPassword("");
+
+        mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/users/update")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + token)
+                .content(TestUtil.objectMapper.writeValueAsString(updatedUser)))
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized())
+                .andExpect(MockMvcResultMatchers.content()
+                        .string("Bad credentials"));
     }
 }

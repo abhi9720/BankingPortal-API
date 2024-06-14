@@ -20,7 +20,7 @@ public class UserResponse {
     public UserResponse(User user) {
         this.name = user.getName();
         this.email = user.getEmail();
-        this.country = user.getCountry();
+        this.country = user.getCountryCode();
         this.phoneNumber = user.getPhoneNumber();
         this.address = user.getAddress();
         this.accountNumber = user.getAccount().getAccountNumber();
