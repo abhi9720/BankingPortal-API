@@ -1,5 +1,7 @@
 package com.webapp.bankingportal;
 
+import org.junit.jupiter.api.Assertions;
+
 import java.util.HashMap;
 
 import org.hamcrest.core.StringContains;
@@ -10,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -26,6 +30,7 @@ import com.webapp.bankingportal.dto.PinRequest;
 import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.repository.UserRepository;
 import com.webapp.bankingportal.service.OtpService;
+import com.webapp.bankingportal.service.TokenService;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -41,6 +46,9 @@ public class UserControllerTests {
 
     @Autowired
     private OtpService otpService;
+
+    @Autowired
+    private TokenService tokenService;
 
     private TestUtil testUtil;
 
@@ -121,7 +129,7 @@ public class UserControllerTests {
                 .content(TestUtil.objectMapper.writeValueAsString(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Country cannot be empty"));
+                        .string("Country code cannot be empty"));
     }
 
     @Test
@@ -135,7 +143,7 @@ public class UserControllerTests {
                 .content(TestUtil.objectMapper.writeValueAsString(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Country cannot be empty"));
+                        .string("Country code cannot be empty"));
     }
 
     @Test
@@ -377,8 +385,9 @@ public class UserControllerTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestUtil.objectMapper.writeValueAsString(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.content()
-                        .string("Password must contain at least one lowercase letter"));
+                .andExpect(MockMvcResultMatchers.content().string(
+                        StringContains.containsString(
+                                "Password must contain at least one lowercase letter")));
     }
 
     @Test
@@ -639,6 +648,8 @@ public class UserControllerTests {
 
         User updatedUser = TestUtil.createUser();
         updatedUser.setPassword(userDetails.get("password"));
+        updatedUser.setPhoneNumber(TestUtil.getRandomPhoneNumber(
+                userDetails.get("countryCode")));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/update")
@@ -663,6 +674,8 @@ public class UserControllerTests {
         User updatedUser = TestUtil.createUser();
         updatedUser.setName("");
         updatedUser.setPassword(userDetails.get("password"));
+        updatedUser.setPhoneNumber(TestUtil.getRandomPhoneNumber(
+                userDetails.get("countryCode")));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/update")
@@ -681,6 +694,8 @@ public class UserControllerTests {
         User updatedUser = TestUtil.createUser();
         updatedUser.setAddress("");
         updatedUser.setPassword(userDetails.get("password"));
+        updatedUser.setPhoneNumber(TestUtil.getRandomPhoneNumber(
+                userDetails.get("countryCode")));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/update")
@@ -699,6 +714,8 @@ public class UserControllerTests {
         User updatedUser = TestUtil.createUser();
         updatedUser.setEmail("");
         updatedUser.setPassword(userDetails.get("password"));
+        updatedUser.setPhoneNumber(TestUtil.getRandomPhoneNumber(
+                userDetails.get("countryCode")));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/update")
@@ -753,6 +770,80 @@ public class UserControllerTests {
                 .post("/api/users/update")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestUtil.objectMapper.writeValueAsString(updatedUser)))
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+    }
+
+    @Test
+    public void test_logout_with_valid_token() throws Exception {
+        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
+
+        MockHttpServletResponse response = mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/users/logout")
+                .header("Authorization", "Bearer " + userDetails.get("token")))
+                .andExpect(MockMvcResultMatchers.status().isFound())
+                .andReturn().getResponse();
+
+        String redirectedUrl = response.getRedirectedUrl();
+        if (redirectedUrl != null) {
+            Assertions.assertEquals("/logout", redirectedUrl);
+            mockMvc.perform(MockMvcRequestBuilders
+                    .get(redirectedUrl))
+                    .andExpect(MockMvcResultMatchers.status().isOk());
+        } else {
+            Assertions.fail("Redirected URL is null");
+        }
+    }
+
+    @Test
+    public void test_logout_with_invalid_token() throws Exception {
+        testUtil.createAndLoginUser();
+
+        User user = testUtil.createAndRegisterUser();
+        String accountNumber = userRepository
+                .findByEmail(user.getEmail())
+                .get()
+                .getAccount()
+                .getAccountNumber();
+
+        UserDetails userDetails = tokenService.loadUserByUsername(accountNumber);
+        String token = tokenService.generateToken(userDetails);
+
+        mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/users/logout")
+                .header("Authorization", "Bearer " + token))
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+    }
+
+    @Test
+    public void test_logout_without_login() throws Exception {
+        User user = testUtil.createAndRegisterUser();
+        String accountNumber = userRepository
+                .findByEmail(user.getEmail())
+                .get()
+                .getAccount()
+                .getAccountNumber();
+
+        UserDetails userDetails = tokenService.loadUserByUsername(accountNumber);
+        String token = tokenService.generateToken(userDetails);
+
+        mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/users/logout")
+                .header("Authorization", "Bearer " + token))
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+    }
+
+    @Test
+    public void test_logout_with_malformed_token() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/users/logout")
+                .header("Authorization", "Bearer invalid-token"))
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+    }
+
+    @Test
+    public void test_logout_without_authorization() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/users/logout"))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 }

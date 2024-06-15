@@ -129,7 +129,7 @@ public class UserServiceImpl implements UserService {
 
     private static void validateCountryCode(String countryCode) {
         if (countryCode == null || countryCode.isEmpty()) {
-            throw new UserInvalidException("Country cannot be empty");
+            throw new UserInvalidException("Country code cannot be empty");
         }
 
         if (!phoneNumberUtil.getSupportedRegions().contains(countryCode)) {

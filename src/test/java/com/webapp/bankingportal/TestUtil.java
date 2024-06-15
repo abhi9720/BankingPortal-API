@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javafaker.Faker;
+import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.jayway.jsonpath.JsonPath;
@@ -63,33 +64,27 @@ public class TestUtil {
     }
 
     public static String getRandomPhoneNumber(String region) {
+        PhoneNumber exampleNumber = phoneNumberUtil.getExampleNumber(region);
 
-        PhoneNumber phoneNumber = phoneNumberUtil.getExampleNumber(region);
-        String randomPhoneNumber = null;
-        String nationalNumber;
-        String operatorPrefix;
-        String randomDigits;
+        for (int i = 0; i < 100; ++i) {
+            String nationalNumber = String.valueOf(exampleNumber.getNationalNumber());
+            String randomPhoneNumber = faker.number().digits(nationalNumber.length());
 
-        for (int i = 0; i < 30; ++i) {
-            nationalNumber = String.valueOf(phoneNumber.getNationalNumber());
-            operatorPrefix = nationalNumber.substring(0, 3);
-            randomDigits = faker.number().digits(nationalNumber.length() - 3);
-            randomPhoneNumber = operatorPrefix + randomDigits;
+            try {
+                PhoneNumber phoneNumber = phoneNumberUtil.parse(
+                        randomPhoneNumber, region);
 
-            phoneNumber.setNationalNumber(Long.valueOf(randomPhoneNumber));
-
-            if (phoneNumberUtil.isValidNumber(phoneNumber)) {
-                break;
+                if (phoneNumberUtil.isValidNumber(phoneNumber)) {
+                    return phoneNumberUtil.format(phoneNumber,
+                            PhoneNumberUtil.PhoneNumberFormat.E164);
+                }
+            } catch (NumberParseException e) {
+                // Continue to next attempt if parsing fails
             }
         }
 
-        if (!phoneNumberUtil.isValidNumber(phoneNumber)) {
-            randomPhoneNumber = String.valueOf(phoneNumberUtil
-                    .getExampleNumber(region)
-                    .getNationalNumber());
-        }
-
-        return randomPhoneNumber;
+        return phoneNumberUtil.format(exampleNumber,
+                PhoneNumberUtil.PhoneNumberFormat.E164);
     }
 
     public static String getRandomOtp() {

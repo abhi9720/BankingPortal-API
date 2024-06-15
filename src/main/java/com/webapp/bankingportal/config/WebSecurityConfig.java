@@ -18,25 +18,38 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.webapp.bankingportal.security.JwtAuthenticationEntryPoint;
 import com.webapp.bankingportal.security.JwtAuthenticationFilter;
-import com.webapp.bankingportal.service.JwtUserDetailsService;
+import com.webapp.bankingportal.service.TokenService;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class WebSecurityConfig {
 
-    @Autowired
-    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private static final String[] PUBLIC_URLS = {
+            "/api/users/register",
+            "/api/users/login",
+            "/api/users/generate-otp",
+            "/api/users/verify-otp",
+            "swagger-ui.html",
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/actuator/**"
+    };
 
     @Autowired
-    private JwtUserDetailsService jwtUserDetailsService;
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Autowired
+    private TokenService tokenService;
+
+    @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(jwtUserDetailsService).passwordEncoder(passwordEncoder());
+        auth.userDetailsService(tokenService).passwordEncoder(passwordEncoder());
     }
 
     @Bean
@@ -45,29 +58,32 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authenticationConfiguration)
             throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable()).authorizeHttpRequests(requests -> requests
-                .requestMatchers("/api/users/register").permitAll()
-                .requestMatchers("/api/users/login").permitAll()
-                .requestMatchers("/api/users/generate-otp").permitAll()
-                .requestMatchers("/api/users/verify-otp").permitAll()
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("swagger-ui.html").permitAll()
-                .requestMatchers("/v3/api-docs/**").permitAll()
-                .requestMatchers("/swagger-ui/**").permitAll()
-                .requestMatchers("/actuator/**").permitAll()
-                .anyRequest().authenticated()).exceptionHandling(handling -> handling
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint))
-                .sessionManagement(management -> management
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http.csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers(PUBLIC_URLS).permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .anyRequest().authenticated())
+                .exceptionHandling(handling -> {
+                    handling.authenticationEntryPoint(jwtAuthenticationEntryPoint);
+                })
+                .sessionManagement(management -> {
+                    management.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                })
+                .logout(logout -> logout
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            response.setStatus(HttpServletResponse.SC_OK);
+                        }));
 
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
