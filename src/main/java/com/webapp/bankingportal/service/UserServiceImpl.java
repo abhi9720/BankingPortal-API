@@ -1,6 +1,8 @@
 package com.webapp.bankingportal.service;
 
+import java.sql.Timestamp;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,15 +28,25 @@ public class UserServiceImpl implements UserService {
     private final AccountService accountService;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final EmailService emailService;
+    private final GeolocationService geolocationService;
 
     private static final PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
 
-    public UserServiceImpl(UserRepository userRepository, AccountService accountService,
-            PasswordEncoder passwordEncoder, UserMapper userMapper) {
+    public UserServiceImpl(
+            UserRepository userRepository,
+            AccountService accountService,
+            PasswordEncoder passwordEncoder,
+            UserMapper userMapper,
+            EmailService emailService,
+            GeolocationService geolocationService) {
+
         this.userRepository = userRepository;
         this.accountService = accountService;
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
+        this.emailService = emailService;
+        this.geolocationService = geolocationService;
     }
 
     @Override
@@ -211,5 +223,31 @@ public class UserServiceImpl implements UserService {
             }
             throw new UserInvalidException(message.toString());
         }
+    }
+
+    @Override
+    public CompletableFuture<Void> sendLoginNotificationEmail(User user, String ip) {
+        final String name = user.getName();
+        final String email = user.getEmail();
+        final String loginTime = new Timestamp(System.currentTimeMillis()).toString();
+
+        return geolocationService.getGeolocation(ip).thenComposeAsync(geolocationResponse -> {
+
+            final String loginLocation = String.format("%s, %s",
+                    geolocationResponse.getCity().getNames().get("en"),
+                    geolocationResponse.getCountry().getNames().get("en"));
+
+            final String emailText = emailService.getLoginEmailTemplate(
+                    name, loginTime, loginLocation);
+
+            return emailService.sendEmail(email, "OneStopBank Login", emailText);
+
+        }).exceptionallyComposeAsync(throwable -> {
+
+            final String emailText = emailService.getLoginEmailTemplate(
+                    name, loginTime, "Unknown");
+
+            return emailService.sendEmail(email, "OneStopBank Login", emailText);
+        });
     }
 }

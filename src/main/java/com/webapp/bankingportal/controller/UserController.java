@@ -31,6 +31,8 @@ import com.webapp.bankingportal.service.OtpService;
 import com.webapp.bankingportal.service.UserService;
 import com.webapp.bankingportal.util.LoggedinUser;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -67,19 +69,30 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest)
+    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request)
             throws InvalidTokenException {
-        // Authenticate the user with the account number and password
+
+        final String accountNumber = loginRequest.getAccountNumber();
+
+        logger.info("Authenticating Account: {}", accountNumber);
+
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                loginRequest.getAccountNumber(),
+                accountNumber,
                 loginRequest.getPassword()));
 
-        UserDetails userDetails = userDetailsService
-                .loadUserByUsername(loginRequest.getAccountNumber());
-        logger.info("User logged in successfully: {}",
-                loginRequest.getAccountNumber());
-        String token = tokenService.generateToken(userDetails);
+        logger.info("Account: {} authenticated successfully", accountNumber);
+
+        userService.sendLoginNotificationEmail(
+                userService.getUserByAccountNumber(accountNumber).get(),
+                request.getRemoteAddr());
+
+        final UserDetails userDetails = userDetailsService
+                .loadUserByUsername(accountNumber);
+
+        final String token = tokenService.generateToken(userDetails);
         tokenService.saveToken(token);
+
+        logger.info("Account: {} logged in successfully", accountNumber);
 
         return ResponseEntity.ok("{ \"token\": \"" + token + "\" }");
     }
