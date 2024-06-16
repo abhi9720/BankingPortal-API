@@ -5,6 +5,9 @@ import static org.springframework.security.core.userdetails.User.withUsername;
 import java.util.Date;
 import java.util.function.Function;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -43,6 +46,8 @@ public class TokenServiceImpl implements TokenService {
     private final long expiration;
     private final String secret;
 
+    private static final Logger logger = LoggerFactory.getLogger(TokenServiceImpl.class);
+
     public TokenServiceImpl(
             @Value("${jwt.secret}") String secret,
             @Value("${jwt.expiration}") long expiration) {
@@ -58,6 +63,7 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public String generateToken(UserDetails userDetails) {
+        logger.info("Generating token for user: " + userDetails.getUsername());
         return doGenerateToken(userDetails);
     }
 
@@ -96,7 +102,9 @@ public class TokenServiceImpl implements TokenService {
             return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
 
         } catch (ExpiredJwtException e) {
+            // Delete expired token
             invalidateToken(token);
+
             throw new InvalidTokenException("Token has expired");
 
         } catch (UnsupportedJwtException e) {
@@ -115,8 +123,14 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public void saveToken(String token) throws InvalidTokenException {
+        if (tokenRepository.findByToken(token) != null) {
+            throw new InvalidTokenException("Token already exists");
+        }
+
         Account account = accountRepository.findByAccountNumber(
                 getUsernameFromToken(token));
+
+        logger.info("Saving token for account: " + account.getAccountNumber());
 
         Token tokenObj = new Token(
                 token,
