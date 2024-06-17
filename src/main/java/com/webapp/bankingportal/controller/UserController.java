@@ -98,33 +98,31 @@ public class UserController {
 
     @PostMapping("/generate-otp")
     public ResponseEntity<String> generateOtp(@RequestBody OtpRequest otpRequest) {
-        String accountNumber = otpRequest.getAccountNumber();
+        final String accountNumber = otpRequest.getAccountNumber();
         if (!userService.doesAccountExist(accountNumber)) {
             return ResponseEntity.badRequest()
                     .body("User not found for the given account number");
         }
 
-        User user = userService.getUserByAccountNumber(accountNumber).get();
+        final User user = userService.getUserByAccountNumber(accountNumber).get();
 
         // Generate and send OTP
-        String generatedOtp = otpService.generateOTP(accountNumber);
-        CompletableFuture<Boolean> emailSendingFuture = otpService.sendOTPByEmail(
+        final String generatedOtp = otpService.generateOTP(accountNumber);
+        final CompletableFuture<Void> emailSendingFuture = otpService.sendOTPByEmail(
                 user.getEmail(),
                 user.getName(),
                 accountNumber,
                 generatedOtp);
 
-        final ResponseEntity<String> response = ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        final ResponseEntity<String> successResponse = ResponseEntity
+                .ok("OTP sent successfully to: " + user.getEmail());
+
+        final ResponseEntity<String> failureResponse = ResponseEntity
+                .internalServerError()
                 .body("Failed to send OTP to: " + user.getEmail());
 
-        return emailSendingFuture.thenApply(success -> {
-            if (success) {
-                return ResponseEntity.ok("OTP sent successfully to: " + user.getEmail());
-            } else {
-                return response;
-            }
-        }).exceptionally(e -> response).join();
+        return emailSendingFuture.thenApply(result -> successResponse)
+                .exceptionally(e -> failureResponse).join();
     }
 
     @PostMapping("/verify-otp")
@@ -136,12 +134,10 @@ public class UserController {
         String otp = otpVerificationRequest.getOtp();
 
         if (accountNumber == null || accountNumber.isEmpty()) {
-
             return ResponseEntity.badRequest().body("Missing account number");
         }
 
         if (otp == null || otp.isEmpty()) {
-
             return ResponseEntity.badRequest().body("Missing OTP");
         }
 
