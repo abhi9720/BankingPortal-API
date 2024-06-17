@@ -33,29 +33,6 @@ public class AccountControllerTests {
     @Autowired
     private UserRepository userRepository;
 
-    private HashMap<String, String> createAndLoginUserWithAmount(double amount)
-            throws Exception {
-
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
-
-        AmountRequest amountRequest = new AmountRequest();
-        amountRequest.setAccountNumber(userDetails.get("accountNumber"));
-        amountRequest.setPin(userDetails.get("pin"));
-        amountRequest.setAmount(amount);
-
-        mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/account/deposit")
-                .header("Authorization", "Bearer " + userDetails.get("token"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(amountRequest)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.msg")
-                        .value("Cash deposited successfully"));
-
-        return userDetails;
-    }
-
     @Test
     public void test_pin_check_without_pin() throws Exception {
         HashMap<String, String> userDetails = TestUtil
@@ -95,8 +72,7 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_create_with_valid_password() throws Exception {
-        TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        TestUtil.createAndLoginUserWithPin(mockMvc, userRepository);
     }
 
     @Test
@@ -393,7 +369,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_deposit_with_valid_data() throws Exception {
-        createAndLoginUserWithAmount(100.00);
+        TestUtil.createAndLoginUserWithInitialBalance(
+                mockMvc, userRepository, 100.0);
     }
 
     @Test
@@ -404,7 +381,7 @@ public class AccountControllerTests {
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
         amountRequest.setPin(TestUtil.getRandomPin());
-        amountRequest.setAmount(100.00);
+        amountRequest.setAmount(100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/deposit")
@@ -424,7 +401,7 @@ public class AccountControllerTests {
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
         amountRequest.setPin(userDetails.get("pin"));
-        amountRequest.setAmount(-100.00);
+        amountRequest.setAmount(-100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/deposit")
@@ -444,7 +421,7 @@ public class AccountControllerTests {
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
         amountRequest.setPin(userDetails.get("pin"));
-        amountRequest.setAmount(0.00);
+        amountRequest.setAmount(0.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/deposit")
@@ -464,7 +441,7 @@ public class AccountControllerTests {
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
         amountRequest.setPin(userDetails.get("pin"));
-        amountRequest.setAmount(1000000.00);
+        amountRequest.setAmount(1000000.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/deposit")
@@ -483,7 +460,7 @@ public class AccountControllerTests {
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
-        amountRequest.setAmount(100.00);
+        amountRequest.setAmount(100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/deposit")
@@ -519,7 +496,7 @@ public class AccountControllerTests {
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(TestUtil.getRandomAccountNumber());
         amountRequest.setPin(TestUtil.getRandomPin());
-        amountRequest.setAmount(100.00);
+        amountRequest.setAmount(100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/deposit")
@@ -530,8 +507,9 @@ public class AccountControllerTests {
 
     @Test
     public void test_withdraw_with_valid_pin_and_amount() throws Exception {
-        double amount = 100.00;
-        HashMap<String, String> userDetails = createAndLoginUserWithAmount(amount);
+        double amount = 100.0;
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -556,7 +534,7 @@ public class AccountControllerTests {
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
         amountRequest.setPin(TestUtil.getRandomPin());
-        amountRequest.setAmount(100.00);
+        amountRequest.setAmount(100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/withdraw")
@@ -576,7 +554,7 @@ public class AccountControllerTests {
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
         amountRequest.setPin(userDetails.get("pin"));
-        amountRequest.setAmount(-100.00);
+        amountRequest.setAmount(-100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/withdraw")
@@ -596,7 +574,7 @@ public class AccountControllerTests {
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
         amountRequest.setPin(userDetails.get("pin"));
-        amountRequest.setAmount(0.00);
+        amountRequest.setAmount(0.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/withdraw")
@@ -610,8 +588,9 @@ public class AccountControllerTests {
 
     @Test
     public void test_withdraw_with_insufficient_funds() throws Exception {
-        double amount = 100.00;
-        HashMap<String, String> userDetails = createAndLoginUserWithAmount(amount);
+        double amount = 100.0;
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -635,7 +614,7 @@ public class AccountControllerTests {
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
-        amountRequest.setAmount(100.00);
+        amountRequest.setAmount(100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/withdraw")
@@ -671,7 +650,7 @@ public class AccountControllerTests {
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(TestUtil.getRandomAccountNumber());
         amountRequest.setPin(TestUtil.getRandomPin());
-        amountRequest.setAmount(100.00);
+        amountRequest.setAmount(100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/withdraw")
@@ -682,8 +661,9 @@ public class AccountControllerTests {
 
     @Test
     public void test_fund_transfer_with_valid_data() throws Exception {
-        double amount = 100.00;
-        HashMap<String, String> userDetails = createAndLoginUserWithAmount(amount);
+        double amount = 100.0;
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
@@ -704,8 +684,9 @@ public class AccountControllerTests {
 
     @Test
     public void test_fund_transfer_to_the_same_account() throws Exception {
-        double amount = 100.00;
-        HashMap<String, String> userDetails = createAndLoginUserWithAmount(amount);
+        double amount = 100.0;
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
@@ -725,8 +706,9 @@ public class AccountControllerTests {
 
     @Test
     public void test_fund_transfer_with_invalid_source_account_pin() throws Exception {
-        double amount = 100.00;
-        HashMap<String, String> userDetails = createAndLoginUserWithAmount(amount);
+        double amount = 100.0;
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
@@ -747,8 +729,9 @@ public class AccountControllerTests {
 
     @Test
     public void test_fund_transfer_with_invalid_target_account() throws Exception {
-        double amount = 100.00;
-        HashMap<String, String> userDetails = createAndLoginUserWithAmount(amount);
+        double amount = 100.0;
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
@@ -768,8 +751,9 @@ public class AccountControllerTests {
 
     @Test
     public void test_fund_transfer_with_insufficient_funds() throws Exception {
-        double amount = 100.00;
-        HashMap<String, String> userDetails = createAndLoginUserWithAmount(amount);
+        double amount = 100.0;
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
@@ -790,8 +774,9 @@ public class AccountControllerTests {
 
     @Test
     public void test_fund_transfer_with_negative_amount() throws Exception {
-        double amount = 100.00;
-        HashMap<String, String> userDetails = createAndLoginUserWithAmount(amount);
+        double amount = 100.0;
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
@@ -812,15 +797,16 @@ public class AccountControllerTests {
 
     @Test
     public void test_fund_transfer_with_zero_amount() throws Exception {
-        double amount = 100.00;
-        HashMap<String, String> userDetails = createAndLoginUserWithAmount(amount);
+        double amount = 100.0;
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
         fundTransferRequest
                 .setTargetAccountNumber(TestUtil.createAndLoginUser(mockMvc, userRepository).get("accountNumber"));
         fundTransferRequest.setPin(userDetails.get("pin"));
-        fundTransferRequest.setAmount(0.00);
+        fundTransferRequest.setAmount(0.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/fund-transfer")
@@ -834,8 +820,9 @@ public class AccountControllerTests {
 
     @Test
     public void test_fund_transfer_with_missing_source_account_pin() throws Exception {
-        double amount = 100.00;
-        HashMap<String, String> userDetails = createAndLoginUserWithAmount(amount);
+        double amount = 100.0;
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
@@ -855,8 +842,9 @@ public class AccountControllerTests {
 
     @Test
     public void test_fund_transfer_with_missing_target_account() throws Exception {
-        double amount = 100.00;
-        HashMap<String, String> userDetails = createAndLoginUserWithAmount(amount);
+        double amount = 100.0;
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
@@ -875,8 +863,9 @@ public class AccountControllerTests {
 
     @Test
     public void test_fund_transfer_with_missing_amount() throws Exception {
-        double amount = 100.00;
-        HashMap<String, String> userDetails = createAndLoginUserWithAmount(amount);
+        double amount = 100.0;
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
@@ -896,8 +885,9 @@ public class AccountControllerTests {
 
     @Test
     public void test_fund_transfer_unauthorized_access() throws Exception {
-        double amount = 100.00;
-        HashMap<String, String> userDetails = createAndLoginUserWithAmount(amount);
+        double amount = 100.0;
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
@@ -915,8 +905,9 @@ public class AccountControllerTests {
 
     @Test
     public void test_transactions_with_authorized_access() throws Exception {
-        double amount = 100.00;
-        HashMap<String, String> userDetails = createAndLoginUserWithAmount(amount);
+        double amount = 100.0;
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/account/transactions")

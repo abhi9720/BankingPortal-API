@@ -112,7 +112,7 @@ public class AccountServiceImpl implements AccountService {
             throw new InvalidPinException("PIN cannot be empty");
         }
 
-        if (pin.length() != 4) {
+        if (!pin.matches("[0-9]{4}")) {
             throw new InvalidPinException("PIN must be 4 digits");
         }
 

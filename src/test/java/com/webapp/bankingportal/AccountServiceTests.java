@@ -1,0 +1,490 @@
+package com.webapp.bankingportal;
+
+import java.util.HashMap;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.webapp.bankingportal.entity.Account;
+import com.webapp.bankingportal.entity.User;
+import com.webapp.bankingportal.exception.InsufficientBalanceException;
+import com.webapp.bankingportal.exception.InvalidAmountException;
+import com.webapp.bankingportal.exception.InvalidPinException;
+import com.webapp.bankingportal.exception.NotFoundException;
+import com.webapp.bankingportal.exception.UnauthorizedException;
+import com.webapp.bankingportal.repository.AccountRepository;
+import com.webapp.bankingportal.repository.UserRepository;
+import com.webapp.bankingportal.service.AccountService;
+
+import jakarta.validation.ConstraintViolationException;
+
+@SpringBootTest
+@Transactional
+@TestPropertySource(locations = "classpath:application-test.properties")
+public class AccountServiceTests {
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    AccountRepository accountRepository;
+
+    @Autowired
+    AccountService accountService;
+
+    @Test
+    public void test_create_account_with_valid_user() {
+        User user = TestUtil.createUser();
+        userRepository.save(user);
+
+        Account account = accountService.createAccount(user);
+
+        Assertions.assertNotNull(account);
+        Assertions.assertNotNull(account.getAccountNumber());
+        Assertions.assertEquals(user, account.getUser());
+        Assertions.assertEquals(0.0, account.getBalance());
+    }
+
+    @Test
+    public void test_create_account_with_null_user() {
+        Assertions.assertThrows(ConstraintViolationException.class,
+                () -> accountService.createAccount(null));
+    }
+
+    @Test
+    public void test_create_pin_with_valid_details() {
+        HashMap<String, String> accountDetails = TestUtil.createAccount(
+                passwordEncoder,
+                userRepository,
+                accountService);
+
+        String pin = TestUtil.getRandomPin();
+
+        accountService.createPin(
+                accountDetails.get("accountNumber"),
+                accountDetails.get("password"),
+                pin);
+
+        Account account = accountRepository
+                .findByAccountNumber(accountDetails.get("accountNumber"));
+
+        Assertions.assertTrue(passwordEncoder.matches(
+                pin, account.getPin()));
+    }
+
+    @Test
+    public void test_create_pin_with_invalid_account_number() {
+        Assertions.assertThrows(NotFoundException.class, () -> {
+            accountService.createPin(
+                    TestUtil.getRandomAccountNumber(),
+                    TestUtil.getRandomPassword(),
+                    TestUtil.getRandomPin());
+        });
+    }
+
+    @Test
+    public void test_create_pin_with_invalid_password() {
+        String accountNumber = TestUtil
+                .createAccount(passwordEncoder, userRepository, accountService)
+                .get("accountNumber");
+
+        Assertions.assertThrows(UnauthorizedException.class, () -> {
+            accountService.createPin(accountNumber,
+                    TestUtil.getRandomPassword(),
+                    TestUtil.getRandomPin());
+        });
+    }
+
+    @Test
+    public void test_create_pin_with_existing_pin() {
+        HashMap<String, String> accountDetails = TestUtil
+                .createAccountWithPin(passwordEncoder, userRepository, accountService);
+
+        Assertions.assertThrows(UnauthorizedException.class, () -> {
+            accountService.createPin(
+                    accountDetails.get("accountNumber"),
+                    accountDetails.get("password"),
+                    TestUtil.getRandomPin());
+        });
+
+    }
+
+    @Test
+    public void test_create_pin_with_missing_or_empty_pin() {
+        HashMap<String, String> accountDetails = TestUtil
+                .createAccount(passwordEncoder, userRepository, accountService);
+
+        Assertions.assertThrows(InvalidPinException.class, () -> {
+            accountService.createPin(
+                    accountDetails.get("accountNumber"),
+                    accountDetails.get("password"),
+                    null);
+        });
+
+        Assertions.assertThrows(InvalidPinException.class, () -> {
+            accountService.createPin(
+                    accountDetails.get("accountNumber"),
+                    accountDetails.get("password"),
+                    "");
+        });
+    }
+
+    @Test
+    public void test_create_pin_with_invalid_format() {
+        HashMap<String, String> accountDetails = TestUtil
+                .createAccount(passwordEncoder, userRepository, accountService);
+
+        // Short pin
+        Assertions.assertThrows(InvalidPinException.class, () -> {
+            accountService.createPin(
+                    accountDetails.get("accountNumber"),
+                    accountDetails.get("password"),
+                    TestUtil.faker.number().digits(3));
+        });
+
+        // Long pin
+        Assertions.assertThrows(InvalidPinException.class, () -> {
+            accountService.createPin(
+                    accountDetails.get("accountNumber"),
+                    accountDetails.get("password"),
+                    TestUtil.faker.number().digits(5));
+        });
+
+        // Invalid format
+        Assertions.assertThrows(InvalidPinException.class, () -> {
+            accountService.createPin(
+                    accountDetails.get("accountNumber"),
+                    accountDetails.get("password"),
+                    TestUtil.getRandomPassword().substring(0, 4));
+        });
+    }
+
+    @Test
+    public void test_update_pin_with_valid_details() {
+        HashMap<String, String> accountDetails = TestUtil
+                .createAccountWithPin(passwordEncoder, userRepository, accountService);
+
+        String newPin = TestUtil.getRandomPin();
+
+        accountService.updatePin(
+                accountDetails.get("accountNumber"),
+                accountDetails.get("pin"),
+                accountDetails.get("password"),
+                newPin);
+
+        Account account = accountRepository
+                .findByAccountNumber(accountDetails.get("accountNumber"));
+
+        Assertions.assertTrue(passwordEncoder.matches(newPin, account.getPin()));
+    }
+
+    @Test
+    public void test_update_pin_with_invalid_account_number() {
+        Assertions.assertThrows(NotFoundException.class, () -> {
+            accountService.updatePin(
+                    TestUtil.getRandomAccountNumber(),
+                    TestUtil.getRandomPin(),
+                    TestUtil.getRandomPassword(),
+                    TestUtil.getRandomPin());
+        });
+    }
+
+    @Test
+    public void test_update_pin_with_incorrect_password() {
+        HashMap<String, String> accountDetails = TestUtil
+                .createAccountWithPin(passwordEncoder, userRepository, accountService);
+
+        Assertions.assertThrows(UnauthorizedException.class, () -> {
+            accountService.updatePin(
+                    accountDetails.get("accountNumber"),
+                    accountDetails.get("pin"),
+                    TestUtil.getRandomPassword(),
+                    TestUtil.getRandomPin());
+        });
+    }
+
+    @Test
+    public void test_update_pin_with_missing_or_empty_password() {
+        HashMap<String, String> accountDetails = TestUtil
+                .createAccountWithPin(passwordEncoder, userRepository, accountService);
+
+        Assertions.assertThrows(UnauthorizedException.class, () -> {
+            accountService.updatePin(
+                    accountDetails.get("accountNumber"),
+                    accountDetails.get("pin"),
+                    null,
+                    TestUtil.getRandomPin());
+        });
+
+        Assertions.assertThrows(UnauthorizedException.class, () -> {
+            accountService.updatePin(
+                    accountDetails.get("accountNumber"),
+                    accountDetails.get("pin"),
+                    "",
+                    TestUtil.getRandomPin());
+        });
+    }
+
+    @Test
+    public void test_update_pin_with_incorrect_pin() {
+        HashMap<String, String> accountDetails = TestUtil
+                .createAccountWithPin(passwordEncoder, userRepository, accountService);
+
+        Assertions.assertThrows(UnauthorizedException.class, () -> {
+            accountService.updatePin(
+                    accountDetails.get("accountNumber"),
+                    TestUtil.getRandomPin(),
+                    accountDetails.get("password"),
+                    TestUtil.getRandomPin());
+        });
+    }
+
+    @Test
+    public void test_update_pin_for_account_with_no_pin() {
+        HashMap<String, String> accountDetails = TestUtil
+                .createAccount(passwordEncoder, userRepository, accountService);
+
+        Assertions.assertThrows(UnauthorizedException.class, () -> {
+            accountService.updatePin(
+                    accountDetails.get("accountNumber"),
+                    TestUtil.getRandomPin(),
+                    accountDetails.get("password"),
+                    TestUtil.getRandomPin());
+        });
+    }
+
+    @Test
+    public void test_update_pin_with_missing_or_empty_old_pin() {
+        HashMap<String, String> accountDetails = TestUtil
+                .createAccountWithPin(passwordEncoder, userRepository, accountService);
+
+        Assertions.assertThrows(UnauthorizedException.class, () -> {
+            accountService.updatePin(
+                    accountDetails.get("accountNumber"),
+                    null,
+                    accountDetails.get("password"),
+                    TestUtil.getRandomPin());
+        });
+
+        Assertions.assertThrows(UnauthorizedException.class, () -> {
+            accountService.updatePin(
+                    accountDetails.get("accountNumber"),
+                    "",
+                    accountDetails.get("password"),
+                    TestUtil.getRandomPin());
+        });
+    }
+
+    @Test
+    public void test_update_pin_with_missing_or_empty_new_pin() {
+        HashMap<String, String> accountDetails = TestUtil
+                .createAccountWithPin(passwordEncoder, userRepository, accountService);
+
+        Assertions.assertThrows(InvalidPinException.class, () -> {
+            accountService.updatePin(
+                    accountDetails.get("accountNumber"),
+                    accountDetails.get("pin"),
+                    accountDetails.get("password"),
+                    null);
+        });
+
+        Assertions.assertThrows(InvalidPinException.class, () -> {
+            accountService.updatePin(
+                    accountDetails.get("accountNumber"),
+                    accountDetails.get("pin"),
+                    accountDetails.get("password"),
+                    "");
+        });
+    }
+
+    @Test
+    public void test_deposit_cash_with_valid_details() {
+        double balance = 1000.0;
+        HashMap<String, String> accountDetails = TestUtil.createAccountWithInitialBalance(
+                passwordEncoder, userRepository, accountService, balance);
+
+        Account account = accountRepository
+                .findByAccountNumber(accountDetails.get("accountNumber"));
+
+        Assertions.assertEquals(balance, account.getBalance(), 0.01);
+    }
+
+    @Test
+    public void test_deposit_cash_with_invalid_account_number() {
+        Assertions.assertThrows(NotFoundException.class, () -> {
+            accountService.cashDeposit(
+                    TestUtil.getRandomAccountNumber(),
+                    TestUtil.getRandomPin(),
+                    50.0);
+        });
+    }
+
+    @Test
+    public void test_deposit_cash_with_invalid_pin() {
+        HashMap<String, String> accountDetails = TestUtil
+                .createAccountWithPin(passwordEncoder, userRepository, accountService);
+
+        Assertions.assertThrows(UnauthorizedException.class, () -> {
+            accountService.cashDeposit(
+                    accountDetails.get("accountNumber"),
+                    TestUtil.getRandomPin(),
+                    50.0);
+        });
+    }
+
+    @Test
+    public void test_deposit_invalid_amount() {
+        HashMap<String, String> accountDetails = TestUtil
+                .createAccountWithPin(passwordEncoder, userRepository, accountService);
+
+        // Negative amount
+        Assertions.assertThrows(InvalidAmountException.class, () -> {
+            accountService.cashDeposit(
+                    accountDetails.get("accountNumber"),
+                    accountDetails.get("pin"),
+                    -50.0);
+        });
+
+        // Zero amount
+        Assertions.assertThrows(InvalidAmountException.class, () -> {
+            accountService.cashDeposit(
+                    accountDetails.get("accountNumber"),
+                    accountDetails.get("pin"),
+                    0.0);
+        });
+
+        // Amount not in multiples of 100
+        Assertions.assertThrows(InvalidAmountException.class, () -> {
+            accountService.cashDeposit(
+                    accountDetails.get("accountNumber"),
+                    accountDetails.get("pin"),
+                    50.0);
+        });
+
+        // Amount greater than 100,000
+        Assertions.assertThrows(InvalidAmountException.class, () -> {
+            accountService.cashDeposit(
+                    accountDetails.get("accountNumber"),
+                    accountDetails.get("pin"),
+                    100001.0);
+        });
+    }
+
+    @Test
+    public void test_withdraw_cash_with_valid_details() {
+        double balance = 1000.0;
+        HashMap<String, String> accountDetails = TestUtil.createAccountWithInitialBalance(
+                passwordEncoder, userRepository, accountService, balance);
+
+        double withdrawalAmount = 500.0;
+        accountService.cashWithdrawal(
+                accountDetails.get("accountNumber"),
+                accountDetails.get("pin"),
+                withdrawalAmount);
+
+        Account account = accountRepository
+                .findByAccountNumber(accountDetails.get("accountNumber"));
+
+        Assertions.assertEquals(
+                balance - withdrawalAmount, account.getBalance(), 0.01);
+    }
+
+    @Test
+    public void test_withdraw_insufficient_balance() {
+        HashMap<String, String> accountDetails = TestUtil.createAccountWithInitialBalance(
+                passwordEncoder,
+                userRepository, accountService, 500.0);
+
+        Assertions.assertThrows(InsufficientBalanceException.class, () -> {
+            accountService.cashWithdrawal(
+                    accountDetails.get("accountNumber"),
+                    accountDetails.get("pin"),
+                    1000.0);
+        });
+    }
+
+    @Test
+    public void test_transfer_funds_with_valid_accounts() {
+        double sourceAccountBalance = 1000.0;
+        HashMap<String, String> sourceAccountDetails = TestUtil
+                .createAccountWithInitialBalance(
+                        passwordEncoder,
+                        userRepository,
+                        accountService,
+                        sourceAccountBalance);
+
+        double targetAccountBalance = 500.0;
+        HashMap<String, String> targetAccountDetails = TestUtil
+                .createAccountWithInitialBalance(
+                        passwordEncoder,
+                        userRepository,
+                        accountService,
+                        targetAccountBalance);
+
+        double transferAmount = 200;
+        accountService.fundTransfer(
+                sourceAccountDetails.get("accountNumber"),
+                targetAccountDetails.get("accountNumber"),
+                sourceAccountDetails.get("pin"),
+                transferAmount);
+
+        Account sourceAccount = accountRepository
+                .findByAccountNumber(sourceAccountDetails.get("accountNumber"));
+        Account targetAccount = accountRepository
+                .findByAccountNumber(targetAccountDetails.get("accountNumber"));
+
+        Assertions.assertEquals(
+                sourceAccountBalance - transferAmount,
+                sourceAccount.getBalance(),
+                0.01);
+
+        Assertions.assertEquals(
+                targetAccountBalance + transferAmount,
+                targetAccount.getBalance(),
+                0.01);
+    }
+
+    @Test
+    public void test_transfer_non_existent_target_account() {
+        HashMap<String, String> accountDetails = TestUtil.createAccountWithInitialBalance(
+                passwordEncoder,
+                userRepository, accountService, 500.0);
+
+        Assertions.assertThrows(NotFoundException.class, () -> {
+            accountService.fundTransfer(
+                    accountDetails.get("accountNumber"),
+                    TestUtil.getRandomAccountNumber(),
+                    accountDetails.get("pin"),
+                    1000.0);
+        });
+    }
+
+    @Test
+    public void test_transfer_funds_insufficient_balance() {
+        HashMap<String, String> sourceAccountDetails = TestUtil
+                .createAccountWithInitialBalance(
+                        passwordEncoder,
+                        userRepository, accountService, 500.0);
+
+        HashMap<String, String> targetAccountDetails = TestUtil.createAccount(
+                passwordEncoder,
+                userRepository, accountService);
+
+        Assertions.assertThrows(InsufficientBalanceException.class, () -> {
+            accountService.fundTransfer(
+                    sourceAccountDetails.get("accountNumber"),
+                    targetAccountDetails.get("accountNumber"),
+                    sourceAccountDetails.get("pin"),
+                    1000.0);
+        });
+    }
+}

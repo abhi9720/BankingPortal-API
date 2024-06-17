@@ -3,6 +3,7 @@ package com.webapp.bankingportal;
 import java.util.HashMap;
 
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -15,7 +16,7 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.jayway.jsonpath.JsonPath;
-
+import com.webapp.bankingportal.dto.AmountRequest;
 import com.webapp.bankingportal.dto.LoginRequest;
 import com.webapp.bankingportal.dto.PinRequest;
 import com.webapp.bankingportal.entity.Account;
@@ -179,13 +180,85 @@ public interface TestUtil {
         return userDetails;
     }
 
-    public static Account createAccount(
+    public static HashMap<String, String> createAndLoginUserWithInitialBalance(
+            MockMvc mockMvc,
+            UserRepository userRepository,
+            double amount) throws Exception {
+
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
+
+        AmountRequest amountRequest = new AmountRequest();
+        amountRequest.setAccountNumber(userDetails.get("accountNumber"));
+        amountRequest.setPin(userDetails.get("pin"));
+        amountRequest.setAmount(amount);
+
+        mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/account/deposit")
+                .header("Authorization", "Bearer " + userDetails.get("token"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtil.objectMapper.writeValueAsString(amountRequest)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.msg")
+                        .value("Cash deposited successfully"));
+
+        return userDetails;
+    }
+
+    public static HashMap<String, String> createAccount(
+        PasswordEncoder passwordEncoder,
             UserRepository userRepository,
             AccountService accountService) {
 
+        HashMap<String, String> accountDetails = new HashMap<>();
         User user = createUser();
+        accountDetails.put("password", user.getPassword());
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
 
-        return accountService.createAccount(user);
+        Account account = accountService.createAccount(user);
+        accountDetails.put("accountNumber", account.getAccountNumber());
+
+        return accountDetails;
+    }
+
+    public static HashMap<String, String> createAccountWithPin(
+            PasswordEncoder passwordEncoder,
+            UserRepository userRepository,
+            AccountService accountService) {
+
+        HashMap<String, String> accountDetails = createAccount(
+                passwordEncoder,
+                userRepository,
+                accountService);
+
+        accountDetails.put("pin", TestUtil.getRandomPin());
+
+        accountService.createPin(
+                accountDetails.get("accountNumber"),
+                accountDetails.get("password"),
+                accountDetails.get("pin"));
+
+        return accountDetails;
+    }
+
+    public static HashMap<String, String> createAccountWithInitialBalance(
+            PasswordEncoder passwordEncoder,
+            UserRepository userRepository,
+            AccountService accountService,
+            double amount) {
+
+        HashMap<String, String> accountDetails = createAccountWithPin(
+                passwordEncoder,
+                userRepository,
+                accountService);
+
+        accountService.cashDeposit(
+                accountDetails.get("accountNumber"),
+                accountDetails.get("pin"),
+                amount);
+
+        return accountDetails;
     }
 }
