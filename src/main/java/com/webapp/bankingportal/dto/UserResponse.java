@@ -6,7 +6,7 @@ public class UserResponse {
 
     private String name;
     private String email;
-    private String country;
+    private String countryCode;
     private String phoneNumber;
     private String address;
     private String accountNumber;
@@ -20,7 +20,7 @@ public class UserResponse {
     public UserResponse(User user) {
         this.name = user.getName();
         this.email = user.getEmail();
-        this.country = user.getCountryCode();
+        this.countryCode = user.getCountryCode();
         this.phoneNumber = user.getPhoneNumber();
         this.address = user.getAddress();
         this.accountNumber = user.getAccount().getAccountNumber();
@@ -45,12 +45,12 @@ public class UserResponse {
         this.email = email;
     }
 
-    public String getCountry() {
-        return country;
+    public String getCountryCode() {
+        return countryCode;
     }
 
-    public void setCountry(String country) {
-        this.country = country;
+    public void setCountryCode(String countryCode) {
+        this.countryCode = countryCode;
     }
 
     public String getPhoneNumber() {
