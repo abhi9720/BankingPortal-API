@@ -3,7 +3,6 @@ package com.webapp.bankingportal;
 import java.util.HashMap;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,16 +33,11 @@ public class AccountControllerTests {
     @Autowired
     private UserRepository userRepository;
 
-    private TestUtil testUtil;
-
-    @BeforeEach
-    public void setup() {
-        testUtil = new TestUtil(mockMvc, userRepository);
-    }
-
     private HashMap<String, String> createAndLoginUserWithAmount(double amount)
             throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -64,7 +58,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_check_without_pin() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUser(mockMvc, userRepository);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/account/pin/check")
@@ -78,7 +73,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_check_with_pin() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/account/pin/check")
@@ -99,12 +95,14 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_create_with_valid_password() throws Exception {
-        testUtil.createAndLoginUserWithPin();
+        TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
     }
 
     @Test
     public void test_pin_create_with_invalid_password() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUser(mockMvc, userRepository);
 
         PinRequest pinRequest = new PinRequest();
         pinRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -123,7 +121,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_create_with_missing_password() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUser(mockMvc, userRepository);
 
         PinRequest pinRequest = new PinRequest();
         pinRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -141,7 +140,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_create_with_missing_pin() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUser(mockMvc, userRepository);
 
         PinRequest pinRequest = new PinRequest();
         pinRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -159,7 +159,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_create_with_invalid_short_pin() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUser(mockMvc, userRepository);
 
         PinRequest pinRequest = new PinRequest();
         pinRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -178,7 +179,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_create_with_invalid_long_pin() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUser(mockMvc, userRepository);
 
         PinRequest pinRequest = new PinRequest();
         pinRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -211,7 +213,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_update_with_valid_data() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
         pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -231,7 +234,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_update_with_invalid_password() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
         pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -251,7 +255,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_update_with_invalid_old_pin() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
         pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -271,7 +276,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_update_with_invalid_new_short_pin() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
         pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -291,7 +297,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_update_with_invalid_new_long_pin() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
         pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -311,7 +318,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_update_with_missing_password() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
         pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -330,7 +338,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_update_with_missing_old_pin() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
         pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -349,7 +358,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_update_with_missing_new_pin() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
         pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -388,7 +398,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_deposit_with_invalid_pin() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -407,7 +418,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_deposit_with_negative_amount() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -426,7 +438,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_deposit_with_zero_amount() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -445,7 +458,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_deposit_with_excessively_large_amount() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -464,7 +478,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_deposit_with_missing_pin() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -482,7 +497,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_deposit_with_missing_amount() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -534,7 +550,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_withdraw_with_invalid_pin() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -553,7 +570,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_withdraw_with_negative_amount() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -572,7 +590,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_withdraw_with_zero_amount() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -611,7 +630,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_withdraw_with_missing_pin() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -629,7 +649,8 @@ public class AccountControllerTests {
 
     @Test
     public void test_withdraw_with_missing_amount() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUserWithPin();
+        HashMap<String, String> userDetails = TestUtil
+                .createAndLoginUserWithPin(mockMvc, userRepository);
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -666,7 +687,8 @@ public class AccountControllerTests {
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest.setTargetAccountNumber(testUtil.createAndLoginUser().get("accountNumber"));
+        fundTransferRequest
+                .setTargetAccountNumber(TestUtil.createAndLoginUser(mockMvc, userRepository).get("accountNumber"));
         fundTransferRequest.setPin(userDetails.get("pin"));
         fundTransferRequest.setAmount(amount);
 
@@ -708,7 +730,8 @@ public class AccountControllerTests {
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest.setTargetAccountNumber(testUtil.createAndLoginUser().get("accountNumber"));
+        fundTransferRequest
+                .setTargetAccountNumber(TestUtil.createAndLoginUser(mockMvc, userRepository).get("accountNumber"));
         fundTransferRequest.setPin(TestUtil.getRandomPin());
         fundTransferRequest.setAmount(amount);
 
@@ -750,7 +773,8 @@ public class AccountControllerTests {
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest.setTargetAccountNumber(testUtil.createAndLoginUser().get("accountNumber"));
+        fundTransferRequest
+                .setTargetAccountNumber(TestUtil.createAndLoginUser(mockMvc, userRepository).get("accountNumber"));
         fundTransferRequest.setPin(userDetails.get("pin"));
         fundTransferRequest.setAmount(amount * 2);
 
@@ -771,7 +795,8 @@ public class AccountControllerTests {
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest.setTargetAccountNumber(testUtil.createAndLoginUser().get("accountNumber"));
+        fundTransferRequest
+                .setTargetAccountNumber(TestUtil.createAndLoginUser(mockMvc, userRepository).get("accountNumber"));
         fundTransferRequest.setPin(userDetails.get("pin"));
         fundTransferRequest.setAmount(-amount);
 
@@ -792,7 +817,8 @@ public class AccountControllerTests {
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest.setTargetAccountNumber(testUtil.createAndLoginUser().get("accountNumber"));
+        fundTransferRequest
+                .setTargetAccountNumber(TestUtil.createAndLoginUser(mockMvc, userRepository).get("accountNumber"));
         fundTransferRequest.setPin(userDetails.get("pin"));
         fundTransferRequest.setAmount(0.00);
 
@@ -813,7 +839,8 @@ public class AccountControllerTests {
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest.setTargetAccountNumber(testUtil.createAndLoginUser().get("accountNumber"));
+        fundTransferRequest
+                .setTargetAccountNumber(TestUtil.createAndLoginUser(mockMvc, userRepository).get("accountNumber"));
         fundTransferRequest.setAmount(amount);
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -853,7 +880,8 @@ public class AccountControllerTests {
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest.setTargetAccountNumber(testUtil.createAndLoginUser().get("accountNumber"));
+        fundTransferRequest
+                .setTargetAccountNumber(TestUtil.createAndLoginUser(mockMvc, userRepository).get("accountNumber"));
         fundTransferRequest.setPin(userDetails.get("pin"));
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -873,7 +901,8 @@ public class AccountControllerTests {
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest.setTargetAccountNumber(testUtil.createAndLoginUser().get("accountNumber"));
+        fundTransferRequest
+                .setTargetAccountNumber(TestUtil.createAndLoginUser(mockMvc, userRepository).get("accountNumber"));
         fundTransferRequest.setPin(userDetails.get("pin"));
         fundTransferRequest.setAmount(amount);
 

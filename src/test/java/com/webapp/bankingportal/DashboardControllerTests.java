@@ -2,7 +2,6 @@ package com.webapp.bankingportal;
 
 import java.util.HashMap;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,16 +30,9 @@ public class DashboardControllerTests {
 
     private HashMap<String, String> userDetails = null;
 
-    private TestUtil testUtil;
-
-    @BeforeEach
-    public void setup() {
-        testUtil = new TestUtil(mockMvc, userRepository);
-    }
-
     private HashMap<String, String> createAndLoginUser() throws Exception {
         if (userDetails == null) {
-            userDetails = testUtil.createAndLoginUser();
+            userDetails = TestUtil.createAndLoginUser(mockMvc, userRepository);
         }
 
         return userDetails;

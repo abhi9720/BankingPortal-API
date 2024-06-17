@@ -18,28 +18,20 @@ import com.jayway.jsonpath.JsonPath;
 
 import com.webapp.bankingportal.dto.LoginRequest;
 import com.webapp.bankingportal.dto.PinRequest;
+import com.webapp.bankingportal.entity.Account;
 import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.repository.UserRepository;
+import com.webapp.bankingportal.service.AccountService;
 
-public class TestUtil {
-
-    private MockMvc mockMvc;
-    private UserRepository userRepository;
+public interface TestUtil {
 
     public static final int MIN_PASSWORD_LENGTH = 8;
     public static final int MAX_PASSWORD_LENGTH = 127;
 
     public static final Faker faker = new Faker();
     public static final PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
-    public static final ObjectMapper objectMapper = new ObjectMapper();
-    static {
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    }
-
-    public TestUtil(MockMvc mockMvc, UserRepository userRepository) {
-        this.mockMvc = mockMvc;
-        this.userRepository = userRepository;
-    }
+    public static final ObjectMapper objectMapper = new ObjectMapper()
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
     public static String getRandomAccountNumber() {
         return faker.lorem().characters(
@@ -110,7 +102,7 @@ public class TestUtil {
         return user;
     }
 
-    public User createAndRegisterUser() throws Exception {
+    public static User createAndRegisterUser(MockMvc mockMvc) throws Exception {
         User user = createUser();
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -122,8 +114,11 @@ public class TestUtil {
         return user;
     }
 
-    public HashMap<String, String> createAndLoginUser() throws Exception {
-        User user = createAndRegisterUser();
+    public static HashMap<String, String> createAndLoginUser(
+            MockMvc mockMvc,
+            UserRepository userRepository) throws Exception {
+
+        User user = createAndRegisterUser(mockMvc);
         String accountNumber = userRepository
                 .findByEmail(user.getEmail())
                 .get()
@@ -157,8 +152,11 @@ public class TestUtil {
         return userDetails;
     }
 
-    public HashMap<String, String> createAndLoginUserWithPin() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUser();
+    public static HashMap<String, String> createAndLoginUserWithPin(
+            MockMvc mockMvc,
+            UserRepository userRepository) throws Exception {
+
+        HashMap<String, String> userDetails = createAndLoginUser(mockMvc, userRepository);
         String accountNumber = userDetails.get("accountNumber");
         String password = userDetails.get("password");
 
@@ -179,5 +177,15 @@ public class TestUtil {
         userDetails.put("pin", pinRequest.getPin());
 
         return userDetails;
+    }
+
+    public static Account createAccount(
+            UserRepository userRepository,
+            AccountService accountService) {
+
+        User user = createUser();
+        userRepository.save(user);
+
+        return accountService.createAccount(user);
     }
 }

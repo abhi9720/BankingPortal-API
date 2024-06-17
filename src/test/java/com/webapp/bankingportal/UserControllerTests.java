@@ -1,11 +1,10 @@
 package com.webapp.bankingportal;
 
-import org.junit.jupiter.api.Assertions;
-
 import java.util.HashMap;
 
 import org.hamcrest.core.StringContains;
-import org.junit.jupiter.api.BeforeEach;
+
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,16 +49,9 @@ public class UserControllerTests {
     @Autowired
     private TokenService tokenService;
 
-    private TestUtil testUtil;
-
-    @BeforeEach
-    public void setup() {
-        testUtil = new TestUtil(mockMvc, userRepository);
-    }
-
     @Test
     public void test_register_user_with_valid_details() throws Exception {
-        testUtil.createAndRegisterUser();
+        TestUtil.createAndRegisterUser(mockMvc);
     }
 
     @Test
@@ -204,7 +196,7 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_duplicate_email() throws Exception {
-        User user1 = testUtil.createAndRegisterUser();
+        User user1 = TestUtil.createAndRegisterUser(mockMvc);
         User user2 = TestUtil.createUser();
         user2.setEmail(user1.getEmail());
 
@@ -219,7 +211,7 @@ public class UserControllerTests {
 
     @Test
     public void test_register_user_with_duplicate_phone_number() throws Exception {
-        User user1 = testUtil.createAndRegisterUser();
+        User user1 = TestUtil.createAndRegisterUser(mockMvc);
         User user2 = TestUtil.createUser();
         user2.setPhoneNumber(user1.getPhoneNumber());
 
@@ -427,7 +419,7 @@ public class UserControllerTests {
 
     @Test
     public void test_login_with_valid_credentials() throws Exception {
-        testUtil.createAndLoginUser();
+        TestUtil.createAndLoginUser(mockMvc, userRepository);
     }
 
     @Test
@@ -445,7 +437,7 @@ public class UserControllerTests {
 
     @Test
     public void test_login_with_invalid_password() throws Exception {
-        User user = testUtil.createAndRegisterUser();
+        User user = TestUtil.createAndRegisterUser(mockMvc);
         String accountNumber = userRepository
                 .findByEmail(user.getEmail())
                 .get()
@@ -478,7 +470,7 @@ public class UserControllerTests {
 
     @Test
     public void test_login_with_missing_password() throws Exception {
-        User user = testUtil.createAndRegisterUser();
+        User user = TestUtil.createAndRegisterUser(mockMvc);
         String accountNumber = userRepository
                 .findByEmail(user.getEmail())
                 .get()
@@ -498,7 +490,7 @@ public class UserControllerTests {
 
     @Test
     public void test_generate_otp_with_valid_account_number() throws Exception {
-        User user = testUtil.createAndRegisterUser();
+        User user = TestUtil.createAndRegisterUser(mockMvc);
         String accountNumber = userRepository
                 .findByEmail(user.getEmail())
                 .get()
@@ -546,8 +538,8 @@ public class UserControllerTests {
     }
 
     @Test
-    public void test_verify_otp_with_valid_otp() throws Exception {
-        User user = testUtil.createAndRegisterUser();
+    public void test_verify_otp_with_valid_account_number_and_otp() throws Exception {
+        User user = TestUtil.createAndRegisterUser(mockMvc);
         String accountNumber = userRepository
                 .findByEmail(user.getEmail())
                 .get()
@@ -585,7 +577,7 @@ public class UserControllerTests {
 
     @Test
     public void test_verify_otp_with_invalid_otp() throws Exception {
-        User user = testUtil.createAndRegisterUser();
+        User user = TestUtil.createAndRegisterUser(mockMvc);
         String accountNumber = userRepository
                 .findByEmail(user.getEmail())
                 .get()
@@ -608,6 +600,20 @@ public class UserControllerTests {
     @Test
     public void test_verify_otp_with_missing_account_number() throws Exception {
         OtpVerificationRequest otpVerificationRequest = new OtpVerificationRequest();
+        otpVerificationRequest.setOtp(TestUtil.getRandomOtp());
+
+        mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/users/verify-otp")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtil.objectMapper.writeValueAsString(otpVerificationRequest)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.content()
+                        .string("Missing account number"));
+    }
+
+    @Test
+    public void test_verify_otp_with_empty_account_number() throws Exception {
+        OtpVerificationRequest otpVerificationRequest = new OtpVerificationRequest();
         otpVerificationRequest.setAccountNumber("");
         otpVerificationRequest.setOtp(TestUtil.getRandomOtp());
 
@@ -622,7 +628,28 @@ public class UserControllerTests {
 
     @Test
     public void test_verify_otp_with_missing_otp() throws Exception {
-        User user = testUtil.createAndRegisterUser();
+        User user = TestUtil.createAndRegisterUser(mockMvc);
+        String accountNumber = userRepository
+                .findByEmail(user.getEmail())
+                .get()
+                .getAccount()
+                .getAccountNumber();
+
+        OtpVerificationRequest otpVerificationRequest = new OtpVerificationRequest();
+        otpVerificationRequest.setAccountNumber(accountNumber);
+
+        mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/users/verify-otp")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtil.objectMapper.writeValueAsString(otpVerificationRequest)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.content()
+                        .string("Missing OTP"));
+    }
+
+    @Test
+    public void test_verify_otp_with_empty_otp() throws Exception {
+        User user = TestUtil.createAndRegisterUser(mockMvc);
         String accountNumber = userRepository
                 .findByEmail(user.getEmail())
                 .get()
@@ -644,7 +671,7 @@ public class UserControllerTests {
 
     @Test
     public void test_update_user_with_valid_details() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
+        HashMap<String, String> userDetails = TestUtil.createAndLoginUser(mockMvc, userRepository);
 
         User updatedUser = TestUtil.createUser();
         updatedUser.setPassword(userDetails.get("password"));
@@ -669,7 +696,7 @@ public class UserControllerTests {
 
     @Test
     public void test_update_user_with_invalid_name() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
+        HashMap<String, String> userDetails = TestUtil.createAndLoginUser(mockMvc, userRepository);
 
         User updatedUser = TestUtil.createUser();
         updatedUser.setName("");
@@ -689,7 +716,7 @@ public class UserControllerTests {
 
     @Test
     public void test_update_user_with_invalid_address() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
+        HashMap<String, String> userDetails = TestUtil.createAndLoginUser(mockMvc, userRepository);
 
         User updatedUser = TestUtil.createUser();
         updatedUser.setAddress("");
@@ -709,7 +736,7 @@ public class UserControllerTests {
 
     @Test
     public void test_update_user_with_invalid_email() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
+        HashMap<String, String> userDetails = TestUtil.createAndLoginUser(mockMvc, userRepository);
 
         User updatedUser = TestUtil.createUser();
         updatedUser.setEmail("");
@@ -729,7 +756,7 @@ public class UserControllerTests {
 
     @Test
     public void test_update_user_with_invalid_phone_number() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
+        HashMap<String, String> userDetails = TestUtil.createAndLoginUser(mockMvc, userRepository);
 
         User updatedUser = TestUtil.createUser();
         updatedUser.setPhoneNumber("");
@@ -747,7 +774,7 @@ public class UserControllerTests {
 
     @Test
     public void test_update_user_with_invalid_password() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
+        HashMap<String, String> userDetails = TestUtil.createAndLoginUser(mockMvc, userRepository);
 
         User updatedUser = TestUtil.createUser();
         updatedUser.setPassword("");
@@ -775,7 +802,7 @@ public class UserControllerTests {
 
     @Test
     public void test_logout_with_valid_token() throws Exception {
-        HashMap<String, String> userDetails = testUtil.createAndLoginUser();
+        HashMap<String, String> userDetails = TestUtil.createAndLoginUser(mockMvc, userRepository);
 
         MockHttpServletResponse response = mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/users/logout")
@@ -796,9 +823,9 @@ public class UserControllerTests {
 
     @Test
     public void test_logout_with_invalid_token() throws Exception {
-        testUtil.createAndLoginUser();
+        TestUtil.createAndLoginUser(mockMvc, userRepository);
 
-        User user = testUtil.createAndRegisterUser();
+        User user = TestUtil.createAndRegisterUser(mockMvc);
         String accountNumber = userRepository
                 .findByEmail(user.getEmail())
                 .get()
@@ -816,7 +843,7 @@ public class UserControllerTests {
 
     @Test
     public void test_logout_without_login() throws Exception {
-        User user = testUtil.createAndRegisterUser();
+        User user = TestUtil.createAndRegisterUser(mockMvc);
         String accountNumber = userRepository
                 .findByEmail(user.getEmail())
                 .get()
