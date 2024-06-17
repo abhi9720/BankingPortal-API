@@ -681,6 +681,27 @@ public class AccountControllerTests {
     }
 
     @Test
+    public void test_fund_transfer_to_the_same_account() throws Exception {
+        double amount = 100.00;
+        HashMap<String, String> userDetails = createAndLoginUserWithAmount(amount);
+
+        FundTransferRequest fundTransferRequest = new FundTransferRequest();
+        fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
+        fundTransferRequest.setTargetAccountNumber(userDetails.get("accountNumber"));
+        fundTransferRequest.setPin(userDetails.get("pin"));
+        fundTransferRequest.setAmount(amount);
+
+        mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/account/fund-transfer")
+                .header("Authorization", "Bearer " + userDetails.get("token"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtil.objectMapper.writeValueAsString(fundTransferRequest)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.content()
+                        .string("Source and target account cannot be the same"));
+    }
+
+    @Test
     public void test_fund_transfer_with_invalid_source_account_pin() throws Exception {
         double amount = 100.00;
         HashMap<String, String> userDetails = createAndLoginUserWithAmount(amount);
@@ -843,26 +864,6 @@ public class AccountControllerTests {
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount must be greater than 0"));
-    }
-
-    public void test_fund_transfer_to_the_same_account() throws Exception {
-        double amount = 100.00;
-        HashMap<String, String> userDetails = createAndLoginUserWithAmount(amount);
-
-        FundTransferRequest fundTransferRequest = new FundTransferRequest();
-        fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest.setTargetAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest.setPin(userDetails.get("pin"));
-        fundTransferRequest.setAmount(amount);
-
-        mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/account/fund-transfer")
-                .header("Authorization", "Bearer " + userDetails.get("token"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(fundTransferRequest)))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.content()
-                        .string("Source and target account cannot be the same"));
     }
 
     @Test

@@ -21,5 +21,5 @@ public interface UserService {
 
     public Optional<User> getUserByAccountNumber(String accountNumber);
 
-    public CompletableFuture<Void> sendLoginNotificationEmail(User user, String ip);
+    public CompletableFuture<Boolean> sendLoginNotificationEmail(User user, String ip);
 }

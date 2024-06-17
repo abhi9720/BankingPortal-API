@@ -226,7 +226,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public CompletableFuture<Void> sendLoginNotificationEmail(User user, String ip) {
+    public CompletableFuture<Boolean> sendLoginNotificationEmail(User user, String ip) {
         final String name = user.getName();
         final String email = user.getEmail();
         final String loginTime = new Timestamp(System.currentTimeMillis()).toString();
@@ -240,14 +240,18 @@ public class UserServiceImpl implements UserService {
             final String emailText = emailService.getLoginEmailTemplate(
                     name, loginTime, loginLocation);
 
-            return emailService.sendEmail(email, "OneStopBank Login", emailText);
+            return emailService.sendEmail(email, "OneStopBank Login", emailText)
+                    .thenApplyAsync(result -> true)
+                    .exceptionally(ex -> false);
 
         }).exceptionallyComposeAsync(throwable -> {
 
             final String emailText = emailService.getLoginEmailTemplate(
                     name, loginTime, "Unknown");
 
-            return emailService.sendEmail(email, "OneStopBank Login", emailText);
+            return emailService.sendEmail(email, "OneStopBank Login", emailText)
+                    .thenApplyAsync(result -> true)
+                    .exceptionally(ex -> false);
         });
     }
 }

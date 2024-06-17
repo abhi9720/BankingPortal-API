@@ -5,8 +5,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -39,8 +37,6 @@ public class OtpServiceImpl implements OtpService {
 
     @Autowired
     private CacheManager cacheManager;
-
-    private static final Logger logger = LoggerFactory.getLogger(OtpServiceImpl.class);
 
     @Override
     public String generateOTP(String accountNumber) {
@@ -164,10 +160,7 @@ public class OtpServiceImpl implements OtpService {
 
         CompletableFuture<Void> emailSendingFuture = emailService.sendEmail(email, subject, emailText);
 
-        return emailSendingFuture.thenApplyAsync(result -> true).exceptionally(ex -> {
-            logger.error("Failed to send OTP to user: {}", email, ex);
-            return false;
-        });
+        return emailSendingFuture.thenApplyAsync(result -> true).exceptionally(ex -> false);
     }
 
     @Override

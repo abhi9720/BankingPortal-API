@@ -1,7 +1,6 @@
 package com.webapp.bankingportal.controller;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,16 +114,17 @@ public class UserController {
                 accountNumber,
                 generatedOtp);
 
-        String response = "Failed to send OTP to: " + user.getEmail();
-        try {
-            if (emailSendingFuture.get()) {
-                response = "OTP sent successfully to: " + user.getEmail();
-            }
-        } catch (InterruptedException | ExecutionException | NullPointerException e) {
-            logger.error("Failed to send OTP to: {}", user.getEmail(), e);
-        }
+        final ResponseEntity<String> response = ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to send OTP to: " + user.getEmail());
 
-        return ResponseEntity.ok(response);
+        return emailSendingFuture.thenApply(success -> {
+            if (success) {
+                return ResponseEntity.ok("OTP sent successfully to: " + user.getEmail());
+            } else {
+                return response;
+            }
+        }).exceptionally(e -> response).join();
     }
 
     @PostMapping("/verify-otp")

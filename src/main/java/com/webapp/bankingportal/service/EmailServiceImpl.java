@@ -6,6 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -42,7 +43,7 @@ public class EmailServiceImpl implements EmailService {
             logger.info("Sent email to {}", to);
             future.complete(null);
 
-        } catch (MessagingException e) {
+        } catch (MessagingException | MailException e) {
             logger.error("Failed to send email to {}", to, e);
             future.completeExceptionally(e);
         }
