@@ -5,38 +5,22 @@ import java.util.HashMap;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.webapp.bankingportal.dto.AmountRequest;
 import com.webapp.bankingportal.dto.FundTransferRequest;
 import com.webapp.bankingportal.dto.PinRequest;
 import com.webapp.bankingportal.dto.PinUpdateRequest;
-import com.webapp.bankingportal.repository.UserRepository;
 
-@SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
-@TestPropertySource(locations = "classpath:application-test.properties")
-public class AccountControllerTests {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private UserRepository userRepository;
+public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_pin_check_without_pin() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUser(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUser();
 
         mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/account/pin/check")
@@ -50,8 +34,7 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_check_with_pin() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/account/pin/check")
@@ -72,24 +55,23 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_create_with_valid_password() throws Exception {
-        TestUtil.createAndLoginUserWithPin(mockMvc, userRepository);
+        createAndLoginUserWithPin();
     }
 
     @Test
     public void test_pin_create_with_invalid_password() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUser(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUser();
 
         PinRequest pinRequest = new PinRequest();
         pinRequest.setAccountNumber(userDetails.get("accountNumber"));
-        pinRequest.setPassword(TestUtil.getRandomPassword());
-        pinRequest.setPin(TestUtil.getRandomPin());
+        pinRequest.setPassword(getRandomPassword());
+        pinRequest.setPin(getRandomPin());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/create")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(pinRequest)))
+                .content(objectMapper.writeValueAsString(pinRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Invalid password"));
@@ -97,18 +79,17 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_create_with_missing_password() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUser(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUser();
 
         PinRequest pinRequest = new PinRequest();
         pinRequest.setAccountNumber(userDetails.get("accountNumber"));
-        pinRequest.setPin(TestUtil.getRandomPin());
+        pinRequest.setPin(getRandomPin());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/create")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(pinRequest)))
+                .content(objectMapper.writeValueAsString(pinRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Password cannot be empty"));
@@ -116,8 +97,7 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_create_with_missing_pin() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUser(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUser();
 
         PinRequest pinRequest = new PinRequest();
         pinRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -127,7 +107,7 @@ public class AccountControllerTests {
                 .post("/api/account/pin/create")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(pinRequest)))
+                .content(objectMapper.writeValueAsString(pinRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("PIN cannot be empty"));
@@ -135,19 +115,18 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_create_with_invalid_short_pin() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUser(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUser();
 
         PinRequest pinRequest = new PinRequest();
         pinRequest.setAccountNumber(userDetails.get("accountNumber"));
         pinRequest.setPassword(userDetails.get("password"));
-        pinRequest.setPin(TestUtil.faker.number().digits(3));
+        pinRequest.setPin(faker.number().digits(3));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/create")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(pinRequest)))
+                .content(objectMapper.writeValueAsString(pinRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("PIN must be 4 digits"));
@@ -155,19 +134,18 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_create_with_invalid_long_pin() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUser(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUser();
 
         PinRequest pinRequest = new PinRequest();
         pinRequest.setAccountNumber(userDetails.get("accountNumber"));
         pinRequest.setPassword(userDetails.get("password"));
-        pinRequest.setPin(TestUtil.faker.number().digits(5));
+        pinRequest.setPin(faker.number().digits(5));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/create")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(pinRequest)))
+                .content(objectMapper.writeValueAsString(pinRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("PIN must be 4 digits"));
@@ -176,33 +154,32 @@ public class AccountControllerTests {
     @Test
     public void test_pin_create_unauthorized_access() throws Exception {
         PinRequest pinRequest = new PinRequest();
-        pinRequest.setAccountNumber(TestUtil.getRandomAccountNumber());
-        pinRequest.setPassword(TestUtil.getRandomPassword());
-        pinRequest.setPin(TestUtil.getRandomPin());
+        pinRequest.setAccountNumber(getRandomAccountNumber());
+        pinRequest.setPassword(getRandomPassword());
+        pinRequest.setPin(getRandomPin());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/create")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(pinRequest)))
+                .content(objectMapper.writeValueAsString(pinRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
     @Test
     public void test_pin_update_with_valid_data() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
         pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
         pinUpdateRequest.setPassword(userDetails.get("password"));
         pinUpdateRequest.setOldPin(userDetails.get("pin"));
-        pinUpdateRequest.setNewPin(TestUtil.getRandomPin());
+        pinUpdateRequest.setNewPin(getRandomPin());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/update")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(pinUpdateRequest)))
+                .content(objectMapper.writeValueAsString(pinUpdateRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.msg")
                         .value("PIN updated successfully"));
@@ -210,20 +187,19 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_update_with_invalid_password() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
         pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
-        pinUpdateRequest.setPassword(TestUtil.getRandomPassword());
+        pinUpdateRequest.setPassword(getRandomPassword());
         pinUpdateRequest.setOldPin(userDetails.get("pin"));
-        pinUpdateRequest.setNewPin(TestUtil.getRandomPin());
+        pinUpdateRequest.setNewPin(getRandomPin());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/update")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(pinUpdateRequest)))
+                .content(objectMapper.writeValueAsString(pinUpdateRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Invalid password"));
@@ -231,20 +207,19 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_update_with_invalid_old_pin() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
         pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
         pinUpdateRequest.setPassword(userDetails.get("password"));
-        pinUpdateRequest.setOldPin(TestUtil.getRandomPin());
-        pinUpdateRequest.setNewPin(TestUtil.getRandomPin());
+        pinUpdateRequest.setOldPin(getRandomPin());
+        pinUpdateRequest.setNewPin(getRandomPin());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/update")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(pinUpdateRequest)))
+                .content(objectMapper.writeValueAsString(pinUpdateRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Invalid PIN"));
@@ -252,20 +227,19 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_update_with_invalid_new_short_pin() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
         pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
         pinUpdateRequest.setPassword(userDetails.get("password"));
         pinUpdateRequest.setOldPin(userDetails.get("pin"));
-        pinUpdateRequest.setNewPin(TestUtil.faker.number().digits(3));
+        pinUpdateRequest.setNewPin(faker.number().digits(3));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/update")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(pinUpdateRequest)))
+                .content(objectMapper.writeValueAsString(pinUpdateRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("New PIN must be 4 digits"));
@@ -273,20 +247,19 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_update_with_invalid_new_long_pin() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
         pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
         pinUpdateRequest.setPassword(userDetails.get("password"));
         pinUpdateRequest.setOldPin(userDetails.get("pin"));
-        pinUpdateRequest.setNewPin(TestUtil.faker.number().digits(5));
+        pinUpdateRequest.setNewPin(faker.number().digits(5));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/update")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(pinUpdateRequest)))
+                .content(objectMapper.writeValueAsString(pinUpdateRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("New PIN must be 4 digits"));
@@ -294,19 +267,18 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_update_with_missing_password() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
         pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
         pinUpdateRequest.setOldPin(userDetails.get("pin"));
-        pinUpdateRequest.setNewPin(TestUtil.getRandomPin());
+        pinUpdateRequest.setNewPin(getRandomPin());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/update")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(pinUpdateRequest)))
+                .content(objectMapper.writeValueAsString(pinUpdateRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Password cannot be empty"));
@@ -314,19 +286,18 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_update_with_missing_old_pin() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
         pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
         pinUpdateRequest.setPassword(userDetails.get("password"));
-        pinUpdateRequest.setNewPin(TestUtil.getRandomPin());
+        pinUpdateRequest.setNewPin(getRandomPin());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/update")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(pinUpdateRequest)))
+                .content(objectMapper.writeValueAsString(pinUpdateRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("PIN cannot be empty"));
@@ -334,8 +305,7 @@ public class AccountControllerTests {
 
     @Test
     public void test_pin_update_with_missing_new_pin() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
         pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -346,7 +316,7 @@ public class AccountControllerTests {
                 .post("/api/account/pin/update")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(pinUpdateRequest)))
+                .content(objectMapper.writeValueAsString(pinUpdateRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("New PIN cannot be empty"));
@@ -355,39 +325,37 @@ public class AccountControllerTests {
     @Test
     public void test_pin_update_with_unauthorized_access() throws Exception {
         PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
-        pinUpdateRequest.setAccountNumber(TestUtil.getRandomAccountNumber());
-        pinUpdateRequest.setPassword(TestUtil.getRandomPassword());
-        pinUpdateRequest.setOldPin(TestUtil.getRandomPin());
-        pinUpdateRequest.setNewPin(TestUtil.getRandomPin());
+        pinUpdateRequest.setAccountNumber(getRandomAccountNumber());
+        pinUpdateRequest.setPassword(getRandomPassword());
+        pinUpdateRequest.setOldPin(getRandomPin());
+        pinUpdateRequest.setNewPin(getRandomPin());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/update")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(pinUpdateRequest)))
+                .content(objectMapper.writeValueAsString(pinUpdateRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
     @Test
     public void test_deposit_with_valid_data() throws Exception {
-        TestUtil.createAndLoginUserWithInitialBalance(
-                mockMvc, userRepository, 100.0);
+        createAndLoginUserWithInitialBalance(100.0);
     }
 
     @Test
     public void test_deposit_with_invalid_pin() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
-        amountRequest.setPin(TestUtil.getRandomPin());
+        amountRequest.setPin(getRandomPin());
         amountRequest.setAmount(100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/deposit")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(amountRequest)))
+                .content(objectMapper.writeValueAsString(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Invalid PIN"));
@@ -395,8 +363,7 @@ public class AccountControllerTests {
 
     @Test
     public void test_deposit_with_negative_amount() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -407,7 +374,7 @@ public class AccountControllerTests {
                 .post("/api/account/deposit")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(amountRequest)))
+                .content(objectMapper.writeValueAsString(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount must be greater than 0"));
@@ -415,8 +382,7 @@ public class AccountControllerTests {
 
     @Test
     public void test_deposit_with_zero_amount() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -427,7 +393,7 @@ public class AccountControllerTests {
                 .post("/api/account/deposit")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(amountRequest)))
+                .content(objectMapper.writeValueAsString(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount must be greater than 0"));
@@ -435,8 +401,7 @@ public class AccountControllerTests {
 
     @Test
     public void test_deposit_with_excessively_large_amount() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -447,7 +412,7 @@ public class AccountControllerTests {
                 .post("/api/account/deposit")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(amountRequest)))
+                .content(objectMapper.writeValueAsString(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount cannot be greater than 100,000"));
@@ -455,8 +420,7 @@ public class AccountControllerTests {
 
     @Test
     public void test_deposit_with_missing_pin() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -466,7 +430,7 @@ public class AccountControllerTests {
                 .post("/api/account/deposit")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(amountRequest)))
+                .content(objectMapper.writeValueAsString(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("PIN cannot be empty"));
@@ -474,8 +438,7 @@ public class AccountControllerTests {
 
     @Test
     public void test_deposit_with_missing_amount() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -485,7 +448,7 @@ public class AccountControllerTests {
                 .post("/api/account/deposit")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(amountRequest)))
+                .content(objectMapper.writeValueAsString(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount must be greater than 0"));
@@ -494,22 +457,21 @@ public class AccountControllerTests {
     @Test
     public void test_deposit_with_unauthorized_access() throws Exception {
         AmountRequest amountRequest = new AmountRequest();
-        amountRequest.setAccountNumber(TestUtil.getRandomAccountNumber());
-        amountRequest.setPin(TestUtil.getRandomPin());
+        amountRequest.setAccountNumber(getRandomAccountNumber());
+        amountRequest.setPin(getRandomPin());
         amountRequest.setAmount(100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/deposit")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(amountRequest)))
+                .content(objectMapper.writeValueAsString(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
     @Test
     public void test_withdraw_with_valid_pin_and_amount() throws Exception {
         double amount = 100.0;
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
+        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -520,7 +482,7 @@ public class AccountControllerTests {
                 .post("/api/account/withdraw")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(amountRequest)))
+                .content(objectMapper.writeValueAsString(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.msg")
                         .value("Cash withdrawn successfully"));
@@ -528,19 +490,18 @@ public class AccountControllerTests {
 
     @Test
     public void test_withdraw_with_invalid_pin() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
-        amountRequest.setPin(TestUtil.getRandomPin());
+        amountRequest.setPin(getRandomPin());
         amountRequest.setAmount(100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/withdraw")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(amountRequest)))
+                .content(objectMapper.writeValueAsString(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Invalid PIN"));
@@ -548,8 +509,7 @@ public class AccountControllerTests {
 
     @Test
     public void test_withdraw_with_negative_amount() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -560,7 +520,7 @@ public class AccountControllerTests {
                 .post("/api/account/withdraw")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(amountRequest)))
+                .content(objectMapper.writeValueAsString(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount must be greater than 0"));
@@ -568,8 +528,7 @@ public class AccountControllerTests {
 
     @Test
     public void test_withdraw_with_zero_amount() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -580,7 +539,7 @@ public class AccountControllerTests {
                 .post("/api/account/withdraw")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(amountRequest)))
+                .content(objectMapper.writeValueAsString(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount must be greater than 0"));
@@ -589,8 +548,7 @@ public class AccountControllerTests {
     @Test
     public void test_withdraw_with_insufficient_funds() throws Exception {
         double amount = 100.0;
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
+        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -601,7 +559,7 @@ public class AccountControllerTests {
                 .post("/api/account/withdraw")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(amountRequest)))
+                .content(objectMapper.writeValueAsString(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Insufficient balance"));
@@ -609,8 +567,7 @@ public class AccountControllerTests {
 
     @Test
     public void test_withdraw_with_missing_pin() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -620,7 +577,7 @@ public class AccountControllerTests {
                 .post("/api/account/withdraw")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(amountRequest)))
+                .content(objectMapper.writeValueAsString(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("PIN cannot be empty"));
@@ -628,8 +585,7 @@ public class AccountControllerTests {
 
     @Test
     public void test_withdraw_with_missing_amount() throws Exception {
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithPin(mockMvc, userRepository);
+        HashMap<String, String> userDetails = createAndLoginUserWithPin();
 
         AmountRequest amountRequest = new AmountRequest();
         amountRequest.setAccountNumber(userDetails.get("accountNumber"));
@@ -639,7 +595,7 @@ public class AccountControllerTests {
                 .post("/api/account/withdraw")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(amountRequest)))
+                .content(objectMapper.writeValueAsString(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount must be greater than 0"));
@@ -648,27 +604,26 @@ public class AccountControllerTests {
     @Test
     public void test_withdraw_with_unauthorized_access() throws Exception {
         AmountRequest amountRequest = new AmountRequest();
-        amountRequest.setAccountNumber(TestUtil.getRandomAccountNumber());
-        amountRequest.setPin(TestUtil.getRandomPin());
+        amountRequest.setAccountNumber(getRandomAccountNumber());
+        amountRequest.setPin(getRandomPin());
         amountRequest.setAmount(100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/withdraw")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(amountRequest)))
+                .content(objectMapper.writeValueAsString(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
     @Test
     public void test_fund_transfer_with_valid_data() throws Exception {
         double amount = 100.0;
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
+        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
         fundTransferRequest
-                .setTargetAccountNumber(TestUtil.createAndLoginUser(mockMvc, userRepository).get("accountNumber"));
+                .setTargetAccountNumber(createAndLoginUser().get("accountNumber"));
         fundTransferRequest.setPin(userDetails.get("pin"));
         fundTransferRequest.setAmount(amount);
 
@@ -676,7 +631,7 @@ public class AccountControllerTests {
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(objectMapper.writeValueAsString(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.msg")
                         .value("Fund transferred successfully"));
@@ -685,8 +640,7 @@ public class AccountControllerTests {
     @Test
     public void test_fund_transfer_to_the_same_account() throws Exception {
         double amount = 100.0;
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
+        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
@@ -698,7 +652,7 @@ public class AccountControllerTests {
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(objectMapper.writeValueAsString(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Source and target account cannot be the same"));
@@ -707,21 +661,20 @@ public class AccountControllerTests {
     @Test
     public void test_fund_transfer_with_invalid_source_account_pin() throws Exception {
         double amount = 100.0;
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
+        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
         fundTransferRequest
-                .setTargetAccountNumber(TestUtil.createAndLoginUser(mockMvc, userRepository).get("accountNumber"));
-        fundTransferRequest.setPin(TestUtil.getRandomPin());
+                .setTargetAccountNumber(createAndLoginUser().get("accountNumber"));
+        fundTransferRequest.setPin(getRandomPin());
         fundTransferRequest.setAmount(amount);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(objectMapper.writeValueAsString(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Invalid PIN"));
@@ -730,12 +683,11 @@ public class AccountControllerTests {
     @Test
     public void test_fund_transfer_with_invalid_target_account() throws Exception {
         double amount = 100.0;
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
+        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest.setTargetAccountNumber(TestUtil.getRandomAccountNumber());
+        fundTransferRequest.setTargetAccountNumber(getRandomAccountNumber());
         fundTransferRequest.setPin(userDetails.get("pin"));
         fundTransferRequest.setAmount(amount);
 
@@ -743,7 +695,7 @@ public class AccountControllerTests {
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(objectMapper.writeValueAsString(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Target account not found"));
@@ -752,13 +704,12 @@ public class AccountControllerTests {
     @Test
     public void test_fund_transfer_with_insufficient_funds() throws Exception {
         double amount = 100.0;
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
+        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
         fundTransferRequest
-                .setTargetAccountNumber(TestUtil.createAndLoginUser(mockMvc, userRepository).get("accountNumber"));
+                .setTargetAccountNumber(createAndLoginUser().get("accountNumber"));
         fundTransferRequest.setPin(userDetails.get("pin"));
         fundTransferRequest.setAmount(amount * 2);
 
@@ -766,7 +717,7 @@ public class AccountControllerTests {
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(objectMapper.writeValueAsString(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Insufficient balance"));
@@ -775,13 +726,12 @@ public class AccountControllerTests {
     @Test
     public void test_fund_transfer_with_negative_amount() throws Exception {
         double amount = 100.0;
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
+        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
         fundTransferRequest
-                .setTargetAccountNumber(TestUtil.createAndLoginUser(mockMvc, userRepository).get("accountNumber"));
+                .setTargetAccountNumber(createAndLoginUser().get("accountNumber"));
         fundTransferRequest.setPin(userDetails.get("pin"));
         fundTransferRequest.setAmount(-amount);
 
@@ -789,7 +739,7 @@ public class AccountControllerTests {
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(objectMapper.writeValueAsString(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount must be greater than 0"));
@@ -798,13 +748,12 @@ public class AccountControllerTests {
     @Test
     public void test_fund_transfer_with_zero_amount() throws Exception {
         double amount = 100.0;
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
+        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
         fundTransferRequest
-                .setTargetAccountNumber(TestUtil.createAndLoginUser(mockMvc, userRepository).get("accountNumber"));
+                .setTargetAccountNumber(createAndLoginUser().get("accountNumber"));
         fundTransferRequest.setPin(userDetails.get("pin"));
         fundTransferRequest.setAmount(0.0);
 
@@ -812,7 +761,7 @@ public class AccountControllerTests {
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(objectMapper.writeValueAsString(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount must be greater than 0"));
@@ -821,20 +770,19 @@ public class AccountControllerTests {
     @Test
     public void test_fund_transfer_with_missing_source_account_pin() throws Exception {
         double amount = 100.0;
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
+        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
         fundTransferRequest
-                .setTargetAccountNumber(TestUtil.createAndLoginUser(mockMvc, userRepository).get("accountNumber"));
+                .setTargetAccountNumber(createAndLoginUser().get("accountNumber"));
         fundTransferRequest.setAmount(amount);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(objectMapper.writeValueAsString(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("PIN cannot be empty"));
@@ -843,8 +791,7 @@ public class AccountControllerTests {
     @Test
     public void test_fund_transfer_with_missing_target_account() throws Exception {
         double amount = 100.0;
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
+        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
@@ -855,7 +802,7 @@ public class AccountControllerTests {
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(objectMapper.writeValueAsString(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Target account not found"));
@@ -864,20 +811,19 @@ public class AccountControllerTests {
     @Test
     public void test_fund_transfer_with_missing_amount() throws Exception {
         double amount = 100.0;
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
+        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
         fundTransferRequest
-                .setTargetAccountNumber(TestUtil.createAndLoginUser(mockMvc, userRepository).get("accountNumber"));
+                .setTargetAccountNumber(createAndLoginUser().get("accountNumber"));
         fundTransferRequest.setPin(userDetails.get("pin"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(objectMapper.writeValueAsString(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount must be greater than 0"));
@@ -886,28 +832,26 @@ public class AccountControllerTests {
     @Test
     public void test_fund_transfer_unauthorized_access() throws Exception {
         double amount = 100.0;
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
+        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
 
         FundTransferRequest fundTransferRequest = new FundTransferRequest();
         fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
         fundTransferRequest
-                .setTargetAccountNumber(TestUtil.createAndLoginUser(mockMvc, userRepository).get("accountNumber"));
+                .setTargetAccountNumber(createAndLoginUser().get("accountNumber"));
         fundTransferRequest.setPin(userDetails.get("pin"));
         fundTransferRequest.setAmount(amount);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/fund-transfer")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(objectMapper.writeValueAsString(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
     @Test
     public void test_transactions_with_authorized_access() throws Exception {
         double amount = 100.0;
-        HashMap<String, String> userDetails = TestUtil
-                .createAndLoginUserWithInitialBalance(mockMvc, userRepository, amount);
+        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/account/transactions")

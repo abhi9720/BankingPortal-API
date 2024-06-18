@@ -4,35 +4,17 @@ import java.util.HashMap;
 
 import org.junit.jupiter.api.Test;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.webapp.bankingportal.repository.UserRepository;
+public class DashboardControllerTests extends BaseTest {
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@TestPropertySource(locations = "classpath:application-test.properties")
-public class DashboardControllerTests {
+    private HashMap<String,String> userDetails = null;
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    private HashMap<String, String> userDetails = null;
-
-    private HashMap<String, String> createAndLoginUser() throws Exception {
+    @Override
+    protected HashMap<String,String> createAndLoginUser() throws Exception {
         if (userDetails == null) {
-            userDetails = TestUtil.createAndLoginUser(mockMvc, userRepository);
+            userDetails = super.createAndLoginUser();
         }
 
         return userDetails;
@@ -44,7 +26,7 @@ public class DashboardControllerTests {
 
         mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/dashboard/account")
-                .header("Authorization", "Bearer " + userDetails.get("token")))
+                .header("Authorization","Bearer " + userDetails.get("token")))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.accountNumber")
                         .value(userDetails.get("accountNumber")))
@@ -67,8 +49,7 @@ public class DashboardControllerTests {
 
         mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/dashboard/user")
-                .header("Authorization", "Bearer " + userDetails.get("token")))
-                .andDo(MockMvcResultHandlers.print())
+                .header("Authorization","Bearer " + userDetails.get("token")))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name")
                         .value(userDetails.get("name")))
