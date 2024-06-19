@@ -51,6 +51,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User registerUser(User user) {
+        validateUserDetails(user);
+
         if (doesEmailExist(user.getEmail())) {
             throw new UserInvalidException("Email already exists");
         }
@@ -58,8 +60,6 @@ public class UserServiceImpl implements UserService {
         if (doesPhoneNumberExist(user.getPhoneNumber())) {
             throw new UserInvalidException("Phone number already exists");
         }
-
-        validateUserDetails(user);
 
         user.setCountryCode(user.getCountryCode().toUpperCase());
         user.setPassword(passwordEncoder.encode(user.getPassword()));

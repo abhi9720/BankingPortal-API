@@ -38,6 +38,13 @@ public class UserControllerTests extends BaseTest {
     }
 
     @Test
+    public void test_register_user_with_null_user() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/users/register"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
     public void test_register_user_with_empty_name() throws Exception {
         User user = createUser();
         user.setName("");
