@@ -14,6 +14,8 @@ public interface TokenService extends UserDetailsService {
 
     public String generateToken(UserDetails userDetails);
 
+    public String generateToken(UserDetails userDetails, Date expiry);
+
     public String getUsernameFromToken(String token) throws InvalidTokenException;
 
     public Date getExpirationDateFromToken(String token) throws InvalidTokenException;

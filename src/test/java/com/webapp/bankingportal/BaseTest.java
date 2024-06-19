@@ -1,5 +1,8 @@
 package com.webapp.bankingportal;
 
+import static org.springframework.security.core.userdetails.User.withUsername;
+
+import java.util.Date;
 import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +32,7 @@ import com.webapp.bankingportal.entity.Account;
 import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.repository.UserRepository;
 import com.webapp.bankingportal.service.AccountService;
+import com.webapp.bankingportal.service.TokenService;
 
 @SpringBootTest
 @TestPropertySource(locations = "classpath:application-test.properties")
@@ -47,6 +51,9 @@ public abstract class BaseTest {
 
     @Autowired
     protected AccountService accountService;
+
+    @Autowired
+    TokenService tokenService;
 
     protected static final int MIN_PASSWORD_LENGTH = 8;
     protected static final int MAX_PASSWORD_LENGTH = 127;
@@ -95,6 +102,16 @@ public abstract class BaseTest {
 
     protected static String getRandomPin() {
         return faker.number().digits(4);
+    }
+
+    protected String generateToken(String username, String password) {
+        return tokenService.generateToken(
+                withUsername(username).password(password).build());
+    }
+
+    protected String generateToken(String username, String password, Date expiry) {
+        return tokenService.generateToken(
+                withUsername(username).password(password).build(), expiry);
     }
 
     protected static User createUser() {
