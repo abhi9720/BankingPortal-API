@@ -22,21 +22,11 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public UserResponse getUserDetails(String accountNumber) {
-        User user = userRepository.findByAccountAccountNumber(accountNumber);
-        // Check if the user exists and is associated with the given account number
-        if (user == null) {
-            throw new NotFoundException("User not found for the provided account number.");
-        }
+        User user = userRepository.findByAccountAccountNumber(accountNumber)
+                .orElseThrow(() -> new NotFoundException(
+                        "User not found for the provided account number."));
 
-        // Map the user entity to UserResponse DTO
-        UserResponse userResponse = new UserResponse();
-        userResponse.setName(user.getName());
-        userResponse.setEmail(user.getEmail());
-        userResponse.setAddress(user.getAddress());
-        userResponse.setPhone_number(user.getPhone_number());
-        userResponse.setAccountNumber(user.getAccount().getAccountNumber());
-
-        return userResponse;
+        return new UserResponse(user);
     }
 
     @Override
@@ -50,10 +40,10 @@ public class DashboardServiceImpl implements DashboardService {
         // Map the account entity to AccountResponse DTO
         AccountResponse accountResponse = new AccountResponse();
         accountResponse.setAccountNumber(account.getAccountNumber());
-        accountResponse.setAccountType(account.getAccount_type());
+        accountResponse.setAccountType(account.getAccountType());
         accountResponse.setBalance(account.getBalance());
         accountResponse.setBranch(account.getBranch());
-        accountResponse.setIFSCCode(account.getIFSC_code());
+        accountResponse.setIfscCode(account.getIfscCode());
 
         return accountResponse;
     }

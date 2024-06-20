@@ -21,7 +21,7 @@ public class Transaction {
 	@Enumerated(EnumType.STRING)
 	private TransactionType transactionType;
 	
-	private Date transaction_date;
+	private Date transactionDate;
 
 	@ManyToOne
 	@JoinColumn(name = "source_account_id")
@@ -55,12 +55,12 @@ public class Transaction {
 		this.transactionType = transactionType;
 	}
 
-	public Date getTransaction_date() {
-		return transaction_date;
+	public Date getTransactionDate() {
+		return transactionDate;
 	}
 
-	public void setTransaction_date(Date transaction_date) {
-		this.transaction_date = transaction_date;
+	public void setTransactionDate(Date transactionDate) {
+		this.transactionDate = transactionDate;
 	}
 
 	public Account getSourceAccount() {
@@ -82,7 +82,7 @@ public class Transaction {
 	@Override
 	public String toString() {
 		return "Transaction [id=" + id + ", amount=" + amount + ", transactionType=" + transactionType
-				+ ", transaction_date=" + transaction_date + ", sourceAccount=" + sourceAccount + ", targetAccount="
+				+ ", transactionDate=" + transactionDate + ", sourceAccount=" + sourceAccount + ", targetAccount="
 				+ targetAccount + "]";
 	}
 

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Dfine conversion rules -->
+    <conversionRule conversionWord="clr"
+        converterClass="org.springframework.boot.logging.logback.ColorConverter" />
+    <conversionRule conversionWord="wEx"
+        converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter" />
+
+    <!-- Define custom log pattern -->
+    <property name="LOG_PATTERN"
+        value="%clr(%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd HH:mm:ss.SSS}}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr([%t]){faint} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}" />
+
+    <!-- Console appender configuration -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root logger configuration -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+</configuration>
