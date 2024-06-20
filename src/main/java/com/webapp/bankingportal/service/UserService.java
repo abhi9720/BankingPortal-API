@@ -1,13 +1,22 @@
 package com.webapp.bankingportal.service;
 
+import java.util.Optional;
+
 import com.webapp.bankingportal.entity.User;
 
 public interface UserService {
-	public User registerUser(User user);
 
-	User getUserByAccountNumber(String account_no);
+    public User registerUser(User user);
 
-	public void saveUser(User user);
+    public User saveUser(User user);
 
-	User updateUser(User user);
+    public User updateUser(User user);
+
+    public boolean doesEmailExist(String email);
+
+    public boolean doesPhoneNumberExist(String phoneNumber);
+
+    public boolean doesAccountExist(String accountNumber);
+
+    public Optional<User> getUserByAccountNumber(String accountNumber);
 }

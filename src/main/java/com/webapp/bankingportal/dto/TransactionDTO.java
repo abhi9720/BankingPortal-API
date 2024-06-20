@@ -7,8 +7,8 @@ import com.webapp.bankingportal.entity.TransactionType;
 public class TransactionDTO {
     private Long id; 
     private double amount;
-    private TransactionType transaction_type;
-    private Date transaction_date;
+    private TransactionType transactionType;
+    private Date transactionDate;
     private String sourceAccountNumber;
     private String targetAccountNumber;
     
@@ -25,17 +25,17 @@ public class TransactionDTO {
 	public void setAmount(double amount) {
 		this.amount = amount;
 	}
-	public TransactionType getTransaction_type() {
-		return transaction_type;
+	public TransactionType getTransactionType() {
+		return transactionType;
 	}
-	public void setTransaction_type(TransactionType transaction_type) {
-		this.transaction_type = transaction_type;
+	public void setTransactionType(TransactionType transactionType) {
+		this.transactionType = transactionType;
 	}
-	public Date getTransaction_date() {
-		return transaction_date;
+	public Date getTransactionDate() {
+		return transactionDate;
 	}
-	public void setTransaction_date(Date transaction_date) {
-		this.transaction_date = transaction_date;
+	public void setTransactionDate(Date transactionDate) {
+		this.transactionDate = transactionDate;
 	}
 	public String getSourceAccountNumber() {
 		return sourceAccountNumber;
