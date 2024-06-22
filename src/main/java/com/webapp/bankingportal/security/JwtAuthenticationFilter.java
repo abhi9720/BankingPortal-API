@@ -12,8 +12,9 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
+import com.webapp.bankingportal.exception.InvalidTokenException;
+import com.webapp.bankingportal.service.TokenService;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,61 +35,55 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private UserDetailsService userDetailsService;
 
     @Autowired
-    private JwtTokenUtil jwtTokenUtil;
+    private TokenService tokenService;
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            logger.info("User is already authenticated");
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String requestTokenHeader = request.getHeader("Authorization");
-        String username = null;
-        String token;
 
         if (requestTokenHeader == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        if (!requestTokenHeader.startsWith("Bearer")) {
-            logger.info("JWT header does not begin with 'Bearer' prefix");
-            logger.info("JWT header: " + requestTokenHeader);
-            
-            filterChain.doFilter(request, response);
+        if (!requestTokenHeader.startsWith("Bearer ")) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                    "Token must start with 'Bearer '");
+
             return;
         }
 
-        token = requestTokenHeader.substring(7);
+        String token = requestTokenHeader.substring(7);
+        String username = null;
 
         try {
-            username = jwtTokenUtil.getUsernameFromToken(token);
-        } catch (IllegalArgumentException e) {
-            logger.info("Unable to get token");
-        } catch (ExpiredJwtException e) {
-            logger.info("JWT Token Expired");
-        } catch (MalformedJwtException e) {
-            logger.info("Malformed JWT Token");
+            tokenService.validateToken(token);
+            username = tokenService.getUsernameFromToken(token);
+
+        } catch (InvalidTokenException e) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                    e.getMessage());
+            return;
         }
 
-        if (username == null) {
-            logger.info("User not found in JWT Token");
-        } else if (SecurityContextHolder.getContext().getAuthentication() != null) {
-            logger.info("User is already authenticated");
-        } else {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
 
-            if (jwtTokenUtil.validateToken(token, userDetails)) {
-                logger.info("Valid JWT Token for account: " + username);
-
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            } else {
-                logger.info("Invalid JWT Token");
-            }
-        }
+        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authToken);
 
         filterChain.doFilter(request, response);
     }
