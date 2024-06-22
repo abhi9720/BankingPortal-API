@@ -1,7 +1,5 @@
 package com.webapp.bankingportal.entity;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,98 +7,102 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
 
 @Entity
 public class User {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-	private String name;
-	private String password;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Column(unique = true)
-	private String email;
-	private String address;
-	private String phone_number;
-	private int otpRetryCount;
-	private LocalDateTime lastOtpRequestTime;
+    @NotEmpty
+    private String name;
 
-	// Establishing a one-to-one relationship with the account
-	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-	private Account account;
+    @NotEmpty
+    private String password;
 
-	public Long getId() {
-		return id;
-	}
+    @Email
+    @NotEmpty
+    @Column(unique = true)
+    private String email;
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    @NotEmpty
+    private String country;
 
-	public String getName() {
-		return name;
-	}
+    @NotEmpty
+    @Column(unique = true)
+    private String phoneNumber;
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    @NotEmpty
+    private String address;
 
-	public String getPassword() {
-		return password;
-	}
+    // Establishing a one-to-one relationship with the account
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Account account;
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public String getEmail() {
-		return email;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public String getAddress() {
-		return address;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public void setAddress(String address) {
-		this.address = address;
-	}
+    public String getPassword() {
+        return password;
+    }
 
-	public String getPhone_number() {
-		return phone_number;
-	}
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-	public void setPhone_number(String phone_number) {
-		this.phone_number = phone_number;
-	}
+    public String getEmail() {
+        return email;
+    }
 
-	public Account getAccount() {
-		return account;
-	}
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-	// Convenience method to set the user's account
-	public void setAccount(Account account) {
-		this.account = account;
-		account.setUser(this);
-	}
+    public String getCountry() {
+        return country;
+    }
 
-	public int getOtpRetryCount() {
-		return otpRetryCount;
-	}
+    public void setCountry(String country) {
+        this.country = country;
+    }
 
-	public void setOtpRetryCount(int otpRetryCount) {
-		this.otpRetryCount = otpRetryCount;
-	}
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
 
-	public LocalDateTime getLastOtpRequestTime() {
-		return lastOtpRequestTime;
-	}
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
 
-	public void setLastOtpRequestTime(LocalDateTime lastOtpRequestTime) {
-		this.lastOtpRequestTime = lastOtpRequestTime;
-	}
+    public String getAddress() {
+        return address;
+    }
 
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
+        account.setUser(this);
+    }
 }
