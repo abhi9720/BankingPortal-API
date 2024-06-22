@@ -1,37 +1,43 @@
 package com.webapp.bankingportal.controller;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.webapp.bankingportal.dto.LoginRequest;
 import com.webapp.bankingportal.dto.OtpRequest;
 import com.webapp.bankingportal.dto.OtpVerificationRequest;
 import com.webapp.bankingportal.dto.UserResponse;
 import com.webapp.bankingportal.entity.User;
-import com.webapp.bankingportal.security.JwtTokenUtil;
+import com.webapp.bankingportal.exception.InvalidTokenException;
+import com.webapp.bankingportal.service.TokenService;
 import com.webapp.bankingportal.service.OtpService;
 import com.webapp.bankingportal.service.UserService;
 import com.webapp.bankingportal.util.LoggedinUser;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
     private final AuthenticationManager authenticationManager;
-    private final JwtTokenUtil jwtTokenUtil;
+    private final TokenService tokenService;
     private final UserDetailsService userDetailsService;
     private final UserService userService;
     private final OtpService otpService;
@@ -42,13 +48,13 @@ public class UserController {
     public UserController(
             UserService userService,
             AuthenticationManager authenticationManager,
-            JwtTokenUtil jwtTokenUtil,
+            TokenService tokenService,
             UserDetailsService userDetailsService,
             OtpService otpService) {
 
         this.userService = userService;
         this.authenticationManager = authenticationManager;
-        this.jwtTokenUtil = jwtTokenUtil;
+        this.tokenService = tokenService;
         this.userDetailsService = userDetailsService;
         this.otpService = otpService;
     }
@@ -62,18 +68,30 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
-        // Authenticate the user with the account number and password
+    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request)
+            throws InvalidTokenException {
+
+        final String accountNumber = loginRequest.getAccountNumber();
+
+        logger.info("Authenticating Account: {}", accountNumber);
+
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                loginRequest.getAccountNumber(),
+                accountNumber,
                 loginRequest.getPassword()));
 
-        // If authentication successful, generate JWT token
-        UserDetails userDetails = userDetailsService
-                .loadUserByUsername(loginRequest.getAccountNumber());
-        logger.info("User logged in successfully: {}",
-                loginRequest.getAccountNumber());
-        String token = jwtTokenUtil.generateToken(userDetails);
+        logger.info("Account: {} authenticated successfully", accountNumber);
+
+        userService.sendLoginNotificationEmail(
+                userService.getUserByAccountNumber(accountNumber).get(),
+                request.getRemoteAddr());
+
+        final UserDetails userDetails = userDetailsService
+                .loadUserByUsername(accountNumber);
+
+        final String token = tokenService.generateToken(userDetails);
+        tokenService.saveToken(token);
+
+        logger.info("Account: {} logged in successfully", accountNumber);
 
         return ResponseEntity.ok("{ \"token\": \"" + token + "\" }");
     }
@@ -82,7 +100,7 @@ public class UserController {
     public ResponseEntity<String> generateOtp(@RequestBody OtpRequest otpRequest) {
         String accountNumber = otpRequest.getAccountNumber();
         if (!userService.doesAccountExist(accountNumber)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.badRequest()
                     .body("User not found for the given account number");
         }
 
@@ -96,33 +114,35 @@ public class UserController {
                 accountNumber,
                 generatedOtp);
 
-        String response = "Failed to send OTP to: " + user.getEmail();
-        try {
-            if (emailSendingFuture.get()) {
-                response = "OTP sent successfully to: " + user.getEmail();
-            }
-        } catch (InterruptedException | ExecutionException | NullPointerException e) {
-            logger.error("Failed to send OTP to: {}", user.getEmail(), e);
-        }
+        final ResponseEntity<String> response = ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to send OTP to: " + user.getEmail());
 
-        return ResponseEntity.ok(response);
+        return emailSendingFuture.thenApply(success -> {
+            if (success) {
+                return ResponseEntity.ok("OTP sent successfully to: " + user.getEmail());
+            } else {
+                return response;
+            }
+        }).exceptionally(e -> response).join();
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<String> verifyOtpAndLogin(@RequestBody OtpVerificationRequest otpVerificationRequest) {
+    public ResponseEntity<String> verifyOtpAndLogin(
+            @RequestBody OtpVerificationRequest otpVerificationRequest)
+            throws InvalidTokenException {
+
         String accountNumber = otpVerificationRequest.getAccountNumber();
         String otp = otpVerificationRequest.getOtp();
 
         if (accountNumber == null || accountNumber.isEmpty()) {
 
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Missing account number");
+            return ResponseEntity.badRequest().body("Missing account number");
         }
 
         if (otp == null || otp.isEmpty()) {
 
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Missing OTP");
+            return ResponseEntity.badRequest().body("Missing OTP");
         }
 
         // Validate OTP against the stored OTP in the database
@@ -132,9 +152,10 @@ public class UserController {
                     .body("OTP has expired");
         }
 
-        // If OTP is valid, generate and return a JWT token
+        // If OTP is valid, generate and return a token
         UserDetails userDetails = userDetailsService.loadUserByUsername(accountNumber);
-        String token = jwtTokenUtil.generateToken(userDetails);
+        String token = tokenService.generateToken(userDetails);
+        tokenService.saveToken(token);
 
         return ResponseEntity.ok("{ \"token\": \"" + token + "\" }");
     }
@@ -156,5 +177,19 @@ public class UserController {
         UserResponse userResponse = new UserResponse(updatedUser);
 
         return ResponseEntity.ok(userResponse.toString());
+    }
+
+    @GetMapping("/logout")
+    public ModelAndView logout(@RequestHeader("Authorization") String token)
+            throws InvalidTokenException {
+
+        token = token.substring(7);
+        tokenService.validateToken(token);
+        tokenService.invalidateToken(token);
+
+        logger.info("User logged out successfully {}",
+                tokenService.getUsernameFromToken(token));
+
+        return new ModelAndView("redirect:/logout");
     }
 }
