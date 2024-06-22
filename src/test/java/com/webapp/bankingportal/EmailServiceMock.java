@@ -20,6 +20,11 @@ public class EmailServiceMock implements EmailService {
     }
 
     @Override
+    public String getLoginEmailTemplate(String name, String loginTime, String loginLocation) {
+        return null;
+    }
+
+    @Override
     public String getOtpLoginEmailTemplate(String name, String accountNumber, String otp) {
         return null;
     }
