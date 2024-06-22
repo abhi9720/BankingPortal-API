@@ -38,10 +38,10 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Account createAccount(User user) {
-        String accountNumber = generateUniqueAccountNumber();
         Account account = new Account();
-        account.setAccountNumber(accountNumber);
+        account.setAccountNumber(generateUniqueAccountNumber());
         account.setBalance(0.0);
+        account.setUser(user);
         return accountRepository.save(account);
     }
 

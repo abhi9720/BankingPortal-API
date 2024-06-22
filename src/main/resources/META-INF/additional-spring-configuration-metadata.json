@@ -19,6 +19,16 @@
             "name": "jwt.prefix",
             "type": "java.lang.String",
             "description": "JWT prefix"
+        },
+        {
+            "name": "geo.api.url",
+            "type": "java.lang.String",
+            "description": "Geolocation API URL"
+        },
+        {
+            "name": "geo.api.key",
+            "type": "java.lang.String",
+            "description": "Geolocation API key"
         }
     ]
 }

@@ -107,7 +107,7 @@ public class AccountController {
         if (LoggedinUser.getAccountNumber()
                 .equals(fundTransferRequest.getTargetAccountNumber())) {
             return new ResponseEntity<>(
-                    "Source and target account cannot be same",
+                    "Source and target account cannot be the same",
                     HttpStatus.BAD_REQUEST);
         }
 
