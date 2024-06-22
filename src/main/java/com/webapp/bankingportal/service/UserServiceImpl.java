@@ -1,6 +1,8 @@
 package com.webapp.bankingportal.service;
 
+import java.sql.Timestamp;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,13 +28,25 @@ public class UserServiceImpl implements UserService {
     private final AccountService accountService;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final EmailService emailService;
+    private final GeolocationService geolocationService;
 
-    public UserServiceImpl(UserRepository userRepository, AccountService accountService,
-            PasswordEncoder passwordEncoder, UserMapper userMapper) {
+    private static final PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
+
+    public UserServiceImpl(
+            UserRepository userRepository,
+            AccountService accountService,
+            PasswordEncoder passwordEncoder,
+            UserMapper userMapper,
+            EmailService emailService,
+            GeolocationService geolocationService) {
+
         this.userRepository = userRepository;
         this.accountService = accountService;
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
+        this.emailService = emailService;
+        this.geolocationService = geolocationService;
     }
 
     @Override
@@ -47,6 +61,7 @@ public class UserServiceImpl implements UserService {
 
         validateUserDetails(user);
 
+        user.setCountryCode(user.getCountryCode().toUpperCase());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         User savedUser = saveUser(user);
 
@@ -96,17 +111,13 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByAccountAccountNumber(accountNo);
     }
 
-    private void validateUserDetails(User user) {
+    private static void validateUserDetails(User user) {
         if (user == null) {
             throw new UserInvalidException("User details cannot be empty");
         }
 
         if (user.getName() == null || user.getName().isEmpty()) {
             throw new UserInvalidException("Name cannot be empty");
-        }
-
-        if (user.getCountry() == null || user.getCountry().isEmpty()) {
-            throw new UserInvalidException("Country cannot be empty");
         }
 
         if (user.getAddress() == null || user.getAddress().isEmpty()) {
@@ -123,31 +134,40 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        validatePhoneNumber(user.getPhoneNumber(), user.getCountry());
-
+        validateCountryCode(user.getCountryCode());
+        validatePhoneNumber(user.getPhoneNumber(), user.getCountryCode());
         validatePassword(user.getPassword());
     }
 
-    private void validatePhoneNumber(String phoneNumber, String countryCode) {
+    private static void validateCountryCode(String countryCode) {
+        if (countryCode == null || countryCode.isEmpty()) {
+            throw new UserInvalidException("Country code cannot be empty");
+        }
+
+        if (!phoneNumberUtil.getSupportedRegions().contains(countryCode)) {
+            throw new UserInvalidException("Invalid country code: " + countryCode);
+        }
+    }
+
+    private static void validatePhoneNumber(String phoneNumber, String countryCode) {
         if (phoneNumber == null || phoneNumber.isEmpty()) {
             throw new UserInvalidException("Phone number cannot be empty");
         }
 
-        PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
-        String exceptionMessage = "Invalid phone number: " + phoneNumber;
+        PhoneNumber parsedNumber = null;
+
         try {
-            PhoneNumber parsedNumber = phoneNumberUtil.parse(phoneNumber, countryCode);
-            if (phoneNumberUtil.isValidNumber(parsedNumber)) {
-                return;
-            }
+            parsedNumber = phoneNumberUtil.parse(phoneNumber, countryCode);
         } catch (NumberParseException e) {
-            exceptionMessage = e.getMessage();
+            throw new UserInvalidException("Invalid phone number: " + e.getMessage());
         }
 
-        throw new UserInvalidException(exceptionMessage);
+        if (!phoneNumberUtil.isValidNumber(parsedNumber)) {
+            throw new UserInvalidException("Invalid phone number: " + parsedNumber);
+        }
     }
 
-    private void validatePassword(String password) {
+    private static void validatePassword(String password) {
         if (password == null || password.isEmpty()) {
             throw new UserInvalidException("Password cannot be empty");
         }
@@ -203,5 +223,35 @@ public class UserServiceImpl implements UserService {
             }
             throw new UserInvalidException(message.toString());
         }
+    }
+
+    @Override
+    public CompletableFuture<Boolean> sendLoginNotificationEmail(User user, String ip) {
+        final String name = user.getName();
+        final String email = user.getEmail();
+        final String loginTime = new Timestamp(System.currentTimeMillis()).toString();
+
+        return geolocationService.getGeolocation(ip).thenComposeAsync(geolocationResponse -> {
+
+            final String loginLocation = String.format("%s, %s",
+                    geolocationResponse.getCity().getNames().get("en"),
+                    geolocationResponse.getCountry().getNames().get("en"));
+
+            final String emailText = emailService.getLoginEmailTemplate(
+                    name, loginTime, loginLocation);
+
+            return emailService.sendEmail(email, "OneStopBank Login", emailText)
+                    .thenApplyAsync(result -> true)
+                    .exceptionally(ex -> false);
+
+        }).exceptionallyComposeAsync(throwable -> {
+
+            final String emailText = emailService.getLoginEmailTemplate(
+                    name, loginTime, "Unknown");
+
+            return emailService.sendEmail(email, "OneStopBank Login", emailText)
+                    .thenApplyAsync(result -> true)
+                    .exceptionally(ex -> false);
+        });
     }
 }
