@@ -120,7 +120,8 @@ public class UserController {
 
         return emailSendingFuture.thenApply(success -> {
             if (success) {
-                return ResponseEntity.ok("OTP sent successfully to: " + user.getEmail());
+                String jsonResponse = String.format("{\"message\": \"OTP sent successfully to: %s\"}", user.getEmail());
+                return ResponseEntity.ok(jsonResponse);
             } else {
                 return response;
             }
