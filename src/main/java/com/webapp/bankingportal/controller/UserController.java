@@ -115,11 +115,10 @@ public class UserController {
                 generatedOtp);
 
         final ResponseEntity<String> successResponse = ResponseEntity
-                .ok("OTP sent successfully to: " + user.getEmail());
+                .ok(String.format("{\"message\": \"OTP sent successfully to: %s\"}", user.getEmail()));
 
-        final ResponseEntity<String> failureResponse = ResponseEntity
-                .internalServerError()
-                .body("Failed to send OTP to: " + user.getEmail());
+        final ResponseEntity<String> failureResponse = ResponseEntity.internalServerError()
+                .body(String.format("{\"message\": \"Failed to send OTP to: %s\"}", user.getEmail()));
 
         return emailSendingFuture.thenApply(result -> successResponse)
                 .exceptionally(e -> failureResponse).join();
@@ -157,7 +156,7 @@ public class UserController {
     }
 
     @PostMapping("/update")
-    public ResponseEntity<String> updateUser(@RequestBody User user) {
+    public ResponseEntity<UserResponse> updateUser(@RequestBody User user) {
         String accountNumber = LoggedinUser.getAccountNumber();
 
         logger.info("Authenticating account: {} ...", accountNumber);
@@ -170,9 +169,7 @@ public class UserController {
         User updatedUser = userService.updateUser(user);
         logger.info("Account: {} is updated successfully", accountNumber);
 
-        UserResponse userResponse = new UserResponse(updatedUser);
-
-        return ResponseEntity.ok(userResponse.toString());
+        return ResponseEntity.ok(new UserResponse(updatedUser));
     }
 
     @GetMapping("/logout")
