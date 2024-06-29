@@ -21,5 +21,9 @@ public interface UserService {
 
     public Optional<User> getUserByAccountNumber(String accountNumber);
 
+    public Optional<User> getUserByEmail(String email);
+
     public CompletableFuture<Boolean> sendLoginNotificationEmail(User user, String ip);
+
+    public boolean resetPassword(User user, String newpassword);
 }
