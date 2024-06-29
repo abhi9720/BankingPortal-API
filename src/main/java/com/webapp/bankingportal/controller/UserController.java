@@ -28,6 +28,7 @@ import com.webapp.bankingportal.exception.InvalidTokenException;
 import com.webapp.bankingportal.service.TokenService;
 import com.webapp.bankingportal.service.OtpService;
 import com.webapp.bankingportal.service.UserService;
+import com.webapp.bankingportal.util.JsonUtil;
 import com.webapp.bankingportal.util.LoggedinUser;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -171,11 +172,12 @@ public class UserController {
 
         logger.info("Updating account: {} ...", accountNumber);
         User updatedUser = userService.updateUser(user);
+        
         logger.info("Account: {} is updated successfully", accountNumber);
 
         UserResponse userResponse = new UserResponse(updatedUser);
 
-        return ResponseEntity.ok(userResponse.toString());
+        return ResponseEntity.ok(JsonUtil.toJson(userResponse));
     }
 
     @GetMapping("/logout")
