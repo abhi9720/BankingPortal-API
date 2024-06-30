@@ -30,6 +30,9 @@ public class WebSecurityConfig {
     private static final String[] PUBLIC_URLS = {
             "/api/users/register",
             "/api/users/login",
+            "/api/auth/password-reset/verify-otp",
+            "/api/auth/password-reset/send-otp",
+            "/api/auth/password-reset",
             "/api/users/generate-otp",
             "/api/users/verify-otp",
             "swagger-ui.html",

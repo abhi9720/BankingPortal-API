@@ -13,6 +13,7 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 import com.webapp.bankingportal.entity.Account;
 import com.webapp.bankingportal.entity.User;
+import com.webapp.bankingportal.exception.PasswordResetException;
 import com.webapp.bankingportal.exception.UserInvalidException;
 import com.webapp.bankingportal.mapper.UserMapper;
 import com.webapp.bankingportal.repository.UserRepository;
@@ -20,6 +21,7 @@ import com.webapp.bankingportal.util.LoggedinUser;
 
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
+import jakarta.transaction.Transactional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -109,6 +111,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<User> getUserByAccountNumber(String accountNo) {
         return userRepository.findByAccountAccountNumber(accountNo);
+    }
+
+    @Override
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     private static void validateUserDetails(User user) {
@@ -253,5 +260,19 @@ public class UserServiceImpl implements UserService {
                     .thenApplyAsync(result -> true)
                     .exceptionally(ex -> false);
         });
+    }
+
+    @Override
+    @Transactional
+    public boolean resetPassword(User user, String newPassword) {
+        try {
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+            return true;
+        } catch (Exception e) {
+            // Log the error
+            // Optionally, you can throw a custom exception here
+            throw new PasswordResetException("Failed to reset password", e);
+        }
     }
 }

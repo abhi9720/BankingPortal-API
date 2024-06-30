@@ -169,7 +169,7 @@ public class OtpServiceImpl implements OtpService {
         if (otpInfo == null) {
             throw new InvalidOtpException("Invalid OTP");
         }
-        otpInfoRepository.delete(otpInfo);
+        // otpInfoRepository.delete(otpInfo);
 
         return !isOtpExpired(otpInfo.getGeneratedAt());
     }
