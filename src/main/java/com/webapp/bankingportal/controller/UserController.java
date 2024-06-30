@@ -28,6 +28,7 @@ import com.webapp.bankingportal.exception.InvalidTokenException;
 import com.webapp.bankingportal.service.TokenService;
 import com.webapp.bankingportal.service.OtpService;
 import com.webapp.bankingportal.service.UserService;
+import com.webapp.bankingportal.util.JsonUtil;
 import com.webapp.bankingportal.util.LoggedinUser;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -156,7 +157,7 @@ public class UserController {
     }
 
     @PostMapping("/update")
-    public ResponseEntity<UserResponse> updateUser(@RequestBody User user) {
+    public ResponseEntity<String> updateUser(@RequestBody User user) {
         String accountNumber = LoggedinUser.getAccountNumber();
 
         logger.info("Authenticating account: {} ...", accountNumber);
@@ -167,9 +168,12 @@ public class UserController {
 
         logger.info("Updating account: {} ...", accountNumber);
         User updatedUser = userService.updateUser(user);
+        
         logger.info("Account: {} is updated successfully", accountNumber);
 
-        return ResponseEntity.ok(new UserResponse(updatedUser));
+        UserResponse userResponse = new UserResponse(updatedUser);
+
+        return ResponseEntity.ok(JsonUtil.toJson(userResponse));
     }
 
     @GetMapping("/logout")
