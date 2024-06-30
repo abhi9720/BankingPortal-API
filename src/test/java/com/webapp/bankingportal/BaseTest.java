@@ -17,8 +17,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javafaker.Faker;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -33,6 +31,7 @@ import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.repository.UserRepository;
 import com.webapp.bankingportal.service.AccountService;
 import com.webapp.bankingportal.service.TokenService;
+import com.webapp.bankingportal.util.JsonUtil;
 
 @SpringBootTest
 @TestPropertySource(locations = "classpath:application-test.properties")
@@ -60,8 +59,6 @@ public abstract class BaseTest {
 
     protected static final Faker faker = new Faker();
     protected static final PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
-    protected static final ObjectMapper objectMapper = new ObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
     protected static String getRandomAccountNumber() {
         return faker.lorem().characters(6, false, true);
@@ -132,7 +129,7 @@ public abstract class BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
         return user;
     }
@@ -148,7 +145,7 @@ public abstract class BaseTest {
         MvcResult loginResult = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
+                .content(JsonUtil.toJson(loginRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
 
@@ -183,7 +180,7 @@ public abstract class BaseTest {
                 .post("/api/account/pin/create")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pinRequest)))
+                .content(JsonUtil.toJson(pinRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.msg").value("PIN created successfully"));
 
@@ -202,7 +199,7 @@ public abstract class BaseTest {
                 .post("/api/account/deposit")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(amountRequest)))
+                .content(JsonUtil.toJson(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.msg").value("Cash deposited successfully"));
 

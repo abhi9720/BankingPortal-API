@@ -14,6 +14,7 @@ import com.webapp.bankingportal.dto.AmountRequest;
 import com.webapp.bankingportal.dto.FundTransferRequest;
 import com.webapp.bankingportal.dto.PinRequest;
 import com.webapp.bankingportal.dto.PinUpdateRequest;
+import com.webapp.bankingportal.util.JsonUtil;
 
 @AutoConfigureMockMvc
 public class AccountControllerTests extends BaseTest {
@@ -71,7 +72,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/pin/create")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pinRequest)))
+                .content(JsonUtil.toJson(pinRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Invalid password"));
@@ -89,7 +90,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/pin/create")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pinRequest)))
+                .content(JsonUtil.toJson(pinRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Password cannot be empty"));
@@ -107,7 +108,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/pin/create")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pinRequest)))
+                .content(JsonUtil.toJson(pinRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("PIN cannot be empty"));
@@ -126,7 +127,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/pin/create")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pinRequest)))
+                .content(JsonUtil.toJson(pinRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("PIN must be 4 digits"));
@@ -145,7 +146,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/pin/create")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pinRequest)))
+                .content(JsonUtil.toJson(pinRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("PIN must be 4 digits"));
@@ -161,7 +162,7 @@ public class AccountControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/create")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pinRequest)))
+                .content(JsonUtil.toJson(pinRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
@@ -179,7 +180,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/pin/update")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pinUpdateRequest)))
+                .content(JsonUtil.toJson(pinUpdateRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.msg")
                         .value("PIN updated successfully"));
@@ -199,7 +200,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/pin/update")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pinUpdateRequest)))
+                .content(JsonUtil.toJson(pinUpdateRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Invalid password"));
@@ -219,7 +220,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/pin/update")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pinUpdateRequest)))
+                .content(JsonUtil.toJson(pinUpdateRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Invalid PIN"));
@@ -239,7 +240,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/pin/update")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pinUpdateRequest)))
+                .content(JsonUtil.toJson(pinUpdateRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("New PIN must be 4 digits"));
@@ -259,7 +260,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/pin/update")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pinUpdateRequest)))
+                .content(JsonUtil.toJson(pinUpdateRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("New PIN must be 4 digits"));
@@ -278,7 +279,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/pin/update")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pinUpdateRequest)))
+                .content(JsonUtil.toJson(pinUpdateRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Password cannot be empty"));
@@ -297,7 +298,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/pin/update")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pinUpdateRequest)))
+                .content(JsonUtil.toJson(pinUpdateRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("PIN cannot be empty"));
@@ -316,7 +317,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/pin/update")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pinUpdateRequest)))
+                .content(JsonUtil.toJson(pinUpdateRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("New PIN cannot be empty"));
@@ -333,7 +334,7 @@ public class AccountControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/update")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pinUpdateRequest)))
+                .content(JsonUtil.toJson(pinUpdateRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
@@ -355,7 +356,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/deposit")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(amountRequest)))
+                .content(JsonUtil.toJson(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Invalid PIN"));
@@ -374,7 +375,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/deposit")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(amountRequest)))
+                .content(JsonUtil.toJson(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount must be greater than 0"));
@@ -393,7 +394,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/deposit")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(amountRequest)))
+                .content(JsonUtil.toJson(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount must be greater than 0"));
@@ -412,7 +413,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/deposit")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(amountRequest)))
+                .content(JsonUtil.toJson(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount cannot be greater than 100,000"));
@@ -430,7 +431,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/deposit")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(amountRequest)))
+                .content(JsonUtil.toJson(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("PIN cannot be empty"));
@@ -448,7 +449,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/deposit")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(amountRequest)))
+                .content(JsonUtil.toJson(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount must be greater than 0"));
@@ -464,7 +465,7 @@ public class AccountControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/deposit")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(amountRequest)))
+                .content(JsonUtil.toJson(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
@@ -482,7 +483,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/withdraw")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(amountRequest)))
+                .content(JsonUtil.toJson(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.msg")
                         .value("Cash withdrawn successfully"));
@@ -501,7 +502,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/withdraw")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(amountRequest)))
+                .content(JsonUtil.toJson(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Invalid PIN"));
@@ -520,7 +521,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/withdraw")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(amountRequest)))
+                .content(JsonUtil.toJson(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount must be greater than 0"));
@@ -539,7 +540,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/withdraw")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(amountRequest)))
+                .content(JsonUtil.toJson(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount must be greater than 0"));
@@ -559,7 +560,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/withdraw")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(amountRequest)))
+                .content(JsonUtil.toJson(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Insufficient balance"));
@@ -577,7 +578,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/withdraw")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(amountRequest)))
+                .content(JsonUtil.toJson(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("PIN cannot be empty"));
@@ -595,7 +596,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/withdraw")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(amountRequest)))
+                .content(JsonUtil.toJson(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount must be greater than 0"));
@@ -611,7 +612,7 @@ public class AccountControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/withdraw")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(amountRequest)))
+                .content(JsonUtil.toJson(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
@@ -631,7 +632,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(JsonUtil.toJson(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.msg")
                         .value("Fund transferred successfully"));
@@ -652,7 +653,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(JsonUtil.toJson(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Source and target account cannot be the same"));
@@ -674,7 +675,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(JsonUtil.toJson(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Invalid PIN"));
@@ -695,7 +696,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(JsonUtil.toJson(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Target account not found"));
@@ -717,7 +718,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(JsonUtil.toJson(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Insufficient balance"));
@@ -739,7 +740,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(JsonUtil.toJson(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount must be greater than 0"));
@@ -761,7 +762,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(JsonUtil.toJson(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount must be greater than 0"));
@@ -782,7 +783,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(JsonUtil.toJson(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("PIN cannot be empty"));
@@ -802,7 +803,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(JsonUtil.toJson(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Target account not found"));
@@ -823,7 +824,7 @@ public class AccountControllerTests extends BaseTest {
                 .post("/api/account/fund-transfer")
                 .header("Authorization", "Bearer " + userDetails.get("token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(JsonUtil.toJson(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Amount must be greater than 0"));
@@ -844,7 +845,7 @@ public class AccountControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/fund-transfer")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(fundTransferRequest)))
+                .content(JsonUtil.toJson(fundTransferRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 

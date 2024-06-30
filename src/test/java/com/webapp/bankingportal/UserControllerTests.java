@@ -23,6 +23,7 @@ import com.webapp.bankingportal.dto.PinRequest;
 import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.service.OtpService;
 import com.webapp.bankingportal.service.TokenService;
+import com.webapp.bankingportal.util.JsonUtil;
 
 public class UserControllerTests extends BaseTest {
 
@@ -52,7 +53,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Name cannot be empty"));
@@ -66,7 +67,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Name cannot be empty"));
@@ -80,7 +81,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Email cannot be empty"));
@@ -94,7 +95,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Email cannot be empty"));
@@ -108,7 +109,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Country code cannot be empty"));
@@ -122,7 +123,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Country code cannot be empty"));
@@ -136,7 +137,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Phone number cannot be empty"));
@@ -150,7 +151,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Phone number cannot be empty"));
@@ -164,7 +165,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Address cannot be empty"));
@@ -178,7 +179,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Address cannot be empty"));
@@ -193,7 +194,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user2)))
+                .content(JsonUtil.toJson(user2)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Email already exists"));
@@ -208,7 +209,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user2)))
+                .content(JsonUtil.toJson(user2)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Phone number already exists"));
@@ -222,7 +223,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Invalid email: Missing final '@domain'"));
@@ -236,7 +237,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Invalid country code: " + user.getCountryCode()));
@@ -250,7 +251,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(
                         MockMvcResultMatchers.content().string(StringContains.containsString("Invalid phone number")));
@@ -264,7 +265,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Password cannot be empty"));
@@ -278,7 +279,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Password cannot be empty"));
@@ -292,7 +293,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Password must be at least 8 characters long"));
@@ -306,7 +307,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Password must be less than 128 characters long"));
@@ -320,7 +321,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Password cannot contain any whitespace characters"));
@@ -334,7 +335,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Password must contain at least one uppercase letter"));
@@ -349,7 +350,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string(StringContains.containsString("Password must contain at least one lowercase letter")));
@@ -363,7 +364,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Password must contain at least one digit"));
@@ -377,7 +378,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Password must contain at least one special character"));
@@ -397,7 +398,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
+                .content(JsonUtil.toJson(loginRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
@@ -417,7 +418,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
+                .content(JsonUtil.toJson(loginRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
@@ -430,7 +431,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
+                .content(JsonUtil.toJson(loginRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
@@ -450,7 +451,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
+                .content(JsonUtil.toJson(loginRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
@@ -469,10 +470,10 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/generate-otp")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(otpRequest)))
+                .content(JsonUtil.toJson(otpRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content()
-                        .string("OTP sent successfully to: " + user.getEmail()));
+                .andExpect(MockMvcResultMatchers.jsonPath("message")
+                        .value("OTP sent successfully to: " + user.getEmail()));
     }
 
     @Test
@@ -483,7 +484,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/generate-otp")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(otpRequest)))
+                .content(JsonUtil.toJson(otpRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("User not found for the given account number"));
@@ -497,7 +498,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/generate-otp")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(otpRequest)))
+                .content(JsonUtil.toJson(otpRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("User not found for the given account number"));
@@ -519,7 +520,7 @@ public class UserControllerTests extends BaseTest {
         MvcResult loginResult = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/verify-otp")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(otpVerificationRequest)))
+                .content(JsonUtil.toJson(otpVerificationRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
 
@@ -535,7 +536,7 @@ public class UserControllerTests extends BaseTest {
                 .post("/api/account/pin/create")
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pinRequest)))
+                .content(JsonUtil.toJson(pinRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.msg")
                         .value("PIN created successfully"));
@@ -557,7 +558,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/verify-otp")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(otpVerificationRequest)))
+                .content(JsonUtil.toJson(otpVerificationRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Invalid OTP"));
@@ -571,7 +572,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/verify-otp")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(otpVerificationRequest)))
+                .content(JsonUtil.toJson(otpVerificationRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Missing account number"));
@@ -586,7 +587,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/verify-otp")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(otpVerificationRequest)))
+                .content(JsonUtil.toJson(otpVerificationRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Missing account number"));
@@ -607,7 +608,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/verify-otp")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(otpVerificationRequest)))
+                .content(JsonUtil.toJson(otpVerificationRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Missing OTP"));
@@ -629,7 +630,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/verify-otp")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(otpVerificationRequest)))
+                .content(JsonUtil.toJson(otpVerificationRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Missing OTP"));
@@ -647,7 +648,7 @@ public class UserControllerTests extends BaseTest {
                 .post("/api/users/update")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + userDetails.get("token"))
-                .content(objectMapper.writeValueAsString(updatedUser)))
+                .content(JsonUtil.toJson(updatedUser)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name")
                         .value(updatedUser.getName()))
@@ -672,7 +673,7 @@ public class UserControllerTests extends BaseTest {
                 .post("/api/users/update")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + userDetails.get("token"))
-                .content(objectMapper.writeValueAsString(updatedUser)))
+                .content(JsonUtil.toJson(updatedUser)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Name cannot be empty"));
@@ -691,7 +692,7 @@ public class UserControllerTests extends BaseTest {
                 .post("/api/users/update")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + userDetails.get("token"))
-                .content(objectMapper.writeValueAsString(updatedUser)))
+                .content(JsonUtil.toJson(updatedUser)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Address cannot be empty"));
@@ -710,7 +711,7 @@ public class UserControllerTests extends BaseTest {
                 .post("/api/users/update")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + userDetails.get("token"))
-                .content(objectMapper.writeValueAsString(updatedUser)))
+                .content(JsonUtil.toJson(updatedUser)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Email cannot be empty"));
@@ -728,7 +729,7 @@ public class UserControllerTests extends BaseTest {
                 .post("/api/users/update")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + userDetails.get("token"))
-                .content(objectMapper.writeValueAsString(updatedUser)))
+                .content(JsonUtil.toJson(updatedUser)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Phone number cannot be empty"));
@@ -745,7 +746,7 @@ public class UserControllerTests extends BaseTest {
                 .post("/api/users/update")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + userDetails.get("token"))
-                .content(objectMapper.writeValueAsString(updatedUser)))
+                .content(JsonUtil.toJson(updatedUser)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
                         .string("Bad credentials"));
@@ -758,7 +759,7 @@ public class UserControllerTests extends BaseTest {
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/update")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updatedUser)))
+                .content(JsonUtil.toJson(updatedUser)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 

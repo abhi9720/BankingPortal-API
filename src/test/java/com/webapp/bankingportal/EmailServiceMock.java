@@ -5,10 +5,14 @@ import java.util.concurrent.CompletableFuture;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import com.webapp.bankingportal.service.EmailService;
+import com.webapp.bankingportal.service.EmailServiceImpl;
 
 @Service
-public class EmailServiceMock implements EmailService {
+public class EmailServiceMock extends EmailServiceImpl {
+
+    public EmailServiceMock() {
+        super(null);
+    }
 
     @Override
     @Async
@@ -17,15 +21,5 @@ public class EmailServiceMock implements EmailService {
         future.complete(null); // Indicate that the email sending is successful
 
         return future;
-    }
-
-    @Override
-    public String getLoginEmailTemplate(String name, String loginTime, String loginLocation) {
-        return null;
-    }
-
-    @Override
-    public String getOtpLoginEmailTemplate(String name, String accountNumber, String otp) {
-        return null;
     }
 }

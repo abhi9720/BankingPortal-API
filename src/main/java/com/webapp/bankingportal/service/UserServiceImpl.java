@@ -117,6 +117,7 @@ public class UserServiceImpl implements UserService {
     public CompletableFuture<Boolean> sendLoginNotificationEmail(User user, String ip) {
         final String name = user.getName();
         final String email = user.getEmail();
+        final String subject = "New login to OneStopBank";
         final String loginTime = new Timestamp(System.currentTimeMillis()).toString();
 
         return geolocationService.getGeolocation(ip).thenComposeAsync(geolocationResponse -> {
@@ -128,7 +129,7 @@ public class UserServiceImpl implements UserService {
             final String emailText = emailService.getLoginEmailTemplate(
                     name, loginTime, loginLocation);
 
-            return emailService.sendEmail(email, "OneStopBank Login", emailText)
+            return emailService.sendEmail(email, subject, emailText)
                     .thenApplyAsync(result -> true)
                     .exceptionally(ex -> false);
 
@@ -137,7 +138,7 @@ public class UserServiceImpl implements UserService {
             final String emailText = emailService.getLoginEmailTemplate(
                     name, loginTime, "Unknown");
 
-            return emailService.sendEmail(email, "OneStopBank Login", emailText)
+            return emailService.sendEmail(email, subject, emailText)
                     .thenApplyAsync(result -> true)
                     .exceptionally(ex -> false);
         });
