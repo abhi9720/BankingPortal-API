@@ -53,3 +53,4 @@ node_modules/
 
 # Test reports
 test-output/
+target/
