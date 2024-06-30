@@ -6,6 +6,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.context.request.WebRequest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.webapp.bankingportal.exception.AccountDoesNotExistException;
@@ -17,6 +18,7 @@ import com.webapp.bankingportal.exception.InvalidOtpException;
 import com.webapp.bankingportal.exception.InvalidPinException;
 import com.webapp.bankingportal.exception.NotFoundException;
 import com.webapp.bankingportal.exception.OtpRetryLimitExceededException;
+import com.webapp.bankingportal.exception.PasswordResetException;
 import com.webapp.bankingportal.exception.UnauthorizedException;
 import com.webapp.bankingportal.exception.UserInvalidException;
 
@@ -94,5 +96,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserInvalidException.class)
     public ResponseEntity<String> handleUserInvalidException(UserInvalidException ex) {
         return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
+    @ExceptionHandler(PasswordResetException.class)
+    public ResponseEntity<String> handlePasswordResetException(PasswordResetException ex, WebRequest request) {
+        String errorMessage = ex.getMessage();
+        return new ResponseEntity<>("{\"message\": \"" + errorMessage + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleGlobalException(Exception ex, WebRequest request) {
+        String errorMessage = "An unexpected error occurred: " + ex.getMessage();
+        return new ResponseEntity<>("{\"message\": \"" + errorMessage + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
