@@ -138,12 +138,10 @@ public class UserController {
         String otp = otpVerificationRequest.getOtp();
 
         if (accountNumber == null || accountNumber.isEmpty()) {
-
             return ResponseEntity.badRequest().body("Missing account number");
         }
 
         if (otp == null || otp.isEmpty()) {
-
             return ResponseEntity.badRequest().body("Missing OTP");
         }
 
