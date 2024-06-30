@@ -2,8 +2,11 @@ package com.webapp.bankingportal;
 
 import static org.springframework.security.core.userdetails.User.withUsername;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -32,6 +35,11 @@ import com.webapp.bankingportal.repository.UserRepository;
 import com.webapp.bankingportal.service.AccountService;
 import com.webapp.bankingportal.service.TokenService;
 import com.webapp.bankingportal.util.JsonUtil;
+
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 
 @SpringBootTest
 @TestPropertySource(locations = "classpath:application-test.properties")
@@ -231,5 +239,40 @@ public abstract class BaseTest {
         HashMap<String, String> accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
         accountService.cashDeposit(accountDetails.get("accountNumber"), accountDetails.get("pin"), amount);
         return accountDetails;
+    }
+
+    protected static String getTextFromMimeMultipart(MimeMultipart mimeMultipart)
+            throws MessagingException, IOException {
+
+        StringBuilder result = new StringBuilder();
+        int count = mimeMultipart.getCount();
+
+        for (int i = 0; i < count; i++) {
+            BodyPart bodyPart = mimeMultipart.getBodyPart(i);
+            if (bodyPart.isMimeType("text/html")) {
+                result.append(bodyPart.getContent());
+                break;
+            } else if (bodyPart.getContent() instanceof MimeMultipart) {
+                result.append(getTextFromMimeMultipart((MimeMultipart) bodyPart.getContent()));
+                if (result.length() > 0) {
+                    break;
+                }
+            }
+        }
+
+        return result.toString();
+    }
+
+    protected static String getOtpFromEmail(MimeMessage message)
+            throws IOException, MessagingException {
+
+        String content = getTextFromMimeMultipart((MimeMultipart) message.getContent());
+        Pattern pattern = Pattern.compile("<h2.*?>(\\d+)</h2>");
+        Matcher matcher = pattern.matcher(content);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        throw new RuntimeException("OTP not found in email");
     }
 }

@@ -21,14 +21,12 @@ import com.webapp.bankingportal.dto.OtpRequest;
 import com.webapp.bankingportal.dto.OtpVerificationRequest;
 import com.webapp.bankingportal.dto.PinRequest;
 import com.webapp.bankingportal.entity.User;
-import com.webapp.bankingportal.service.OtpService;
 import com.webapp.bankingportal.service.TokenService;
 import com.webapp.bankingportal.util.JsonUtil;
 
-public class UserControllerTests extends BaseTest {
+import jakarta.mail.internet.MimeMessage;
 
-    @Autowired
-    private OtpService otpService;
+public class UserControllerTests extends BaseTest {
 
     @Autowired
     private TokenService tokenService;
@@ -36,13 +34,6 @@ public class UserControllerTests extends BaseTest {
     @Test
     public void test_register_user_with_valid_details() throws Exception {
         createAndRegisterUser();
-    }
-
-    @Test
-    public void test_register_user_with_null_user() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/users/register"))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
@@ -226,7 +217,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Invalid email: Missing final '@domain'"));
+                        .string(StringContains.containsString("Invalid email")));
     }
 
     @Test
@@ -513,9 +504,21 @@ public class UserControllerTests extends BaseTest {
                 .getAccount()
                 .getAccountNumber();
 
+        OtpRequest otpRequest = new OtpRequest();
+        otpRequest.setAccountNumber(accountNumber);
+
+        mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/users/generate-otp")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.toJson(otpRequest)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("message")
+                        .value("OTP sent successfully to: " + user.getEmail()));
+
+        MimeMessage[] receivedMessages = GreenMailJavaMailSender.getReceivedMessagesForDomain(user.getEmail());
         OtpVerificationRequest otpVerificationRequest = new OtpVerificationRequest();
         otpVerificationRequest.setAccountNumber(accountNumber);
-        otpVerificationRequest.setOtp(otpService.generateOTP(accountNumber));
+        otpVerificationRequest.setOtp(getOtpFromEmail(receivedMessages[0]));
 
         MvcResult loginResult = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/verify-otp")

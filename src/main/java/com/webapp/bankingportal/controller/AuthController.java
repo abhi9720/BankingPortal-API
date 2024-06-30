@@ -155,7 +155,7 @@ public class AuthController {
             passwordResetSuccessful = userService.resetPassword(user, newPassword);
         } catch (Exception e) {
             logger.error("Error resetting password for user: {}", user.getId(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to reset password");
+            return ResponseEntity.internalServerError().body("Failed to reset password");
         }
 
         if (passwordResetSuccessful) {
@@ -163,7 +163,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.OK).body("{\"message\": \"Password reset successfully\"}");
         } else {
             logger.error("Failed to reset password for user: {}", user.getId());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to reset password");
+            return ResponseEntity.internalServerError().body("Failed to reset password");
         }
     }
 }
