@@ -6,6 +6,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.webapp.bankingportal.entity.Account;
 import com.webapp.bankingportal.entity.User;
@@ -15,8 +16,6 @@ import com.webapp.bankingportal.mapper.UserMapper;
 import com.webapp.bankingportal.repository.UserRepository;
 import com.webapp.bankingportal.util.LoggedinUser;
 import com.webapp.bankingportal.util.ValidationUtil;
-
-import jakarta.transaction.Transactional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -152,8 +151,6 @@ public class UserServiceImpl implements UserService {
             userRepository.save(user);
             return true;
         } catch (Exception e) {
-            // Log the error
-            // Optionally, you can throw a custom exception here
             throw new PasswordResetException("Failed to reset password", e);
         }
     }

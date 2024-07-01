@@ -1,8 +1,10 @@
 package com.webapp.bankingportal.controller;
 
 import java.util.concurrent.CompletableFuture;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -54,6 +56,7 @@ public class AuthController {
 
         // Generate and send OTP
         final String accountNumber = user.getAccount().getAccountNumber();
+        logger.info("Generating OTP for account number: {}", accountNumber);
         final String generatedOtp = otpService.generateOTP(accountNumber);
         final CompletableFuture<Void> emailSendingFuture = otpService.sendOTPByEmail(
                 user.getEmail(),

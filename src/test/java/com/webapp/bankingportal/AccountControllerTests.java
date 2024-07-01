@@ -5,7 +5,6 @@ import java.util.HashMap;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -16,7 +15,6 @@ import com.webapp.bankingportal.dto.PinRequest;
 import com.webapp.bankingportal.dto.PinUpdateRequest;
 import com.webapp.bankingportal.util.JsonUtil;
 
-@AutoConfigureMockMvc
 public class AccountControllerTests extends BaseTest {
 
     @Test
