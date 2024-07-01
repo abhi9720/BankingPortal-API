@@ -64,14 +64,20 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public String generateToken(UserDetails userDetails) {
         logger.info("Generating token for user: " + userDetails.getUsername());
-        return doGenerateToken(userDetails);
+        return doGenerateToken(userDetails,
+                new Date(System.currentTimeMillis() + expiration));
     }
 
-    private String doGenerateToken(UserDetails userDetails) {
-        long currentTime = System.currentTimeMillis();
+    @Override
+    public String generateToken(UserDetails userDetails, Date expiry) {
+        logger.info("Generating token for user: " + userDetails.getUsername());
+        return doGenerateToken(userDetails, expiry);
+    }
+
+    private String doGenerateToken(UserDetails userDetails, Date expiry) {
         return Jwts.builder().setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(currentTime))
-                .setExpiration(new Date(currentTime + expiration))
+                .setIssuedAt(new Date())
+                .setExpiration(expiry)
                 .signWith(SignatureAlgorithm.HS512, secret).compact();
     }
 
@@ -144,12 +150,6 @@ public class TokenServiceImpl implements TokenService {
     public void validateToken(String token) throws InvalidTokenException {
         if (tokenRepository.findByToken(token) == null) {
             throw new InvalidTokenException("Token not found");
-        }
-
-        String accountNumber = getUsernameFromToken(token);
-
-        if (accountRepository.findByAccountNumber(accountNumber) == null) {
-            throw new InvalidTokenException("Token account not found");
         }
     }
 
