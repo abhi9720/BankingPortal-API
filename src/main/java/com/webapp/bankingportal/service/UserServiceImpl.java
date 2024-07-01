@@ -154,4 +154,5 @@ public class UserServiceImpl implements UserService {
             throw new PasswordResetException("Failed to reset password", e);
         }
     }
+
 }

@@ -206,7 +206,7 @@ public class AccountServiceImpl implements AccountService {
         if (targetAccount == null) {
             throw new NotFoundException("Target account not found");
         }
-        
+
         Account sourceAccount = accountRepository.findByAccountNumber(sourceAccountNumber);
         double sourceBalance = sourceAccount.getBalance();
         if (sourceBalance < amount) {
@@ -230,4 +230,5 @@ public class AccountServiceImpl implements AccountService {
         transaction.setTargetAccount(targetAccount);
         transactionRepository.save(transaction);
     }
+
 }

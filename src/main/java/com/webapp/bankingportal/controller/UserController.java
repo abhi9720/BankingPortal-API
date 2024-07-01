@@ -168,7 +168,7 @@ public class UserController {
 
         logger.info("Updating account: {} ...", accountNumber);
         User updatedUser = userService.updateUser(user);
-        
+
         logger.info("Account: {} is updated successfully", accountNumber);
 
         UserResponse userResponse = new UserResponse(updatedUser);
@@ -189,4 +189,5 @@ public class UserController {
 
         return new ModelAndView("redirect:/logout");
     }
+
 }

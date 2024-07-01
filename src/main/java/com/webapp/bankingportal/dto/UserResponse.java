@@ -113,4 +113,5 @@ public class UserResponse {
                 + "\", \"branch\": \"" + branch
                 + "\", \"accountType\": \"" + accountType + "\" }";
     }
+
 }
