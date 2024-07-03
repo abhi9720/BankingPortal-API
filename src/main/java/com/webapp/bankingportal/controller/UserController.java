@@ -99,34 +99,30 @@ public class UserController {
 
     @PostMapping("/generate-otp")
     public ResponseEntity<String> generateOtp(@RequestBody OtpRequest otpRequest) {
-        String accountNumber = otpRequest.getAccountNumber();
+        final String accountNumber = otpRequest.getAccountNumber();
         if (!userService.doesAccountExist(accountNumber)) {
             return ResponseEntity.badRequest()
                     .body("User not found for the given account number");
         }
 
-        User user = userService.getUserByAccountNumber(accountNumber).get();
+        final User user = userService.getUserByAccountNumber(accountNumber).get();
 
         // Generate and send OTP
-        String generatedOtp = otpService.generateOTP(accountNumber);
-        CompletableFuture<Boolean> emailSendingFuture = otpService.sendOTPByEmail(
+        final String generatedOtp = otpService.generateOTP(accountNumber);
+        final CompletableFuture<Void> emailSendingFuture = otpService.sendOTPByEmail(
                 user.getEmail(),
                 user.getName(),
                 accountNumber,
                 generatedOtp);
 
-        final ResponseEntity<String> response = ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Failed to send OTP to: " + user.getEmail());
+        final ResponseEntity<String> successResponse = ResponseEntity
+                .ok(String.format("{\"message\": \"OTP sent successfully to: %s\"}", user.getEmail()));
 
-        return emailSendingFuture.thenApply(success -> {
-            if (success) {
-                String jsonResponse = String.format("{\"message\": \"OTP sent successfully to: %s\"}", user.getEmail());
-                return ResponseEntity.ok(jsonResponse);
-            } else {
-                return response;
-            }
-        }).exceptionally(e -> response).join();
+        final ResponseEntity<String> failureResponse = ResponseEntity.internalServerError()
+                .body(String.format("{\"message\": \"Failed to send OTP to: %s\"}", user.getEmail()));
+
+        return emailSendingFuture.thenApply(result -> successResponse)
+                .exceptionally(e -> failureResponse).join();
     }
 
     @PostMapping("/verify-otp")
@@ -172,7 +168,7 @@ public class UserController {
 
         logger.info("Updating account: {} ...", accountNumber);
         User updatedUser = userService.updateUser(user);
-        
+
         logger.info("Account: {} is updated successfully", accountNumber);
 
         UserResponse userResponse = new UserResponse(updatedUser);
@@ -193,4 +189,5 @@ public class UserController {
 
         return new ModelAndView("redirect:/logout");
     }
+
 }

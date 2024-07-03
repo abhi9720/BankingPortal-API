@@ -22,13 +22,15 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public List<TransactionDTO> getAllTransactionsByAccountNumber(String accountNumber) {
-        List<Transaction> transactions = transactionRepository.findBySourceAccount_AccountNumberOrTargetAccount_AccountNumber(accountNumber, accountNumber);
+        List<Transaction> transactions = transactionRepository
+                .findBySourceAccount_AccountNumberOrTargetAccount_AccountNumber(accountNumber, accountNumber);
 
-        List<TransactionDTO> transactionDTOs = transactions.stream()
+        List<TransactionDTO> transactionDTOs = transactions.parallelStream()
                 .map(transactionMapper::toDto)
                 .sorted((t1, t2) -> t2.getTransactionDate().compareTo(t1.getTransactionDate()))
                 .collect(Collectors.toList());
 
         return transactionDTOs;
     }
+
 }

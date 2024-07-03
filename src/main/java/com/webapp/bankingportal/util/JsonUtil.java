@@ -1,19 +1,31 @@
 package com.webapp.bankingportal.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class JsonUtil {
+public interface JsonUtil {
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    public static final Logger logger = LoggerFactory.getLogger(JsonUtil.class);
+    public static final ObjectMapper objectMapper = new ObjectMapper()
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
-    // Convert an object to a JSON string
+    /**
+     * Convert an object to a JSON string.
+     *
+     * @param obj the object to be converted to JSON
+     * @return the JSON string representation of the object
+     */
     public static String toJson(Object obj) {
         try {
             return objectMapper.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return null;
+            logger.error(e.getMessage(), e);
         }
+
+        return null;
     }
 }

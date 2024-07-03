@@ -6,10 +6,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import com.google.i18n.phonenumbers.NumberParseException;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.webapp.bankingportal.entity.Account;
 import com.webapp.bankingportal.entity.User;
@@ -18,10 +15,7 @@ import com.webapp.bankingportal.exception.UserInvalidException;
 import com.webapp.bankingportal.mapper.UserMapper;
 import com.webapp.bankingportal.repository.UserRepository;
 import com.webapp.bankingportal.util.LoggedinUser;
-
-import jakarta.mail.internet.AddressException;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.transaction.Transactional;
+import com.webapp.bankingportal.util.ValidationUtil;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -32,8 +26,6 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final EmailService emailService;
     private final GeolocationService geolocationService;
-
-    private static final PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
 
     public UserServiceImpl(
             UserRepository userRepository,
@@ -53,6 +45,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User registerUser(User user) {
+        ValidationUtil.validateUserDetails(user);
+
         if (doesEmailExist(user.getEmail())) {
             throw new UserInvalidException("Email already exists");
         }
@@ -61,7 +55,7 @@ public class UserServiceImpl implements UserService {
             throw new UserInvalidException("Phone number already exists");
         }
 
-        validateUserDetails(user);
+        ValidationUtil.validateUserDetails(user);
 
         user.setCountryCode(user.getCountryCode().toUpperCase());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -85,7 +79,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserInvalidException(
                         "User with account number " + accountNumber + " does not exist"));
 
-        validateUserDetails(source);
+        ValidationUtil.validateUserDetails(source);
 
         source.setPassword(target.getPassword());
         userMapper.updateUser(source, target);
@@ -118,124 +112,11 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByEmail(email);
     }
 
-    private static void validateUserDetails(User user) {
-        if (user == null) {
-            throw new UserInvalidException("User details cannot be empty");
-        }
-
-        if (user.getName() == null || user.getName().isEmpty()) {
-            throw new UserInvalidException("Name cannot be empty");
-        }
-
-        if (user.getAddress() == null || user.getAddress().isEmpty()) {
-            throw new UserInvalidException("Address cannot be empty");
-        }
-
-        if (user.getEmail() == null || user.getEmail().isEmpty()) {
-            throw new UserInvalidException("Email cannot be empty");
-        } else {
-            try {
-                new InternetAddress(user.getEmail()).validate();
-            } catch (AddressException e) {
-                throw new UserInvalidException("Invalid email: " + e.getMessage());
-            }
-        }
-
-        validateCountryCode(user.getCountryCode());
-        validatePhoneNumber(user.getPhoneNumber(), user.getCountryCode());
-        validatePassword(user.getPassword());
-    }
-
-    private static void validateCountryCode(String countryCode) {
-        if (countryCode == null || countryCode.isEmpty()) {
-            throw new UserInvalidException("Country code cannot be empty");
-        }
-
-        if (!phoneNumberUtil.getSupportedRegions().contains(countryCode)) {
-            throw new UserInvalidException("Invalid country code: " + countryCode);
-        }
-    }
-
-    private static void validatePhoneNumber(String phoneNumber, String countryCode) {
-        if (phoneNumber == null || phoneNumber.isEmpty()) {
-            throw new UserInvalidException("Phone number cannot be empty");
-        }
-
-        PhoneNumber parsedNumber = null;
-
-        try {
-            parsedNumber = phoneNumberUtil.parse(phoneNumber, countryCode);
-        } catch (NumberParseException e) {
-            throw new UserInvalidException("Invalid phone number: " + e.getMessage());
-        }
-
-        if (!phoneNumberUtil.isValidNumber(parsedNumber)) {
-            throw new UserInvalidException("Invalid phone number: " + parsedNumber);
-        }
-    }
-
-    private static void validatePassword(String password) {
-        if (password == null || password.isEmpty()) {
-            throw new UserInvalidException("Password cannot be empty");
-        }
-
-        if (password.length() < 8) {
-            throw new UserInvalidException("Password must be at least 8 characters long");
-        }
-
-        if (password.length() >= 128) {
-            throw new UserInvalidException("Password must be less than 128 characters long");
-        }
-
-        if (password.matches(".*\\s.*")) {
-            throw new UserInvalidException("Password cannot contain any whitespace characters");
-        }
-
-        StringBuilder message = new StringBuilder();
-        message.append("Password must contain at least ");
-
-        boolean needsComma = false;
-        if (!password.matches(".*[A-Z].*")) {
-            message.append("one uppercase letter");
-            needsComma = true;
-        }
-
-        if (!password.matches(".*[a-z].*")) {
-            if (needsComma) {
-                message.append(", ");
-            }
-            message.append("one lowercase letter");
-            needsComma = true;
-        }
-
-        if (!password.matches(".*[0-9].*")) {
-            if (needsComma) {
-                message.append(", ");
-            }
-            message.append("one digit");
-            needsComma = true;
-        }
-
-        if (!password.matches(".*[^A-Za-z0-9].*")) {
-            if (needsComma) {
-                message.append(", ");
-            }
-            message.append("one special character");
-        }
-
-        if (message.length() > "Password must contain at least ".length()) {
-            int lastCommaIndex = message.lastIndexOf(",");
-            if (lastCommaIndex > -1) {
-                message.replace(lastCommaIndex, lastCommaIndex + 1, " and");
-            }
-            throw new UserInvalidException(message.toString());
-        }
-    }
-
     @Override
     public CompletableFuture<Boolean> sendLoginNotificationEmail(User user, String ip) {
         final String name = user.getName();
         final String email = user.getEmail();
+        final String subject = "New login to OneStopBank";
         final String loginTime = new Timestamp(System.currentTimeMillis()).toString();
 
         return geolocationService.getGeolocation(ip).thenComposeAsync(geolocationResponse -> {
@@ -247,7 +128,7 @@ public class UserServiceImpl implements UserService {
             final String emailText = emailService.getLoginEmailTemplate(
                     name, loginTime, loginLocation);
 
-            return emailService.sendEmail(email, "OneStopBank Login", emailText)
+            return emailService.sendEmail(email, subject, emailText)
                     .thenApplyAsync(result -> true)
                     .exceptionally(ex -> false);
 
@@ -256,7 +137,7 @@ public class UserServiceImpl implements UserService {
             final String emailText = emailService.getLoginEmailTemplate(
                     name, loginTime, "Unknown");
 
-            return emailService.sendEmail(email, "OneStopBank Login", emailText)
+            return emailService.sendEmail(email, subject, emailText)
                     .thenApplyAsync(result -> true)
                     .exceptionally(ex -> false);
         });
@@ -270,9 +151,8 @@ public class UserServiceImpl implements UserService {
             userRepository.save(user);
             return true;
         } catch (Exception e) {
-            // Log the error
-            // Optionally, you can throw a custom exception here
             throw new PasswordResetException("Failed to reset password", e);
         }
     }
+
 }
