@@ -106,10 +106,12 @@ public class UserResponse {
         return "{ \"name\": \"" + name
                 + "\", \"email\": \"" + email
                 + "\", \"address\": \"" + address
+                + "\", \"countryCode\": \"" + countryCode
                 + "\", \"phoneNumber\": \"" + phoneNumber
                 + "\", \"accountNumber\": \"" + accountNumber
                 + "\", \"ifscCode\": \"" + ifscCode
                 + "\", \"branch\": \"" + branch
                 + "\", \"accountType\": \"" + accountType + "\" }";
     }
+
 }

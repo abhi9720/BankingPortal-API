@@ -153,14 +153,14 @@ public class OtpServiceImpl implements OtpService {
     }
 
     @Override
-    public CompletableFuture<Boolean> sendOTPByEmail(String email, String name, String accountNumber, String otp) {
+    public CompletableFuture<Void> sendOTPByEmail(String email, String name, String accountNumber, String otp) {
         // Compose the email content
         String subject = "OTP Verification";
         String emailText = emailService.getOtpLoginEmailTemplate(name, "xxx" + accountNumber.substring(3), otp);
 
         CompletableFuture<Void> emailSendingFuture = emailService.sendEmail(email, subject, emailText);
 
-        return emailSendingFuture.thenApplyAsync(result -> true).exceptionally(ex -> false);
+        return emailSendingFuture;
     }
 
     @Override
