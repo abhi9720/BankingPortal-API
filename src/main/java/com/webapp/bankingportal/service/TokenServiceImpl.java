@@ -5,19 +5,13 @@ import static org.springframework.security.core.userdetails.User.withUsername;
 import java.util.Date;
 import java.util.function.Function;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.webapp.bankingportal.entity.Account;
 import com.webapp.bankingportal.entity.Token;
-import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.exception.InvalidTokenException;
 import com.webapp.bankingportal.repository.AccountRepository;
 import com.webapp.bankingportal.repository.TokenRepository;
@@ -31,30 +25,24 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
 
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class TokenServiceImpl implements TokenService {
 
-    @Autowired
-    private UserRepository userRepository;
+    @Value("${jwt.secret}")
+    private String secret;
 
-    @Autowired
-    private TokenRepository tokenRepository;
+    @Value("${jwt.expiration}")
+    private long expiration;
 
-    @Autowired
-    private AccountRepository accountRepository;
-
-    private final long expiration;
-    private final String secret;
-
-    private static final Logger logger = LoggerFactory.getLogger(TokenServiceImpl.class);
-
-    public TokenServiceImpl(
-            @Value("${jwt.secret}") String secret,
-            @Value("${jwt.expiration}") long expiration) {
-
-        this.secret = secret;
-        this.expiration = expiration;
-    }
+    private final UserRepository userRepository;
+    private final TokenRepository tokenRepository;
+    private final AccountRepository accountRepository;
 
     @Override
     public String getUsernameFromToken(String token) throws InvalidTokenException {
@@ -63,14 +51,14 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public String generateToken(UserDetails userDetails) {
-        logger.info("Generating token for user: " + userDetails.getUsername());
+        log.info("Generating token for user: " + userDetails.getUsername());
         return doGenerateToken(userDetails,
                 new Date(System.currentTimeMillis() + expiration));
     }
 
     @Override
     public String generateToken(UserDetails userDetails, Date expiry) {
-        logger.info("Generating token for user: " + userDetails.getUsername());
+        log.info("Generating token for user: " + userDetails.getUsername());
         return doGenerateToken(userDetails, expiry);
     }
 
@@ -83,7 +71,7 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public UserDetails loadUserByUsername(String accountNumber) throws UsernameNotFoundException {
-        User user = userRepository.findByAccountAccountNumber(accountNumber)
+        val user = userRepository.findByAccountAccountNumber(accountNumber)
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "User not found with account number: " + accountNumber));
 
@@ -99,7 +87,7 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver)
             throws InvalidTokenException {
-        final Claims claims = getAllClaimsFromToken(token);
+        val claims = getAllClaimsFromToken(token);
         return claimsResolver.apply(claims);
     }
 
@@ -133,12 +121,12 @@ public class TokenServiceImpl implements TokenService {
             throw new InvalidTokenException("Token already exists");
         }
 
-        Account account = accountRepository.findByAccountNumber(
+        val account = accountRepository.findByAccountNumber(
                 getUsernameFromToken(token));
 
-        logger.info("Saving token for account: " + account.getAccountNumber());
+        log.info("Saving token for account: " + account.getAccountNumber());
 
-        Token tokenObj = new Token(
+        val tokenObj = new Token(
                 token,
                 getExpirationDateFromToken(token),
                 account);
@@ -160,4 +148,5 @@ public class TokenServiceImpl implements TokenService {
             tokenRepository.deleteByToken(token);
         }
     }
+
 }

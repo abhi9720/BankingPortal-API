@@ -5,7 +5,6 @@ import static org.springframework.security.core.userdetails.User.withUsername;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,23 +21,22 @@ import org.springframework.transaction.annotation.Transactional;
 import com.github.javafaker.Faker;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.jayway.jsonpath.JsonPath;
 
 import com.webapp.bankingportal.dto.AmountRequest;
 import com.webapp.bankingportal.dto.LoginRequest;
 import com.webapp.bankingportal.dto.PinRequest;
-import com.webapp.bankingportal.entity.Account;
 import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.repository.UserRepository;
 import com.webapp.bankingportal.service.AccountService;
 import com.webapp.bankingportal.service.TokenService;
 import com.webapp.bankingportal.util.JsonUtil;
 
-import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
+
+import lombok.val;
 
 @SpringBootTest
 @TestPropertySource(locations = "classpath:application-test.properties")
@@ -77,20 +74,20 @@ public abstract class BaseTest {
     }
 
     protected static String getRandomCountryCode() {
-        Object[] supportedRegions = phoneNumberUtil.getSupportedRegions().toArray();
-        int index = faker.number().numberBetween(0, supportedRegions.length - 1);
+        val supportedRegions = phoneNumberUtil.getSupportedRegions().toArray();
+        val index = faker.number().numberBetween(0, supportedRegions.length - 1);
         return supportedRegions[index].toString();
     }
 
     protected static String getRandomPhoneNumber(String region) {
-        PhoneNumber exampleNumber = phoneNumberUtil.getExampleNumber(region);
+        val exampleNumber = phoneNumberUtil.getExampleNumber(region);
 
         for (int i = 0; i < 100; ++i) {
-            String nationalNumber = String.valueOf(exampleNumber.getNationalNumber());
-            String randomPhoneNumber = faker.number().digits(nationalNumber.length());
+            val nationalNumber = String.valueOf(exampleNumber.getNationalNumber());
+            val randomPhoneNumber = faker.number().digits(nationalNumber.length());
 
             try {
-                PhoneNumber phoneNumber = phoneNumberUtil.parse(randomPhoneNumber, region);
+                val phoneNumber = phoneNumberUtil.parse(randomPhoneNumber, region);
                 if (phoneNumberUtil.isValidNumber(phoneNumber)) {
                     return phoneNumberUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164);
                 }
@@ -120,9 +117,9 @@ public abstract class BaseTest {
     }
 
     protected static User createUser() {
-        String countryCode = getRandomCountryCode();
-        String phoneNumber = getRandomPhoneNumber(countryCode);
-        User user = new User();
+        val countryCode = getRandomCountryCode();
+        val phoneNumber = getRandomPhoneNumber(countryCode);
+        val user = new User();
         user.setName(faker.name().fullName());
         user.setPassword(getRandomPassword());
         user.setEmail(faker.internet().safeEmailAddress());
@@ -133,7 +130,7 @@ public abstract class BaseTest {
     }
 
     protected User createAndRegisterUser() throws Exception {
-        User user = createUser();
+        val user = createUser();
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -144,23 +141,21 @@ public abstract class BaseTest {
 
     protected HashMap<String, String> createAndLoginUser()
             throws Exception {
-        User user = createAndRegisterUser();
-        String accountNumber = userRepository.findByEmail(user.getEmail()).get().getAccount().getAccountNumber();
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setAccountNumber(accountNumber);
-        loginRequest.setPassword(user.getPassword());
+        val user = createAndRegisterUser();
+        val accountNumber = userRepository.findByEmail(user.getEmail()).get().getAccount().getAccountNumber();
+        val loginRequest = new LoginRequest(accountNumber, user.getPassword(), false);
 
-        MvcResult loginResult = mockMvc.perform(MockMvcRequestBuilders
+        val loginResult = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.toJson(loginRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
 
-        String responseBody = loginResult.getResponse().getContentAsString();
+        val responseBody = loginResult.getResponse().getContentAsString();
         String token = JsonPath.read(responseBody, "$.token");
 
-        HashMap<String, String> userDetails = new HashMap<>();
+        val userDetails = new HashMap<String, String>();
         userDetails.put("name", user.getName());
         userDetails.put("email", user.getEmail());
         userDetails.put("countryCode", user.getCountryCode());
@@ -175,14 +170,11 @@ public abstract class BaseTest {
 
     protected HashMap<String, String> createAndLoginUserWithPin()
             throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUser();
-        String accountNumber = userDetails.get("accountNumber");
-        String password = userDetails.get("password");
+        val userDetails = createAndLoginUser();
+        val accountNumber = userDetails.get("accountNumber");
+        val password = userDetails.get("password");
 
-        PinRequest pinRequest = new PinRequest();
-        pinRequest.setAccountNumber(accountNumber);
-        pinRequest.setPassword(password);
-        pinRequest.setPin(getRandomPin());
+        val pinRequest = new PinRequest(accountNumber, getRandomPin(), password);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/create")
@@ -192,16 +184,13 @@ public abstract class BaseTest {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.msg").value("PIN created successfully"));
 
-        userDetails.put("pin", pinRequest.getPin());
+        userDetails.put("pin", pinRequest.pin());
         return userDetails;
     }
 
     protected HashMap<String, String> createAndLoginUserWithInitialBalance(double amount) throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
-        AmountRequest amountRequest = new AmountRequest();
-        amountRequest.setAccountNumber(userDetails.get("accountNumber"));
-        amountRequest.setPin(userDetails.get("pin"));
-        amountRequest.setAmount(amount);
+        val userDetails = createAndLoginUserWithPin();
+        val amountRequest = new AmountRequest(userDetails.get("accountNumber"), userDetails.get("pin"), amount);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/deposit")
@@ -215,20 +204,20 @@ public abstract class BaseTest {
     }
 
     protected HashMap<String, String> createAccount() {
-        HashMap<String, String> accountDetails = new HashMap<>();
-        User user = createUser();
+        val accountDetails = new HashMap<String, String>();
+        val user = createUser();
         accountDetails.put("password", user.getPassword());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
 
-        Account account = accountService.createAccount(user);
+        val account = accountService.createAccount(user);
         accountDetails.put("accountNumber", account.getAccountNumber());
         return accountDetails;
     }
 
     protected HashMap<String, String> createAccountWithPin(PasswordEncoder passwordEncoder,
             UserRepository userRepository, AccountService accountService) {
-        HashMap<String, String> accountDetails = createAccount();
+        val accountDetails = createAccount();
         accountDetails.put("pin", getRandomPin());
         accountService.createPin(accountDetails.get("accountNumber"), accountDetails.get("password"),
                 accountDetails.get("pin"));
@@ -236,7 +225,7 @@ public abstract class BaseTest {
     }
 
     protected HashMap<String, String> createAccountWithInitialBalance(double amount) {
-        HashMap<String, String> accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
+        val accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
         accountService.cashDeposit(accountDetails.get("accountNumber"), accountDetails.get("pin"), amount);
         return accountDetails;
     }
@@ -244,11 +233,11 @@ public abstract class BaseTest {
     protected static String getTextFromMimeMultipart(MimeMultipart mimeMultipart)
             throws MessagingException, IOException {
 
-        StringBuilder result = new StringBuilder();
-        int count = mimeMultipart.getCount();
+        val result = new StringBuilder();
+        val count = mimeMultipart.getCount();
 
         for (int i = 0; i < count; i++) {
-            BodyPart bodyPart = mimeMultipart.getBodyPart(i);
+            val bodyPart = mimeMultipart.getBodyPart(i);
             if (bodyPart.isMimeType("text/html")) {
                 result.append(bodyPart.getContent());
                 break;
@@ -266,13 +255,14 @@ public abstract class BaseTest {
     protected static String getOtpFromEmail(MimeMessage message)
             throws IOException, MessagingException {
 
-        String content = getTextFromMimeMultipart((MimeMultipart) message.getContent());
-        Pattern pattern = Pattern.compile("<h2.*?>(\\d+)</h2>");
-        Matcher matcher = pattern.matcher(content);
+        val content = getTextFromMimeMultipart((MimeMultipart) message.getContent());
+        val pattern = Pattern.compile("<h2.*?>(\\d+)</h2>");
+        val matcher = pattern.matcher(content);
         if (matcher.find()) {
             return matcher.group(1);
         }
 
         throw new RuntimeException("OTP not found in email");
     }
+
 }

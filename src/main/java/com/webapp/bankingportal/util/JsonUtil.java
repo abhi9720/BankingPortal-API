@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public interface JsonUtil {
 
-    public static final Logger logger = LoggerFactory.getLogger(JsonUtil.class);
+    public static final Logger log = LoggerFactory.getLogger(JsonUtil.class);
     public static final ObjectMapper objectMapper = new ObjectMapper()
             .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
@@ -23,9 +23,10 @@ public interface JsonUtil {
         try {
             return objectMapper.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
-            logger.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         }
 
         return null;
     }
+
 }

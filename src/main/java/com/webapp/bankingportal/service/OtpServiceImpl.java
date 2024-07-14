@@ -5,8 +5,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +14,11 @@ import com.webapp.bankingportal.exception.InvalidOtpException;
 import com.webapp.bankingportal.exception.OtpRetryLimitExceededException;
 import com.webapp.bankingportal.repository.OtpInfoRepository;
 
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+
 @Service
+@RequiredArgsConstructor
 public class OtpServiceImpl implements OtpService {
 
     public static final int OTP_ATTEMPTS_LIMIT = 3;
@@ -24,19 +26,12 @@ public class OtpServiceImpl implements OtpService {
     public static final int OTP_RESET_WAITING_TIME_MINUTES = 10;
     public static final int OTP_RETRY_LIMIT_WINDOW_MINUTES = 15;
 
+    private final EmailService emailService;
+    private final OtpInfoRepository otpInfoRepository;
+    private final UserService userService;
+    private final CacheManager cacheManager;
+
     private LocalDateTime otpLimitReachedTime = null;
-
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private OtpInfoRepository otpInfoRepository;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private CacheManager cacheManager;
 
     @Override
     public String generateOTP(String accountNumber) {
@@ -44,7 +39,7 @@ public class OtpServiceImpl implements OtpService {
             throw new AccountDoesNotExistException("Account does not exist");
         }
 
-        OtpInfo existingOtpInfo = otpInfoRepository.findByAccountNumber(accountNumber);
+        val existingOtpInfo = otpInfoRepository.findByAccountNumber(accountNumber);
         if (existingOtpInfo == null) {
             incrementOtpAttempts(accountNumber);
             return generateNewOTP(accountNumber);
@@ -52,8 +47,7 @@ public class OtpServiceImpl implements OtpService {
 
         validateOtpWithinRetryLimit(existingOtpInfo);
 
-        if (isOtpExpired(existingOtpInfo.getGeneratedAt())) {
-            otpInfoRepository.delete(existingOtpInfo);
+        if (isOtpExpired(existingOtpInfo)) {
             return generateNewOTP(accountNumber);
         }
 
@@ -69,20 +63,20 @@ public class OtpServiceImpl implements OtpService {
             return;
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        val now = LocalDateTime.now();
 
         if (otpLimitReachedTime == null) {
             otpLimitReachedTime = now;
         }
 
-        long waitingMinutes = OTP_RESET_WAITING_TIME_MINUTES - otpLimitReachedTime.until(now, ChronoUnit.MINUTES);
+        val waitingMinutes = OTP_RESET_WAITING_TIME_MINUTES - otpLimitReachedTime.until(now, ChronoUnit.MINUTES);
 
         throw new OtpRetryLimitExceededException(
                 "OTP generation limit exceeded. Please try again after " + waitingMinutes + " minutes");
     }
 
     private boolean isOtpRetryLimitExceeded(OtpInfo otpInfo) {
-        int attempts = getOtpAttempts(otpInfo.getAccountNumber());
+        val attempts = getOtpAttempts(otpInfo.getAccountNumber());
         if (attempts < OTP_ATTEMPTS_LIMIT) {
             return false;
         }
@@ -92,13 +86,13 @@ public class OtpServiceImpl implements OtpService {
             return false;
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        val now = LocalDateTime.now();
 
         return otpInfo.getGeneratedAt().isAfter(now.minusMinutes(OTP_RETRY_LIMIT_WINDOW_MINUTES));
     }
 
     private boolean isOtpResetWaitingTimeExceeded() {
-        LocalDateTime now = LocalDateTime.now();
+        val now = LocalDateTime.now();
         return otpLimitReachedTime != null
                 && otpLimitReachedTime.isBefore(now.minusMinutes(OTP_RESET_WAITING_TIME_MINUTES));
     }
@@ -108,7 +102,7 @@ public class OtpServiceImpl implements OtpService {
             throw new AccountDoesNotExistException("Account does not exist");
         }
 
-        Cache cache = cacheManager.getCache("otpAttempts");
+        val cache = cacheManager.getCache("otpAttempts");
         if (cache != null) {
             cache.put(accountNumber, getOtpAttempts(accountNumber) + 1);
         }
@@ -116,20 +110,20 @@ public class OtpServiceImpl implements OtpService {
 
     private void resetOtpAttempts(String accountNumber) {
         otpLimitReachedTime = null;
-        Cache cache = cacheManager.getCache("otpAttempts");
+        val cache = cacheManager.getCache("otpAttempts");
         if (cache != null) {
             cache.put(accountNumber, 0);
         }
     }
 
     private int getOtpAttempts(String accountNumber) {
-        int otpAttempts = 0;
-        Cache cache = cacheManager.getCache("otpAttempts");
+        var otpAttempts = 0;
+        val cache = cacheManager.getCache("otpAttempts");
         if (cache == null) {
             return otpAttempts;
         }
 
-        Integer value = cache.get(accountNumber, Integer.class);
+        val value = cache.get(accountNumber, Integer.class);
         if (value != null) {
             otpAttempts = value;
         }
@@ -138,44 +132,44 @@ public class OtpServiceImpl implements OtpService {
     }
 
     private String generateNewOTP(String accountNumber) {
-        Random random = new Random();
-        int otpValue = 100_000 + random.nextInt(900_000);
-        String otp = String.valueOf(otpValue);
+        val random = new Random();
+        val otpValue = 100_000 + random.nextInt(900_000);
+        val otp = String.valueOf(otpValue);
 
-        // Save the new OTP information in the database
-        OtpInfo otpInfo = new OtpInfo();
-        otpInfo.setAccountNumber(accountNumber);
-        otpInfo.setOtp(otp);
-        otpInfo.setGeneratedAt(LocalDateTime.now());
-        otpInfoRepository.save(otpInfo);
+        otpInfoRepository.save(new OtpInfo(accountNumber, otp, LocalDateTime.now()));
 
         return otp;
     }
 
     @Override
     public CompletableFuture<Void> sendOTPByEmail(String email, String name, String accountNumber, String otp) {
-        // Compose the email content
-        String subject = "OTP Verification";
-        String emailText = emailService.getOtpLoginEmailTemplate(name, "xxx" + accountNumber.substring(3), otp);
+        val subject = "OTP Verification";
+        val emailText = emailService.getOtpLoginEmailTemplate(name, "xxx" + accountNumber.substring(3), otp);
 
-        CompletableFuture<Void> emailSendingFuture = emailService.sendEmail(email, subject, emailText);
+        val emailSendingFuture = emailService.sendEmail(email, subject, emailText);
 
         return emailSendingFuture;
     }
 
     @Override
     public boolean validateOTP(String accountNumber, String otp) {
-        OtpInfo otpInfo = otpInfoRepository.findByAccountNumberAndOtp(accountNumber, otp);
+        val otpInfo = otpInfoRepository.findByAccountNumberAndOtp(accountNumber, otp);
         if (otpInfo == null) {
             throw new InvalidOtpException("Invalid OTP");
         }
-        // otpInfoRepository.delete(otpInfo);
 
-        return !isOtpExpired(otpInfo.getGeneratedAt());
+        return !isOtpExpired(otpInfo);
     }
 
-    private boolean isOtpExpired(LocalDateTime otpGeneratedAt) {
-        LocalDateTime now = LocalDateTime.now();
-        return otpGeneratedAt.isBefore(now.minusMinutes(OTP_EXPIRY_MINUTES));
+    private boolean isOtpExpired(OtpInfo otpInfo) {
+        val now = LocalDateTime.now();
+        val generatedAt = otpInfo.getGeneratedAt();
+        val expired = generatedAt.isBefore(now.minusMinutes(OTP_EXPIRY_MINUTES));
+        if (expired) {
+            otpInfoRepository.delete(otpInfo);
+        }
+
+        return expired;
     }
+
 }

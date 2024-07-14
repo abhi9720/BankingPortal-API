@@ -11,11 +11,16 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "passwordresettoken")
+@Data
+@NoArgsConstructor
 public class PasswordResetToken implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "passwordresettoken_sequence")
@@ -32,45 +37,14 @@ public class PasswordResetToken implements Serializable {
     @Column(nullable = false)
     private LocalDateTime expiryDateTime;
 
-    public PasswordResetToken() {
-    }
-
     public PasswordResetToken(String token, User user, LocalDateTime expiryDateTime) {
         this.token = token;
         this.user = user;
         this.expiryDateTime = expiryDateTime;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public LocalDateTime getExpiryDateTime() {
-        return expiryDateTime;
-    }
-
-    public void setExpiryDateTime(LocalDateTime expiryDateTime) {
-        this.expiryDateTime = expiryDateTime;
+    public boolean isTokenValid() {
+        return getExpiryDateTime().isAfter(LocalDateTime.now());
     }
 
 }

@@ -3,10 +3,6 @@ package com.webapp.bankingportal.service;
 import java.util.Date;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,23 +18,22 @@ import com.webapp.bankingportal.exception.UnauthorizedException;
 import com.webapp.bankingportal.repository.AccountRepository;
 import com.webapp.bankingportal.repository.TransactionRepository;
 
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
 
-    @Autowired
-    private AccountRepository accountRepository;
-
-    @Autowired
-    private TransactionRepository transactionRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    private static final Logger logger = LoggerFactory.getLogger(AccountServiceImpl.class);
+    private final AccountRepository accountRepository;
+    private final TransactionRepository transactionRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public Account createAccount(User user) {
-        Account account = new Account();
+        val account = new Account();
         account.setAccountNumber(generateUniqueAccountNumber());
         account.setBalance(0.0);
         account.setUser(user);
@@ -47,7 +42,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public boolean isPinCreated(String accountNumber) {
-        Account account = accountRepository.findByAccountNumber(accountNumber);
+        val account = accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
             throw new NotFoundException("Account not found");
         }
@@ -66,7 +61,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     private void validatePin(String accountNumber, String pin) {
-        Account account = accountRepository.findByAccountNumber(accountNumber);
+        val account = accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
             throw new NotFoundException("Account not found");
         }
@@ -85,7 +80,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     private void validatePassword(String accountNumber, String password) {
-        Account account = accountRepository.findByAccountNumber(accountNumber);
+        val account = accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
             throw new NotFoundException("Account not found");
         }
@@ -103,7 +98,7 @@ public class AccountServiceImpl implements AccountService {
     public void createPin(String accountNumber, String password, String pin) {
         validatePassword(accountNumber, password);
 
-        Account account = accountRepository.findByAccountNumber(accountNumber);
+        val account = accountRepository.findByAccountNumber(accountNumber);
         if (account.getPin() != null) {
             throw new UnauthorizedException("PIN already created");
         }
@@ -122,18 +117,18 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void updatePin(String accountNumber, String oldPin, String password, String newPin) {
-        logger.info("Updating PIN for account: {}", accountNumber);
+        log.info("Updating PIN for account: {}", accountNumber);
 
         validatePassword(accountNumber, password);
         validatePin(accountNumber, oldPin);
 
-        Account account = accountRepository.findByAccountNumber(accountNumber);
+        val account = accountRepository.findByAccountNumber(accountNumber);
 
         if (newPin == null || newPin.isEmpty()) {
             throw new InvalidPinException("New PIN cannot be empty");
         }
 
-        if (newPin.length() != 4) {
+        if (!newPin.matches("[0-9]{4}")) {
             throw new InvalidPinException("New PIN must be 4 digits");
         }
 
@@ -160,13 +155,13 @@ public class AccountServiceImpl implements AccountService {
         validatePin(accountNumber, pin);
         validateAmount(amount);
 
-        Account account = accountRepository.findByAccountNumber(accountNumber);
-        double currentBalance = account.getBalance();
-        double newBalance = currentBalance + amount;
+        val account = accountRepository.findByAccountNumber(accountNumber);
+        val currentBalance = account.getBalance();
+        val newBalance = currentBalance + amount;
         account.setBalance(newBalance);
         accountRepository.save(account);
 
-        Transaction transaction = new Transaction();
+        val transaction = new Transaction();
         transaction.setAmount(amount);
         transaction.setTransactionType(TransactionType.CASH_DEPOSIT);
         transaction.setTransactionDate(new Date());
@@ -179,17 +174,17 @@ public class AccountServiceImpl implements AccountService {
         validatePin(accountNumber, pin);
         validateAmount(amount);
 
-        Account account = accountRepository.findByAccountNumber(accountNumber);
-        double currentBalance = account.getBalance();
+        val account = accountRepository.findByAccountNumber(accountNumber);
+        val currentBalance = account.getBalance();
         if (currentBalance < amount) {
             throw new InsufficientBalanceException("Insufficient balance");
         }
 
-        double newBalance = currentBalance - amount;
+        val newBalance = currentBalance - amount;
         account.setBalance(newBalance);
         accountRepository.save(account);
 
-        Transaction transaction = new Transaction();
+        val transaction = new Transaction();
         transaction.setAmount(amount);
         transaction.setTransactionType(TransactionType.CASH_WITHDRAWAL);
         transaction.setTransactionDate(new Date());
@@ -202,27 +197,27 @@ public class AccountServiceImpl implements AccountService {
         validatePin(sourceAccountNumber, pin);
         validateAmount(amount);
 
-        Account targetAccount = accountRepository.findByAccountNumber(targetAccountNumber);
+        val targetAccount = accountRepository.findByAccountNumber(targetAccountNumber);
         if (targetAccount == null) {
             throw new NotFoundException("Target account not found");
         }
 
-        Account sourceAccount = accountRepository.findByAccountNumber(sourceAccountNumber);
-        double sourceBalance = sourceAccount.getBalance();
+        val sourceAccount = accountRepository.findByAccountNumber(sourceAccountNumber);
+        val sourceBalance = sourceAccount.getBalance();
         if (sourceBalance < amount) {
             throw new InsufficientBalanceException("Insufficient balance");
         }
 
-        double newSourceBalance = sourceBalance - amount;
+        val newSourceBalance = sourceBalance - amount;
         sourceAccount.setBalance(newSourceBalance);
         accountRepository.save(sourceAccount);
 
-        double targetBalance = targetAccount.getBalance();
-        double newTargetBalance = targetBalance + amount;
+        val targetBalance = targetAccount.getBalance();
+        val newTargetBalance = targetBalance + amount;
         targetAccount.setBalance(newTargetBalance);
         accountRepository.save(targetAccount);
 
-        Transaction transaction = new Transaction();
+        val transaction = new Transaction();
         transaction.setAmount(amount);
         transaction.setTransactionType(TransactionType.CASH_TRANSFER);
         transaction.setTransactionDate(new Date());

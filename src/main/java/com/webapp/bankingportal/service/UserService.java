@@ -19,11 +19,16 @@ public interface UserService {
 
     public boolean doesAccountExist(String accountNumber);
 
+    public boolean doesIdentifierExist(String identifier);
+
     public Optional<User> getUserByAccountNumber(String accountNumber);
 
     public Optional<User> getUserByEmail(String email);
 
+    public Optional<User> getUserByIdentifier(String identifier);
+
     public CompletableFuture<Boolean> sendLoginNotificationEmail(User user, String ip);
 
     public boolean resetPassword(User user, String newpassword);
+
 }

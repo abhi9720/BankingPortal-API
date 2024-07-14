@@ -12,10 +12,11 @@ import com.webapp.bankingportal.exception.UserInvalidException;
 
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
+import lombok.val;
 
 public interface ValidationUtil {
 
-    public static final Logger logger = LoggerFactory.getLogger(ValidationUtil.class);
+    public static final Logger log = LoggerFactory.getLogger(ValidationUtil.class);
     public static final PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
 
     public static boolean isValidEmail(String identifier) {
@@ -23,7 +24,7 @@ public interface ValidationUtil {
             new InternetAddress(identifier).validate();
             return true;
         } catch (AddressException e) {
-            logger.warn("Invalid email address: {}", identifier);
+            log.warn("Invalid email address: {}", identifier);
         }
 
         return false;
@@ -67,10 +68,10 @@ public interface ValidationUtil {
             throw new UserInvalidException("Password cannot contain any whitespace characters");
         }
 
-        StringBuilder message = new StringBuilder();
+        val message = new StringBuilder();
         message.append("Password must contain at least ");
 
-        boolean needsComma = false;
+        var needsComma = false;
         if (!password.matches(".*[A-Z].*")) {
             message.append("one uppercase letter");
             needsComma = true;
@@ -100,7 +101,7 @@ public interface ValidationUtil {
         }
 
         if (message.length() > "Password must contain at least ".length()) {
-            int lastCommaIndex = message.lastIndexOf(",");
+            val lastCommaIndex = message.lastIndexOf(",");
             if (lastCommaIndex > -1) {
                 message.replace(lastCommaIndex, lastCommaIndex + 1, " and");
             }
@@ -156,4 +157,5 @@ public interface ValidationUtil {
 
         validatePassword(user.getPassword());
     }
+
 }
