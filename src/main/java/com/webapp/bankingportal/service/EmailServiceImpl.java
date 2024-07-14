@@ -3,9 +3,6 @@ package com.webapp.bankingportal.service;
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -13,14 +10,15 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
-
-    private static final Logger logger = LoggerFactory.getLogger(EmailServiceImpl.class);
 
     public EmailServiceImpl(JavaMailSender mailSender) {
         this.mailSender = mailSender;
@@ -29,22 +27,22 @@ public class EmailServiceImpl implements EmailService {
     @Override
     @Async
     public CompletableFuture<Void> sendEmail(String to, String subject, String text) {
-        CompletableFuture<Void> future = new CompletableFuture<>();
+        val future = new CompletableFuture<Void>();
 
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            val message = mailSender.createMimeMessage();
+            val helper = new MimeMessageHelper(message, true);
             helper.setTo(to);
             // From address is automatically set by Spring Boot based on your properties
             helper.setSubject(subject);
             helper.setText(text, true); // Set the second parameter to true to send HTML content
             mailSender.send(message);
 
-            logger.info("Sent email to {}", to);
+            log.info("Sent email to {}", to);
             future.complete(null);
 
         } catch (MessagingException | MailException e) {
-            logger.error("Failed to send email to {}", to, e);
+            log.error("Failed to send email to {}", to, e);
             future.completeExceptionally(e);
         }
 
@@ -79,7 +77,6 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public String getOtpLoginEmailTemplate(String name, String accountNumber, String otp) {
-
         return "<div style=\"font-family: Helvetica, Arial, sans-serif; min-width: 320px; max-width: 1000px; margin: 0 auto; overflow: auto; line-height: 2; background-color: #f1f1f1; padding: 20px;\">"
                 + "<div style=\"margin: 50px auto; width: 100%; max-width: 600px; padding: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);\">"
                 + "<div style=\"border-bottom: 1px solid #ddd; padding-bottom: 10px; text-align: center;\">"
@@ -105,19 +102,20 @@ public class EmailServiceImpl implements EmailService {
 
     public void sendEmailWithAttachment(String to, String subject, String text, String attachmentFilePath) {
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            val message = mailSender.createMimeMessage();
+            val helper = new MimeMessageHelper(message, true);
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(text, true); // Set the second parameter to true to send HTML content
 
             // Add an attachment to the email
-            File attachmentFile = new File(attachmentFilePath);
+            val attachmentFile = new File(attachmentFilePath);
             helper.addAttachment(attachmentFile.getName(), attachmentFile);
 
             mailSender.send(message);
         } catch (MessagingException e) {
-            logger.error("Failed to send email to {}", to, e);
+            log.error("Failed to send email to {}", to, e);
         }
     }
+
 }

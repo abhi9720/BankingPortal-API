@@ -12,7 +12,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 @Entity
+@NoArgsConstructor
+@Data
 public class Token {
 
     @Id
@@ -31,11 +36,8 @@ public class Token {
 
     @NotNull
     @ManyToOne
-	@JoinColumn(name = "account_id")
+    @JoinColumn(name = "account_id")
     private Account account;
-
-    public Token() {
-    }
 
     public Token(String token, Date expiryAt, Account account) {
         this.token = token;
@@ -43,43 +45,4 @@ public class Token {
         this.account = account;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Date getExpiryAt() {
-        return expiryAt;
-    }
-
-    public void setExpiryAt(Date expiryAt) {
-        this.expiryAt = expiryAt;
-    }
-
-    public Account getAccount() {
-        return account;
-    }
-
-    public void setAccount(Account account) {
-        this.account = account;
-    }
 }

@@ -3,7 +3,6 @@ package com.webapp.bankingportal.service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.webapp.bankingportal.entity.PasswordResetToken;
@@ -12,19 +11,21 @@ import com.webapp.bankingportal.repository.PasswordResetTokenRepository;
 
 import jakarta.transaction.Transactional;
 
-@Service
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 
+@Service
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private static final int EXPIRATION_HOURS = 24;
 
-    @Autowired
-    private PasswordResetTokenRepository passwordResetTokenRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Override
     public String generatePasswordResetToken(User user) {
         // Check if there's an existing token for the user that hasn't expired
-        PasswordResetToken existingToken = passwordResetTokenRepository.findByUser(user);
+        val existingToken = passwordResetTokenRepository.findByUser(user);
 
         if (existingToken != null) {
             // Check if the existing token has more than 5 minutes left before expiration
@@ -38,13 +39,13 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // Generate a new token
-        String token = UUID.randomUUID().toString();
+        val token = UUID.randomUUID().toString();
 
         // Calculate token expiry date/time
-        LocalDateTime expiryDateTime = LocalDateTime.now().plusHours(EXPIRATION_HOURS);
+        val expiryDateTime = LocalDateTime.now().plusHours(EXPIRATION_HOURS);
 
         // Save the new token in the database
-        PasswordResetToken resetToken = new PasswordResetToken(token, user, expiryDateTime);
+        val resetToken = new PasswordResetToken(token, user, expiryDateTime);
         passwordResetTokenRepository.save(resetToken);
 
         return token;
@@ -55,10 +56,8 @@ public class AuthServiceImpl implements AuthService {
     public boolean verifyPasswordResetToken(String token, User user) {
         return passwordResetTokenRepository.findByToken(token)
                 .map(resetToken -> {
-                    boolean isTokenValid = resetToken.getExpiryDateTime().isAfter(LocalDateTime.now());
-                    boolean isUserMatch = user.equals(resetToken.getUser());
                     deletePasswordResetToken(token);
-                    return isTokenValid && isUserMatch;
+                    return user.equals(resetToken.getUser()) && resetToken.isTokenValid();
                 })
                 .orElse(false);
     }
@@ -68,4 +67,5 @@ public class AuthServiceImpl implements AuthService {
         // Delete the token from the database
         passwordResetTokenRepository.deleteByToken(token);
     }
+
 }

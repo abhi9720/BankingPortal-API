@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 
-
+import lombok.val;
 
 @Configuration
 @EnableCaching
@@ -19,7 +19,7 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager();
+        val cacheManager = new CaffeineCacheManager();
         cacheManager.setCacheNames(List.of("otpAttempts")); // Define the cache name
         cacheManager.setCaffeine(caffeineConfig());
         return cacheManager;
@@ -31,4 +31,5 @@ public class CacheConfig {
                 .maximumSize(100) // Maximum of 100 entries in the cache
                 .recordStats(); // For monitoring cache statistics (optional)
     }
+
 }

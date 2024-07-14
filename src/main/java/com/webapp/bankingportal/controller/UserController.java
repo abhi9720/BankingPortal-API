@@ -1,15 +1,9 @@
 package com.webapp.bankingportal.controller;
 
-import java.util.concurrent.CompletableFuture;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +19,7 @@ import com.webapp.bankingportal.dto.OtpVerificationRequest;
 import com.webapp.bankingportal.dto.UserResponse;
 import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.exception.InvalidTokenException;
+import com.webapp.bankingportal.exception.UnauthorizedException;
 import com.webapp.bankingportal.service.TokenService;
 import com.webapp.bankingportal.service.OtpService;
 import com.webapp.bankingportal.service.UserService;
@@ -33,8 +28,12 @@ import com.webapp.bankingportal.util.LoggedinUser;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 @RestController
 @RequestMapping("/api/users")
+@Slf4j
 public class UserController {
 
     private final AuthenticationManager authenticationManager;
@@ -42,9 +41,6 @@ public class UserController {
     private final UserDetailsService userDetailsService;
     private final UserService userService;
     private final OtpService otpService;
-
-    private static final Logger logger = LoggerFactory.getLogger(
-            UserController.class);
 
     public UserController(
             UserService userService,
@@ -62,63 +58,69 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody User user) {
-        User registeredUser = userService.registerUser(user);
-        UserResponse userResponse = new UserResponse(registeredUser);
+        val registeredUser = userService.registerUser(user);
+        val userResponse = new UserResponse(registeredUser);
 
-        return ResponseEntity.ok(userResponse.toString());
+        return ResponseEntity.ok(JsonUtil.toJson(userResponse));
     }
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request)
             throws InvalidTokenException {
 
-        final String accountNumber = loginRequest.getAccountNumber();
+        val identifier = loginRequest.identifier();
+        log.info("Received login request for identifier: {}", identifier);
 
-        logger.info("Authenticating Account: {}", accountNumber);
+        val user = userService.getUserByIdentifier(identifier)
+                .orElseThrow(() -> new UnauthorizedException("User not found for the given identifier"));
+
+        val accountNumber = user.getAccount().getAccountNumber();
+
+        log.info("Authenticating Account: {}", accountNumber);
 
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 accountNumber,
-                loginRequest.getPassword()));
+                loginRequest.password()));
 
-        logger.info("Account: {} authenticated successfully", accountNumber);
+        log.info("Account: {} authenticated successfully", accountNumber);
 
         userService.sendLoginNotificationEmail(
                 userService.getUserByAccountNumber(accountNumber).get(),
                 request.getRemoteAddr());
 
-        final UserDetails userDetails = userDetailsService
+        val userDetails = userDetailsService
                 .loadUserByUsername(accountNumber);
 
-        final String token = tokenService.generateToken(userDetails);
+        val token = tokenService.generateToken(userDetails);
         tokenService.saveToken(token);
 
-        logger.info("Account: {} logged in successfully", accountNumber);
+        log.info("Account: {} logged in successfully", accountNumber);
 
         return ResponseEntity.ok("{ \"token\": \"" + token + "\" }");
     }
 
     @PostMapping("/generate-otp")
     public ResponseEntity<String> generateOtp(@RequestBody OtpRequest otpRequest) {
-        final String accountNumber = otpRequest.getAccountNumber();
-        if (!userService.doesAccountExist(accountNumber)) {
-            return ResponseEntity.badRequest()
-                    .body("User not found for the given account number");
-        }
+        val identifier = otpRequest.identifier();
+        log.info("Received OTP request for identifier: {}", identifier);
 
-        final User user = userService.getUserByAccountNumber(accountNumber).get();
+        val user = userService.getUserByIdentifier(identifier)
+                .orElseThrow(() -> new UnauthorizedException("User not found for the given identifier"));
 
         // Generate and send OTP
-        final String generatedOtp = otpService.generateOTP(accountNumber);
-        final CompletableFuture<Void> emailSendingFuture = otpService.sendOTPByEmail(
+        val accountNumber = user.getAccount().getAccountNumber();
+        log.info("Generating OTP for account number: {}", accountNumber);
+        val generatedOtp = otpService.generateOTP(accountNumber);
+        val emailSendingFuture = otpService.sendOTPByEmail(
                 user.getEmail(),
                 user.getName(),
                 accountNumber,
                 generatedOtp);
 
-        final ResponseEntity<String> successResponse = ResponseEntity
+        val successResponse = ResponseEntity
                 .ok(String.format("{\"message\": \"OTP sent successfully to: %s\"}", user.getEmail()));
 
-        final ResponseEntity<String> failureResponse = ResponseEntity.internalServerError()
+        val failureResponse = ResponseEntity.internalServerError()
                 .body(String.format("{\"message\": \"Failed to send OTP to: %s\"}", user.getEmail()));
 
         return emailSendingFuture.thenApply(result -> successResponse)
@@ -130,27 +132,36 @@ public class UserController {
             @RequestBody OtpVerificationRequest otpVerificationRequest)
             throws InvalidTokenException {
 
-        String accountNumber = otpVerificationRequest.getAccountNumber();
-        String otp = otpVerificationRequest.getOtp();
+        val identifier = otpVerificationRequest.identifier();
+        val otp = otpVerificationRequest.otp();
+        log.info("Received OTP verification request for identifier: {}", identifier);
 
-        if (accountNumber == null || accountNumber.isEmpty()) {
+        if (identifier == null || identifier.isEmpty()) {
+            log.warn("Missing identifier in OTP verification request");
             return ResponseEntity.badRequest().body("Missing account number");
         }
 
         if (otp == null || otp.isEmpty()) {
+            log.warn("Missing OTP in OTP verification request");
             return ResponseEntity.badRequest().body("Missing OTP");
         }
 
+        val user = userService.getUserByIdentifier(identifier)
+                .orElseThrow(() -> new UnauthorizedException("User not found for the given identifier"));
+
+        val accountNumber = user.getAccount().getAccountNumber();
+        log.info("Validating OTP for account number: {}", accountNumber);
+
         // Validate OTP against the stored OTP in the database
-        boolean isValidOtp = otpService.validateOTP(accountNumber, otp);
+        val isValidOtp = otpService.validateOTP(accountNumber, otp);
         if (!isValidOtp) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("OTP has expired");
         }
 
         // If OTP is valid, generate and return a token
-        UserDetails userDetails = userDetailsService.loadUserByUsername(accountNumber);
-        String token = tokenService.generateToken(userDetails);
+        val userDetails = userDetailsService.loadUserByUsername(accountNumber);
+        val token = tokenService.generateToken(userDetails);
         tokenService.saveToken(token);
 
         return ResponseEntity.ok("{ \"token\": \"" + token + "\" }");
@@ -158,20 +169,20 @@ public class UserController {
 
     @PostMapping("/update")
     public ResponseEntity<String> updateUser(@RequestBody User user) {
-        String accountNumber = LoggedinUser.getAccountNumber();
+        val accountNumber = LoggedinUser.getAccountNumber();
 
-        logger.info("Authenticating account: {} ...", accountNumber);
+        log.info("Authenticating account: {} ...", accountNumber);
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 accountNumber,
                 user.getPassword()));
-        logger.info("Account: {} authenticated successfully", accountNumber);
+        log.info("Account: {} authenticated successfully", accountNumber);
 
-        logger.info("Updating account: {} ...", accountNumber);
-        User updatedUser = userService.updateUser(user);
+        log.info("Updating account: {} ...", accountNumber);
+        val updatedUser = userService.updateUser(user);
 
-        logger.info("Account: {} is updated successfully", accountNumber);
+        log.info("Account: {} is updated successfully", accountNumber);
 
-        UserResponse userResponse = new UserResponse(updatedUser);
+        val userResponse = new UserResponse(updatedUser);
 
         return ResponseEntity.ok(JsonUtil.toJson(userResponse));
     }
@@ -184,7 +195,7 @@ public class UserController {
         tokenService.validateToken(token);
         tokenService.invalidateToken(token);
 
-        logger.info("User logged out successfully {}",
+        log.info("User logged out successfully {}",
                 tokenService.getUsernameFromToken(token));
 
         return new ModelAndView("redirect:/logout");

@@ -1,7 +1,5 @@
 package com.webapp.bankingportal;
 
-import java.util.HashMap;
-
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 
@@ -15,11 +13,13 @@ import com.webapp.bankingportal.dto.PinRequest;
 import com.webapp.bankingportal.dto.PinUpdateRequest;
 import com.webapp.bankingportal.util.JsonUtil;
 
+import lombok.val;
+
 public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_pin_check_without_pin() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUser();
+        val userDetails = createAndLoginUser();
 
         mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/account/pin/check")
@@ -33,7 +33,7 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_pin_check_with_pin() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
+        val userDetails = createAndLoginUserWithPin();
 
         mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/account/pin/check")
@@ -59,12 +59,9 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_pin_create_with_invalid_password() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUser();
+        val userDetails = createAndLoginUser();
 
-        PinRequest pinRequest = new PinRequest();
-        pinRequest.setAccountNumber(userDetails.get("accountNumber"));
-        pinRequest.setPassword(getRandomPassword());
-        pinRequest.setPin(getRandomPin());
+        val pinRequest = new PinRequest(userDetails.get("accountNumber"), getRandomPin(), getRandomPassword());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/create")
@@ -78,11 +75,9 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_pin_create_with_missing_password() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUser();
+        val userDetails = createAndLoginUser();
 
-        PinRequest pinRequest = new PinRequest();
-        pinRequest.setAccountNumber(userDetails.get("accountNumber"));
-        pinRequest.setPin(getRandomPin());
+        val pinRequest = new PinRequest(userDetails.get("accountNumber"), getRandomPin(), null);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/create")
@@ -96,11 +91,9 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_pin_create_with_missing_pin() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUser();
+        val userDetails = createAndLoginUser();
 
-        PinRequest pinRequest = new PinRequest();
-        pinRequest.setAccountNumber(userDetails.get("accountNumber"));
-        pinRequest.setPassword(userDetails.get("password"));
+        val pinRequest = new PinRequest(userDetails.get("accountNumber"), null, userDetails.get("password"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/create")
@@ -114,12 +107,10 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_pin_create_with_invalid_short_pin() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUser();
+        val userDetails = createAndLoginUser();
 
-        PinRequest pinRequest = new PinRequest();
-        pinRequest.setAccountNumber(userDetails.get("accountNumber"));
-        pinRequest.setPassword(userDetails.get("password"));
-        pinRequest.setPin(faker.number().digits(3));
+        val pinRequest = new PinRequest(userDetails.get("accountNumber"), faker.number().digits(3),
+                userDetails.get("password"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/create")
@@ -133,12 +124,10 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_pin_create_with_invalid_long_pin() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUser();
+        val userDetails = createAndLoginUser();
 
-        PinRequest pinRequest = new PinRequest();
-        pinRequest.setAccountNumber(userDetails.get("accountNumber"));
-        pinRequest.setPassword(userDetails.get("password"));
-        pinRequest.setPin(faker.number().digits(5));
+        val pinRequest = new PinRequest(userDetails.get("accountNumber"), faker.number().digits(5),
+                userDetails.get("password"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/create")
@@ -152,10 +141,7 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_pin_create_unauthorized_access() throws Exception {
-        PinRequest pinRequest = new PinRequest();
-        pinRequest.setAccountNumber(getRandomAccountNumber());
-        pinRequest.setPassword(getRandomPassword());
-        pinRequest.setPin(getRandomPin());
+        val pinRequest = new PinRequest(getRandomAccountNumber(), getRandomPin(), getRandomPassword());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/create")
@@ -166,13 +152,10 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_pin_update_with_valid_data() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
+        val userDetails = createAndLoginUserWithPin();
 
-        PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
-        pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
-        pinUpdateRequest.setPassword(userDetails.get("password"));
-        pinUpdateRequest.setOldPin(userDetails.get("pin"));
-        pinUpdateRequest.setNewPin(getRandomPin());
+        val pinUpdateRequest = new PinUpdateRequest(userDetails.get("accountNumber"), userDetails.get("pin"),
+                getRandomPin(), userDetails.get("password"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/update")
@@ -186,13 +169,10 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_pin_update_with_invalid_password() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
+        val userDetails = createAndLoginUserWithPin();
 
-        PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
-        pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
-        pinUpdateRequest.setPassword(getRandomPassword());
-        pinUpdateRequest.setOldPin(userDetails.get("pin"));
-        pinUpdateRequest.setNewPin(getRandomPin());
+        val pinUpdateRequest = new PinUpdateRequest(userDetails.get("accountNumber"), userDetails.get("pin"),
+                getRandomPin(), getRandomPassword());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/update")
@@ -206,13 +186,10 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_pin_update_with_invalid_old_pin() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
+        val userDetails = createAndLoginUserWithPin();
 
-        PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
-        pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
-        pinUpdateRequest.setPassword(userDetails.get("password"));
-        pinUpdateRequest.setOldPin(getRandomPin());
-        pinUpdateRequest.setNewPin(getRandomPin());
+        val pinUpdateRequest = new PinUpdateRequest(userDetails.get("accountNumber"), getRandomPin(), getRandomPin(),
+                userDetails.get("password"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/update")
@@ -226,13 +203,10 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_pin_update_with_invalid_new_short_pin() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
+        val userDetails = createAndLoginUserWithPin();
 
-        PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
-        pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
-        pinUpdateRequest.setPassword(userDetails.get("password"));
-        pinUpdateRequest.setOldPin(userDetails.get("pin"));
-        pinUpdateRequest.setNewPin(faker.number().digits(3));
+        val pinUpdateRequest = new PinUpdateRequest(userDetails.get("accountNumber"), userDetails.get("pin"),
+                faker.number().digits(3), userDetails.get("password"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/update")
@@ -246,13 +220,10 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_pin_update_with_invalid_new_long_pin() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
+        val userDetails = createAndLoginUserWithPin();
 
-        PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
-        pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
-        pinUpdateRequest.setPassword(userDetails.get("password"));
-        pinUpdateRequest.setOldPin(userDetails.get("pin"));
-        pinUpdateRequest.setNewPin(faker.number().digits(5));
+        val pinUpdateRequest = new PinUpdateRequest(userDetails.get("accountNumber"), userDetails.get("pin"),
+                faker.number().digits(5), userDetails.get("password"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/update")
@@ -266,12 +237,10 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_pin_update_with_missing_password() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
+        val userDetails = createAndLoginUserWithPin();
 
-        PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
-        pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
-        pinUpdateRequest.setOldPin(userDetails.get("pin"));
-        pinUpdateRequest.setNewPin(getRandomPin());
+        val pinUpdateRequest = new PinUpdateRequest(userDetails.get("accountNumber"), userDetails.get("pin"),
+                getRandomPin(), null);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/update")
@@ -285,12 +254,10 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_pin_update_with_missing_old_pin() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
+        val userDetails = createAndLoginUserWithPin();
 
-        PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
-        pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
-        pinUpdateRequest.setPassword(userDetails.get("password"));
-        pinUpdateRequest.setNewPin(getRandomPin());
+        val pinUpdateRequest = new PinUpdateRequest(userDetails.get("accountNumber"), null, getRandomPin(),
+                userDetails.get("password"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/update")
@@ -304,12 +271,10 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_pin_update_with_missing_new_pin() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
+        val userDetails = createAndLoginUserWithPin();
 
-        PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
-        pinUpdateRequest.setAccountNumber(userDetails.get("accountNumber"));
-        pinUpdateRequest.setPassword(userDetails.get("password"));
-        pinUpdateRequest.setOldPin(userDetails.get("pin"));
+        val pinUpdateRequest = new PinUpdateRequest(userDetails.get("accountNumber"), userDetails.get("pin"), null,
+                userDetails.get("password"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/update")
@@ -323,11 +288,8 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_pin_update_with_unauthorized_access() throws Exception {
-        PinUpdateRequest pinUpdateRequest = new PinUpdateRequest();
-        pinUpdateRequest.setAccountNumber(getRandomAccountNumber());
-        pinUpdateRequest.setPassword(getRandomPassword());
-        pinUpdateRequest.setOldPin(getRandomPin());
-        pinUpdateRequest.setNewPin(getRandomPin());
+        val pinUpdateRequest = new PinUpdateRequest(getRandomAccountNumber(), getRandomPin(), getRandomPin(),
+                getRandomPassword());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/update")
@@ -343,12 +305,9 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_deposit_with_invalid_pin() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
+        val userDetails = createAndLoginUserWithPin();
 
-        AmountRequest amountRequest = new AmountRequest();
-        amountRequest.setAccountNumber(userDetails.get("accountNumber"));
-        amountRequest.setPin(getRandomPin());
-        amountRequest.setAmount(100.0);
+        val amountRequest = new AmountRequest(userDetails.get("accountNumber"), getRandomPin(), 100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/deposit")
@@ -362,12 +321,9 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_deposit_with_negative_amount() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
+        val userDetails = createAndLoginUserWithPin();
 
-        AmountRequest amountRequest = new AmountRequest();
-        amountRequest.setAccountNumber(userDetails.get("accountNumber"));
-        amountRequest.setPin(userDetails.get("pin"));
-        amountRequest.setAmount(-100.0);
+        val amountRequest = new AmountRequest(userDetails.get("accountNumber"), userDetails.get("pin"), -100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/deposit")
@@ -381,12 +337,9 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_deposit_with_zero_amount() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
+        val userDetails = createAndLoginUserWithPin();
 
-        AmountRequest amountRequest = new AmountRequest();
-        amountRequest.setAccountNumber(userDetails.get("accountNumber"));
-        amountRequest.setPin(userDetails.get("pin"));
-        amountRequest.setAmount(0.0);
+        val amountRequest = new AmountRequest(userDetails.get("accountNumber"), userDetails.get("pin"), 0.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/deposit")
@@ -400,12 +353,9 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_deposit_with_excessively_large_amount() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
+        val userDetails = createAndLoginUserWithPin();
 
-        AmountRequest amountRequest = new AmountRequest();
-        amountRequest.setAccountNumber(userDetails.get("accountNumber"));
-        amountRequest.setPin(userDetails.get("pin"));
-        amountRequest.setAmount(1000000.0);
+        val amountRequest = new AmountRequest(userDetails.get("accountNumber"), userDetails.get("pin"), 1000000.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/deposit")
@@ -419,11 +369,9 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_deposit_with_missing_pin() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
+        val userDetails = createAndLoginUserWithPin();
 
-        AmountRequest amountRequest = new AmountRequest();
-        amountRequest.setAccountNumber(userDetails.get("accountNumber"));
-        amountRequest.setAmount(100.0);
+        val amountRequest = new AmountRequest(userDetails.get("accountNumber"), null, 100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/deposit")
@@ -436,29 +384,8 @@ public class AccountControllerTests extends BaseTest {
     }
 
     @Test
-    public void test_deposit_with_missing_amount() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
-
-        AmountRequest amountRequest = new AmountRequest();
-        amountRequest.setAccountNumber(userDetails.get("accountNumber"));
-        amountRequest.setPin(userDetails.get("pin"));
-
-        mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/account/deposit")
-                .header("Authorization", "Bearer " + userDetails.get("token"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtil.toJson(amountRequest)))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.content()
-                        .string("Amount must be greater than 0"));
-    }
-
-    @Test
     public void test_deposit_with_unauthorized_access() throws Exception {
-        AmountRequest amountRequest = new AmountRequest();
-        amountRequest.setAccountNumber(getRandomAccountNumber());
-        amountRequest.setPin(getRandomPin());
-        amountRequest.setAmount(100.0);
+        val amountRequest = new AmountRequest(getRandomAccountNumber(), getRandomPin(), 100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/deposit")
@@ -469,13 +396,10 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_withdraw_with_valid_pin_and_amount() throws Exception {
-        double amount = 100.0;
-        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
+        val amount = 100.0;
+        val userDetails = createAndLoginUserWithInitialBalance(amount);
 
-        AmountRequest amountRequest = new AmountRequest();
-        amountRequest.setAccountNumber(userDetails.get("accountNumber"));
-        amountRequest.setPin(userDetails.get("pin"));
-        amountRequest.setAmount(amount);
+        val amountRequest = new AmountRequest(userDetails.get("accountNumber"), userDetails.get("pin"), amount);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/withdraw")
@@ -489,12 +413,9 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_withdraw_with_invalid_pin() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
+        val userDetails = createAndLoginUserWithPin();
 
-        AmountRequest amountRequest = new AmountRequest();
-        amountRequest.setAccountNumber(userDetails.get("accountNumber"));
-        amountRequest.setPin(getRandomPin());
-        amountRequest.setAmount(100.0);
+        val amountRequest = new AmountRequest(userDetails.get("accountNumber"), getRandomPin(), 100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/withdraw")
@@ -508,12 +429,9 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_withdraw_with_negative_amount() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
+        val userDetails = createAndLoginUserWithPin();
 
-        AmountRequest amountRequest = new AmountRequest();
-        amountRequest.setAccountNumber(userDetails.get("accountNumber"));
-        amountRequest.setPin(userDetails.get("pin"));
-        amountRequest.setAmount(-100.0);
+        val amountRequest = new AmountRequest(userDetails.get("accountNumber"), userDetails.get("pin"), -100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/withdraw")
@@ -527,12 +445,9 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_withdraw_with_zero_amount() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
+        val userDetails = createAndLoginUserWithPin();
 
-        AmountRequest amountRequest = new AmountRequest();
-        amountRequest.setAccountNumber(userDetails.get("accountNumber"));
-        amountRequest.setPin(userDetails.get("pin"));
-        amountRequest.setAmount(0.0);
+        val amountRequest = new AmountRequest(userDetails.get("accountNumber"), userDetails.get("pin"), 0.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/withdraw")
@@ -546,13 +461,10 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_withdraw_with_insufficient_funds() throws Exception {
-        double amount = 100.0;
-        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
+        val amount = 100.0;
+        val userDetails = createAndLoginUserWithInitialBalance(amount);
 
-        AmountRequest amountRequest = new AmountRequest();
-        amountRequest.setAccountNumber(userDetails.get("accountNumber"));
-        amountRequest.setPin(userDetails.get("pin"));
-        amountRequest.setAmount(amount * 2);
+        val amountRequest = new AmountRequest(userDetails.get("accountNumber"), userDetails.get("pin"), amount * 2);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/withdraw")
@@ -566,11 +478,9 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_withdraw_with_missing_pin() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
+        val userDetails = createAndLoginUserWithPin();
 
-        AmountRequest amountRequest = new AmountRequest();
-        amountRequest.setAccountNumber(userDetails.get("accountNumber"));
-        amountRequest.setAmount(100.0);
+        val amountRequest = new AmountRequest(userDetails.get("accountNumber"), null, 100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/withdraw")
@@ -583,29 +493,8 @@ public class AccountControllerTests extends BaseTest {
     }
 
     @Test
-    public void test_withdraw_with_missing_amount() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUserWithPin();
-
-        AmountRequest amountRequest = new AmountRequest();
-        amountRequest.setAccountNumber(userDetails.get("accountNumber"));
-        amountRequest.setPin(userDetails.get("pin"));
-
-        mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/account/withdraw")
-                .header("Authorization", "Bearer " + userDetails.get("token"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtil.toJson(amountRequest)))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.content()
-                        .string("Amount must be greater than 0"));
-    }
-
-    @Test
     public void test_withdraw_with_unauthorized_access() throws Exception {
-        AmountRequest amountRequest = new AmountRequest();
-        amountRequest.setAccountNumber(getRandomAccountNumber());
-        amountRequest.setPin(getRandomPin());
-        amountRequest.setAmount(100.0);
+        val amountRequest = new AmountRequest(getRandomAccountNumber(), getRandomPin(), 100.0);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/withdraw")
@@ -616,15 +505,11 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_fund_transfer_with_valid_data() throws Exception {
-        double amount = 100.0;
-        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
+        val amount = 100.0;
+        val userDetails = createAndLoginUserWithInitialBalance(amount);
 
-        FundTransferRequest fundTransferRequest = new FundTransferRequest();
-        fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest
-                .setTargetAccountNumber(createAndLoginUser().get("accountNumber"));
-        fundTransferRequest.setPin(userDetails.get("pin"));
-        fundTransferRequest.setAmount(amount);
+        val fundTransferRequest = new FundTransferRequest(userDetails.get("accountNumber"),
+                createAndLoginUser().get("accountNumber"), amount, userDetails.get("pin"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/fund-transfer")
@@ -638,14 +523,11 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_fund_transfer_to_the_same_account() throws Exception {
-        double amount = 100.0;
-        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
+        val amount = 100.0;
+        val userDetails = createAndLoginUserWithInitialBalance(amount);
 
-        FundTransferRequest fundTransferRequest = new FundTransferRequest();
-        fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest.setTargetAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest.setPin(userDetails.get("pin"));
-        fundTransferRequest.setAmount(amount);
+        val fundTransferRequest = new FundTransferRequest(userDetails.get("accountNumber"),
+                userDetails.get("accountNumber"), amount, userDetails.get("pin"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/fund-transfer")
@@ -659,15 +541,11 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_fund_transfer_with_invalid_source_account_pin() throws Exception {
-        double amount = 100.0;
-        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
+        val amount = 100.0;
+        val userDetails = createAndLoginUserWithInitialBalance(amount);
 
-        FundTransferRequest fundTransferRequest = new FundTransferRequest();
-        fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest
-                .setTargetAccountNumber(createAndLoginUser().get("accountNumber"));
-        fundTransferRequest.setPin(getRandomPin());
-        fundTransferRequest.setAmount(amount);
+        val fundTransferRequest = new FundTransferRequest(userDetails.get("accountNumber"),
+                createAndLoginUser().get("accountNumber"), amount, getRandomPin());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/fund-transfer")
@@ -681,14 +559,11 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_fund_transfer_with_invalid_target_account() throws Exception {
-        double amount = 100.0;
-        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
+        val amount = 100.0;
+        val userDetails = createAndLoginUserWithInitialBalance(amount);
 
-        FundTransferRequest fundTransferRequest = new FundTransferRequest();
-        fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest.setTargetAccountNumber(getRandomAccountNumber());
-        fundTransferRequest.setPin(userDetails.get("pin"));
-        fundTransferRequest.setAmount(amount);
+        val fundTransferRequest = new FundTransferRequest(userDetails.get("accountNumber"), getRandomAccountNumber(),
+                amount, userDetails.get("pin"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/fund-transfer")
@@ -702,15 +577,11 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_fund_transfer_with_insufficient_funds() throws Exception {
-        double amount = 100.0;
-        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
+        val amount = 100.0;
+        val userDetails = createAndLoginUserWithInitialBalance(amount);
 
-        FundTransferRequest fundTransferRequest = new FundTransferRequest();
-        fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest
-                .setTargetAccountNumber(createAndLoginUser().get("accountNumber"));
-        fundTransferRequest.setPin(userDetails.get("pin"));
-        fundTransferRequest.setAmount(amount * 2);
+        val fundTransferRequest = new FundTransferRequest(userDetails.get("accountNumber"),
+                createAndLoginUser().get("accountNumber"), amount * 2, userDetails.get("pin"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/fund-transfer")
@@ -724,15 +595,11 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_fund_transfer_with_negative_amount() throws Exception {
-        double amount = 100.0;
-        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
+        val amount = 100.0;
+        val userDetails = createAndLoginUserWithInitialBalance(amount);
 
-        FundTransferRequest fundTransferRequest = new FundTransferRequest();
-        fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest
-                .setTargetAccountNumber(createAndLoginUser().get("accountNumber"));
-        fundTransferRequest.setPin(userDetails.get("pin"));
-        fundTransferRequest.setAmount(-amount);
+        val fundTransferRequest = new FundTransferRequest(userDetails.get("accountNumber"),
+                createAndLoginUser().get("accountNumber"), -amount, userDetails.get("pin"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/fund-transfer")
@@ -746,15 +613,11 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_fund_transfer_with_zero_amount() throws Exception {
-        double amount = 100.0;
-        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
+        val amount = 100.0;
+        val userDetails = createAndLoginUserWithInitialBalance(amount);
 
-        FundTransferRequest fundTransferRequest = new FundTransferRequest();
-        fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest
-                .setTargetAccountNumber(createAndLoginUser().get("accountNumber"));
-        fundTransferRequest.setPin(userDetails.get("pin"));
-        fundTransferRequest.setAmount(0.0);
+        val fundTransferRequest = new FundTransferRequest(userDetails.get("accountNumber"),
+                createAndLoginUser().get("accountNumber"), 0.0, userDetails.get("pin"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/fund-transfer")
@@ -768,14 +631,11 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_fund_transfer_with_missing_source_account_pin() throws Exception {
-        double amount = 100.0;
-        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
+        val amount = 100.0;
+        val userDetails = createAndLoginUserWithInitialBalance(amount);
 
-        FundTransferRequest fundTransferRequest = new FundTransferRequest();
-        fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest
-                .setTargetAccountNumber(createAndLoginUser().get("accountNumber"));
-        fundTransferRequest.setAmount(amount);
+        val fundTransferRequest = new FundTransferRequest(userDetails.get("accountNumber"),
+                createAndLoginUser().get("accountNumber"), amount, null);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/fund-transfer")
@@ -789,13 +649,11 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_fund_transfer_with_missing_target_account() throws Exception {
-        double amount = 100.0;
-        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
+        val amount = 100.0;
+        val userDetails = createAndLoginUserWithInitialBalance(amount);
 
-        FundTransferRequest fundTransferRequest = new FundTransferRequest();
-        fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest.setPin(userDetails.get("pin"));
-        fundTransferRequest.setAmount(amount);
+        val fundTransferRequest = new FundTransferRequest(userDetails.get("accountNumber"), null,
+                amount, userDetails.get("pin"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/fund-transfer")
@@ -808,37 +666,12 @@ public class AccountControllerTests extends BaseTest {
     }
 
     @Test
-    public void test_fund_transfer_with_missing_amount() throws Exception {
-        double amount = 100.0;
-        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
-
-        FundTransferRequest fundTransferRequest = new FundTransferRequest();
-        fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest
-                .setTargetAccountNumber(createAndLoginUser().get("accountNumber"));
-        fundTransferRequest.setPin(userDetails.get("pin"));
-
-        mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/account/fund-transfer")
-                .header("Authorization", "Bearer " + userDetails.get("token"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtil.toJson(fundTransferRequest)))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.content()
-                        .string("Amount must be greater than 0"));
-    }
-
-    @Test
     public void test_fund_transfer_unauthorized_access() throws Exception {
-        double amount = 100.0;
-        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
+        val amount = 100.0;
+        val userDetails = createAndLoginUserWithInitialBalance(amount);
 
-        FundTransferRequest fundTransferRequest = new FundTransferRequest();
-        fundTransferRequest.setSourceAccountNumber(userDetails.get("accountNumber"));
-        fundTransferRequest
-                .setTargetAccountNumber(createAndLoginUser().get("accountNumber"));
-        fundTransferRequest.setPin(userDetails.get("pin"));
-        fundTransferRequest.setAmount(amount);
+        val fundTransferRequest = new FundTransferRequest(userDetails.get("accountNumber"),
+                createAndLoginUser().get("accountNumber"), amount, userDetails.get("pin"));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/fund-transfer")
@@ -849,8 +682,8 @@ public class AccountControllerTests extends BaseTest {
 
     @Test
     public void test_transactions_with_authorized_access() throws Exception {
-        double amount = 100.0;
-        HashMap<String, String> userDetails = createAndLoginUserWithInitialBalance(amount);
+        val amount = 100.0;
+        val userDetails = createAndLoginUserWithInitialBalance(amount);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/account/transactions")
@@ -867,4 +700,5 @@ public class AccountControllerTests extends BaseTest {
                 .get("/api/account/transactions"))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
+
 }

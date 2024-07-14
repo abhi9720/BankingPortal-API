@@ -1,7 +1,6 @@
 package com.webapp.bankingportal;
 
 import java.util.Date;
-import java.util.HashMap;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -14,6 +13,8 @@ import com.webapp.bankingportal.repository.TokenRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
+import lombok.val;
+
 public class TokenServiceTests extends BaseTest {
 
     @Autowired
@@ -21,14 +22,14 @@ public class TokenServiceTests extends BaseTest {
 
     @Test
     public void test_validate_token_with_valid_token() throws Exception {
-        String token = createAndLoginUser().get("token");
+        val token = createAndLoginUser().get("token");
         tokenService.validateToken(token);
         tokenService.invalidateToken(token);
     }
 
     @Test
     public void test_validate_token_with_invalid_token() throws Exception {
-        String token = generateToken(getRandomAccountNumber(), getRandomPassword());
+        val token = generateToken(getRandomAccountNumber(), getRandomPassword());
 
         Assertions.assertThrows(InvalidTokenException.class,
                 () -> tokenService.validateToken(token),
@@ -37,7 +38,7 @@ public class TokenServiceTests extends BaseTest {
 
     @Test
     public void test_invalidate_token_with_valid_token() throws Exception {
-        String token = createAndLoginUser().get("token");
+        val token = createAndLoginUser().get("token");
         Assertions.assertNotNull(tokenRepository.findByToken(token));
 
         tokenService.invalidateToken(token);
@@ -46,14 +47,14 @@ public class TokenServiceTests extends BaseTest {
 
     @Test
     public void test_invalidate_token_with_invalid_token() throws Exception {
-        String token = generateToken(getRandomAccountNumber(), getRandomPassword());
+        val token = generateToken(getRandomAccountNumber(), getRandomPassword());
         tokenService.invalidateToken(token);
     }
 
     @Test
     public void test_save_token_with_valid_token() throws Exception {
-        HashMap<String, String> accountDetails = createAccount();
-        String token = generateToken(
+        val accountDetails = createAccount();
+        val token = generateToken(
                 accountDetails.get("accountNumber"),
                 accountDetails.get("password"));
 
@@ -66,7 +67,7 @@ public class TokenServiceTests extends BaseTest {
 
     @Test
     public void test_save_token_with_duplicate_token() throws Exception {
-        String token = createAndLoginUser().get("token");
+        val token = createAndLoginUser().get("token");
         Assertions.assertNotNull(tokenRepository.findByToken(token));
         Assertions.assertThrows(InvalidTokenException.class,
                 () -> tokenService.saveToken(token),
@@ -78,17 +79,17 @@ public class TokenServiceTests extends BaseTest {
 
     @Test
     public void test_get_username_from_token_with_valid_token() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUser();
-        String token = userDetails.get("token");
-        String accountNumber = userDetails.get("accountNumber");
-        String username = tokenService.getUsernameFromToken(token);
+        val userDetails = createAndLoginUser();
+        val token = userDetails.get("token");
+        val accountNumber = userDetails.get("accountNumber");
+        val username = tokenService.getUsernameFromToken(token);
 
         Assertions.assertEquals(accountNumber, username);
     }
 
     @Test
     public void test_get_username_from_token_with_expired_token() {
-        String token = generateToken(
+        val token = generateToken(
                 getRandomAccountNumber(), getRandomPassword(), new Date());
 
         Assertions.assertThrows(InvalidTokenException.class,
@@ -98,7 +99,7 @@ public class TokenServiceTests extends BaseTest {
 
     @Test
     public void test_get_username_from_token_with_unsigned_token() {
-        String token = Jwts.builder().setSubject(getRandomAccountNumber())
+        val token = Jwts.builder().setSubject(getRandomAccountNumber())
                 .setIssuedAt(new Date()).compact();
 
         Assertions.assertThrows(InvalidTokenException.class,
@@ -108,7 +109,7 @@ public class TokenServiceTests extends BaseTest {
 
     @Test
     public void test_get_username_from_token_with_malformed_token() {
-        String token = "malformed";
+        val token = "malformed";
 
         Assertions.assertThrows(InvalidTokenException.class,
                 () -> tokenService.getUsernameFromToken(token),
@@ -117,7 +118,7 @@ public class TokenServiceTests extends BaseTest {
 
     @Test
     public void test_get_username_from_token_with_invalid_signature() {
-        String token = Jwts.builder().setSubject(getRandomAccountNumber())
+        val token = Jwts.builder().setSubject(getRandomAccountNumber())
                 .setIssuedAt(new Date())
                 .signWith(SignatureAlgorithm.HS256, "invalid")
                 .compact();
@@ -133,4 +134,5 @@ public class TokenServiceTests extends BaseTest {
                 () -> tokenService.getUsernameFromToken(null),
                 "Token is empty");
     }
+
 }

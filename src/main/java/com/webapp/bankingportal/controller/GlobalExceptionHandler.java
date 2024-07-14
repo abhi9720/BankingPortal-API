@@ -100,13 +100,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PasswordResetException.class)
     public ResponseEntity<String> handlePasswordResetException(PasswordResetException ex, WebRequest request) {
-        String errorMessage = ex.getMessage();
-        return new ResponseEntity<>("{\"message\": \"" + errorMessage + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.internalServerError()
+                .body("{\"message\": \"" + ex.getMessage() + "\"}");
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGlobalException(Exception ex, WebRequest request) {
-        String errorMessage = "An unexpected error occurred: " + ex.getMessage();
-        return new ResponseEntity<>("{\"message\": \"" + errorMessage + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.internalServerError()
+                .body("{\"message\": \"An unexpected error occurred: " + ex.getMessage() + "\"}");
     }
 }

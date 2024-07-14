@@ -1,16 +1,11 @@
 package com.webapp.bankingportal;
 
-import java.util.HashMap;
-
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
@@ -20,11 +15,10 @@ import com.webapp.bankingportal.dto.LoginRequest;
 import com.webapp.bankingportal.dto.OtpRequest;
 import com.webapp.bankingportal.dto.OtpVerificationRequest;
 import com.webapp.bankingportal.dto.PinRequest;
-import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.service.TokenService;
 import com.webapp.bankingportal.util.JsonUtil;
 
-import jakarta.mail.internet.MimeMessage;
+import lombok.val;
 
 public class UserControllerTests extends BaseTest {
 
@@ -38,7 +32,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_empty_name() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setName("");
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -52,7 +46,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_missing_name() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setName(null);
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -66,7 +60,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_empty_email() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setEmail("");
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -80,7 +74,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_missing_email() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setEmail(null);
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -94,7 +88,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_empty_country_code() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setCountryCode("");
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -108,7 +102,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_missing_country_code() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setCountryCode(null);
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -122,7 +116,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_empty_phone_number() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setPhoneNumber("");
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -136,7 +130,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_missing_phone_number() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setPhoneNumber(null);
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -150,7 +144,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_empty_address() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setAddress("");
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -164,7 +158,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_missing_address() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setAddress(null);
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -178,8 +172,8 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_duplicate_email() throws Exception {
-        User user1 = createAndRegisterUser();
-        User user2 = createUser();
+        val user1 = createAndRegisterUser();
+        val user2 = createUser();
         user2.setEmail(user1.getEmail());
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -193,8 +187,8 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_duplicate_phone_number() throws Exception {
-        User user1 = createAndRegisterUser();
-        User user2 = createUser();
+        val user1 = createAndRegisterUser();
+        val user2 = createUser();
         user2.setPhoneNumber(user1.getPhoneNumber());
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -208,7 +202,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_invalid_email() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setEmail(faker.lorem().word());
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -222,7 +216,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_invalid_country_code() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setCountryCode(faker.lorem().word());
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -236,7 +230,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_invalid_phone_number() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setPhoneNumber(faker.number().digits(3));
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -250,7 +244,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_empty_password() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setPassword("");
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -264,7 +258,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_missing_password() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setPassword(null);
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -278,7 +272,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_short_password() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setPassword(faker.internet().password(1, MIN_PASSWORD_LENGTH - 1, true, true));
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -292,7 +286,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_long_password() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setPassword(faker.internet().password(MAX_PASSWORD_LENGTH + 1, MAX_PASSWORD_LENGTH * 2, true, true));
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -306,7 +300,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_password_containing_whitespace() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setPassword(faker.lorem().sentence());
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -320,7 +314,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_password_missing_uppercase_letters() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setPassword(faker.internet().password(MAX_PASSWORD_LENGTH - 1, MAX_PASSWORD_LENGTH, false, true));
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -334,7 +328,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_password_missing_lowercase_letters() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setPassword(faker.internet().password(MAX_PASSWORD_LENGTH - 1, MAX_PASSWORD_LENGTH, true, true)
                 .toUpperCase());
 
@@ -349,7 +343,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_password_missing_digits() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setPassword("!" + faker.lorem().characters(MAX_PASSWORD_LENGTH - 1, true, false));
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -363,7 +357,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_register_user_with_password_missing_special_characters() throws Exception {
-        User user = createUser();
+        val user = createUser();
         user.setPassword(faker.internet().password(MAX_PASSWORD_LENGTH - 1, MAX_PASSWORD_LENGTH, true, false));
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -382,9 +376,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_login_with_invalid_account_number() throws Exception {
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setAccountNumber(getRandomAccountNumber());
-        loginRequest.setPassword(getRandomPassword());
+        val loginRequest = new LoginRequest(getRandomAccountNumber(), getRandomPassword(), false);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/login")
@@ -395,16 +387,14 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_login_with_invalid_password() throws Exception {
-        User user = createAndRegisterUser();
-        String accountNumber = userRepository
+        val user = createAndRegisterUser();
+        val accountNumber = userRepository
                 .findByEmail(user.getEmail())
                 .get()
                 .getAccount()
                 .getAccountNumber();
 
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setAccountNumber(accountNumber);
-        loginRequest.setPassword(getRandomPassword());
+        val loginRequest = new LoginRequest(accountNumber, getRandomPassword(), false);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/login")
@@ -415,9 +405,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_login_with_missing_account_number() throws Exception {
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setAccountNumber("");
-        loginRequest.setPassword(getRandomPassword());
+        val loginRequest = new LoginRequest("", getRandomPassword(), false);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/login")
@@ -428,16 +416,14 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_login_with_missing_password() throws Exception {
-        User user = createAndRegisterUser();
-        String accountNumber = userRepository
+        val user = createAndRegisterUser();
+        val accountNumber = userRepository
                 .findByEmail(user.getEmail())
                 .get()
                 .getAccount()
                 .getAccountNumber();
 
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setAccountNumber(accountNumber);
-        loginRequest.setPassword("");
+        val loginRequest = new LoginRequest(accountNumber, "", false);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/login")
@@ -448,15 +434,14 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_generate_otp_with_valid_account_number() throws Exception {
-        User user = createAndRegisterUser();
-        String accountNumber = userRepository
+        val user = createAndRegisterUser();
+        val accountNumber = userRepository
                 .findByEmail(user.getEmail())
                 .get()
                 .getAccount()
                 .getAccountNumber();
 
-        OtpRequest otpRequest = new OtpRequest();
-        otpRequest.setAccountNumber(accountNumber);
+        val otpRequest = new OtpRequest(accountNumber);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/generate-otp")
@@ -469,43 +454,36 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_generate_otp_with_invalid_account_number() throws Exception {
-        OtpRequest otpRequest = new OtpRequest();
-        otpRequest.setAccountNumber(getRandomAccountNumber());
+        val otpRequest = new OtpRequest(getRandomAccountNumber());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/generate-otp")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.toJson(otpRequest)))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.content()
-                        .string("User not found for the given account number"));
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
     @Test
     public void test_generate_otp_with_missing_account_number() throws Exception {
-        OtpRequest otpRequest = new OtpRequest();
-        otpRequest.setAccountNumber("");
+        val otpRequest = new OtpRequest("");
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/generate-otp")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.toJson(otpRequest)))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.content()
-                        .string("User not found for the given account number"));
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
     @Test
     public void test_verify_otp_with_valid_account_number_and_otp() throws Exception {
-        User user = createAndRegisterUser();
-        String accountNumber = userRepository
+        val user = createAndRegisterUser();
+        val accountNumber = userRepository
                 .findByEmail(user.getEmail())
                 .get()
                 .getAccount()
                 .getAccountNumber();
 
-        OtpRequest otpRequest = new OtpRequest();
-        otpRequest.setAccountNumber(accountNumber);
+        val otpRequest = new OtpRequest(accountNumber);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/generate-otp")
@@ -515,25 +493,20 @@ public class UserControllerTests extends BaseTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("message")
                         .value("OTP sent successfully to: " + user.getEmail()));
 
-        MimeMessage[] receivedMessages = GreenMailJavaMailSender.getReceivedMessagesForDomain(user.getEmail());
-        OtpVerificationRequest otpVerificationRequest = new OtpVerificationRequest();
-        otpVerificationRequest.setAccountNumber(accountNumber);
-        otpVerificationRequest.setOtp(getOtpFromEmail(receivedMessages[0]));
+        val receivedMessages = GreenMailJavaMailSender.getReceivedMessagesForDomain(user.getEmail());
+        val otpVerificationRequest = new OtpVerificationRequest(accountNumber, getOtpFromEmail(receivedMessages[0]));
 
-        MvcResult loginResult = mockMvc.perform(MockMvcRequestBuilders
+        val loginResult = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/verify-otp")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.toJson(otpVerificationRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
 
-        String responseBody = loginResult.getResponse().getContentAsString();
-        String token = JsonPath.read(responseBody, "$.token");
+        val responseBody = loginResult.getResponse().getContentAsString();
+        val token = JsonPath.read(responseBody, "$.token");
 
-        PinRequest pinRequest = new PinRequest();
-        pinRequest.setAccountNumber(accountNumber);
-        pinRequest.setPassword(user.getPassword());
-        pinRequest.setPin(getRandomPin());
+        val pinRequest = new PinRequest(accountNumber, getRandomPin(), user.getPassword());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/account/pin/create")
@@ -547,16 +520,14 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_verify_otp_with_invalid_otp() throws Exception {
-        User user = createAndRegisterUser();
-        String accountNumber = userRepository
+        val user = createAndRegisterUser();
+        val accountNumber = userRepository
                 .findByEmail(user.getEmail())
                 .get()
                 .getAccount()
                 .getAccountNumber();
 
-        OtpVerificationRequest otpVerificationRequest = new OtpVerificationRequest();
-        otpVerificationRequest.setAccountNumber(accountNumber);
-        otpVerificationRequest.setOtp(getRandomOtp());
+        val otpVerificationRequest = new OtpVerificationRequest(accountNumber, getRandomOtp());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/verify-otp")
@@ -569,8 +540,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_verify_otp_with_missing_account_number() throws Exception {
-        OtpVerificationRequest otpVerificationRequest = new OtpVerificationRequest();
-        otpVerificationRequest.setOtp(getRandomOtp());
+        val otpVerificationRequest = new OtpVerificationRequest(null, getRandomOtp());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/verify-otp")
@@ -583,9 +553,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_verify_otp_with_empty_account_number() throws Exception {
-        OtpVerificationRequest otpVerificationRequest = new OtpVerificationRequest();
-        otpVerificationRequest.setAccountNumber("");
-        otpVerificationRequest.setOtp(getRandomOtp());
+        val otpVerificationRequest = new OtpVerificationRequest("", getRandomOtp());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/verify-otp")
@@ -598,15 +566,14 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_verify_otp_with_missing_otp() throws Exception {
-        User user = createAndRegisterUser();
-        String accountNumber = userRepository
+        val user = createAndRegisterUser();
+        val accountNumber = userRepository
                 .findByEmail(user.getEmail())
                 .get()
                 .getAccount()
                 .getAccountNumber();
 
-        OtpVerificationRequest otpVerificationRequest = new OtpVerificationRequest();
-        otpVerificationRequest.setAccountNumber(accountNumber);
+        val otpVerificationRequest = new OtpVerificationRequest(accountNumber, null);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/verify-otp")
@@ -619,16 +586,14 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_verify_otp_with_empty_otp() throws Exception {
-        User user = createAndRegisterUser();
-        String accountNumber = userRepository
+        val user = createAndRegisterUser();
+        val accountNumber = userRepository
                 .findByEmail(user.getEmail())
                 .get()
                 .getAccount()
                 .getAccountNumber();
 
-        OtpVerificationRequest otpVerificationRequest = new OtpVerificationRequest();
-        otpVerificationRequest.setAccountNumber(accountNumber);
-        otpVerificationRequest.setOtp("");
+        val otpVerificationRequest = new OtpVerificationRequest(accountNumber, "");
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/verify-otp")
@@ -641,9 +606,9 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_update_user_with_valid_details() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUser();
+        val userDetails = createAndLoginUser();
 
-        User updatedUser = createUser();
+        val updatedUser = createUser();
         updatedUser.setPassword(userDetails.get("password"));
         updatedUser.setPhoneNumber(getRandomPhoneNumber(userDetails.get("countryCode")));
 
@@ -665,9 +630,9 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_update_user_with_invalid_name() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUser();
+        val userDetails = createAndLoginUser();
 
-        User updatedUser = createUser();
+        val updatedUser = createUser();
         updatedUser.setName("");
         updatedUser.setPassword(userDetails.get("password"));
         updatedUser.setPhoneNumber(getRandomPhoneNumber(userDetails.get("countryCode")));
@@ -684,9 +649,9 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_update_user_with_invalid_address() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUser();
+        val userDetails = createAndLoginUser();
 
-        User updatedUser = createUser();
+        val updatedUser = createUser();
         updatedUser.setAddress("");
         updatedUser.setPassword(userDetails.get("password"));
         updatedUser.setPhoneNumber(getRandomPhoneNumber(userDetails.get("countryCode")));
@@ -703,9 +668,9 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_update_user_with_invalid_email() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUser();
+        val userDetails = createAndLoginUser();
 
-        User updatedUser = createUser();
+        val updatedUser = createUser();
         updatedUser.setEmail("");
         updatedUser.setPassword(userDetails.get("password"));
         updatedUser.setPhoneNumber(getRandomPhoneNumber(userDetails.get("countryCode")));
@@ -722,9 +687,9 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_update_user_with_invalid_phone_number() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUser();
+        val userDetails = createAndLoginUser();
 
-        User updatedUser = createUser();
+        val updatedUser = createUser();
         updatedUser.setPhoneNumber("");
         updatedUser.setPassword(userDetails.get("password"));
 
@@ -740,9 +705,9 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_update_user_with_invalid_password() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUser();
+        val userDetails = createAndLoginUser();
 
-        User updatedUser = createUser();
+        val updatedUser = createUser();
         updatedUser.setPassword("");
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -757,7 +722,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_update_user_without_authentication() throws Exception {
-        User updatedUser = createUser();
+        val updatedUser = createUser();
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/update")
@@ -768,15 +733,15 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_logout_with_valid_token() throws Exception {
-        HashMap<String, String> userDetails = createAndLoginUser();
+        val userDetails = createAndLoginUser();
 
-        MockHttpServletResponse response = mockMvc.perform(MockMvcRequestBuilders
+        val response = mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/users/logout")
                 .header("Authorization", "Bearer " + userDetails.get("token")))
                 .andExpect(MockMvcResultMatchers.status().isFound())
                 .andReturn().getResponse();
 
-        String redirectedUrl = response.getRedirectedUrl();
+        val redirectedUrl = response.getRedirectedUrl();
         if (redirectedUrl != null) {
             Assertions.assertEquals("/logout", redirectedUrl);
             mockMvc.perform(MockMvcRequestBuilders
@@ -791,15 +756,15 @@ public class UserControllerTests extends BaseTest {
     public void test_logout_with_invalid_token() throws Exception {
         createAndLoginUser();
 
-        User user = createAndRegisterUser();
-        String accountNumber = userRepository
+        val user = createAndRegisterUser();
+        val accountNumber = userRepository
                 .findByEmail(user.getEmail())
                 .get()
                 .getAccount()
                 .getAccountNumber();
 
-        UserDetails userDetails = tokenService.loadUserByUsername(accountNumber);
-        String token = tokenService.generateToken(userDetails);
+        val userDetails = tokenService.loadUserByUsername(accountNumber);
+        val token = tokenService.generateToken(userDetails);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/users/logout")
@@ -809,15 +774,15 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_logout_without_login() throws Exception {
-        User user = createAndRegisterUser();
-        String accountNumber = userRepository
+        val user = createAndRegisterUser();
+        val accountNumber = userRepository
                 .findByEmail(user.getEmail())
                 .get()
                 .getAccount()
                 .getAccountNumber();
 
-        UserDetails userDetails = tokenService.loadUserByUsername(accountNumber);
-        String token = tokenService.generateToken(userDetails);
+        val userDetails = tokenService.loadUserByUsername(accountNumber);
+        val token = tokenService.generateToken(userDetails);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/users/logout")
@@ -839,4 +804,5 @@ public class UserControllerTests extends BaseTest {
                 .get("/api/users/logout"))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
+
 }

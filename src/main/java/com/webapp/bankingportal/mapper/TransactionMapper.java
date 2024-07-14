@@ -9,18 +9,7 @@ import com.webapp.bankingportal.entity.Transaction;
 public class TransactionMapper {
 
     public TransactionDTO toDto(Transaction transaction) {
-        TransactionDTO dto = new TransactionDTO();
-        dto.setId(transaction.getId());
-        dto.setAmount(transaction.getAmount());
-        dto.setTransactionType(transaction.getTransactionType());
-        dto.setTransactionDate(transaction.getTransactionDate());
-        dto.setSourceAccountNumber(transaction.getSourceAccount().getAccountNumber());
-        if (transaction.getTargetAccount() != null) {
-            dto.setTargetAccountNumber(transaction.getTargetAccount().getAccountNumber());
-        } else {
-            // Handle the case where target account is null (e.g., set a default value or do nothing)
-            dto.setTargetAccountNumber("N/A"); // Replace "N/A" with an appropriate default value
-        }
-        return dto;
+        return new TransactionDTO(transaction);
     }
+
 }

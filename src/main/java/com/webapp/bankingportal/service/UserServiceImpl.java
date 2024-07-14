@@ -8,7 +8,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.webapp.bankingportal.entity.Account;
 import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.exception.PasswordResetException;
 import com.webapp.bankingportal.exception.UserInvalidException;
@@ -16,6 +15,8 @@ import com.webapp.bankingportal.mapper.UserMapper;
 import com.webapp.bankingportal.repository.UserRepository;
 import com.webapp.bankingportal.util.LoggedinUser;
 import com.webapp.bankingportal.util.ValidationUtil;
+
+import lombok.val;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -59,9 +60,9 @@ public class UserServiceImpl implements UserService {
 
         user.setCountryCode(user.getCountryCode().toUpperCase());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        User savedUser = saveUser(user);
+        val savedUser = saveUser(user);
 
-        Account account = accountService.createAccount(savedUser);
+        val account = accountService.createAccount(savedUser);
         savedUser.setAccount(account);
 
         return saveUser(savedUser);
@@ -74,8 +75,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateUser(User source) {
-        String accountNumber = LoggedinUser.getAccountNumber();
-        User target = userRepository.findByAccountAccountNumber(accountNumber)
+        val accountNumber = LoggedinUser.getAccountNumber();
+        val target = userRepository.findByAccountAccountNumber(accountNumber)
                 .orElseThrow(() -> new UserInvalidException(
                         "User with account number " + accountNumber + " does not exist"));
 
@@ -103,6 +104,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public boolean doesIdentifierExist(String identifier) {
+        return doesAccountExist(identifier) || doesEmailExist(identifier);
+    }
+
+    @Override
     public Optional<User> getUserByAccountNumber(String accountNo) {
         return userRepository.findByAccountAccountNumber(accountNo);
     }
@@ -113,19 +119,32 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Optional<User> getUserByIdentifier(String identifier) {
+        Optional<User> user = Optional.empty();
+
+        if (doesEmailExist(identifier)) {
+            user = getUserByEmail(identifier);
+        } else if (doesAccountExist(identifier)) {
+            user = getUserByAccountNumber(identifier);
+        }
+
+        return user;
+    }
+
+    @Override
     public CompletableFuture<Boolean> sendLoginNotificationEmail(User user, String ip) {
-        final String name = user.getName();
-        final String email = user.getEmail();
-        final String subject = "New login to OneStopBank";
-        final String loginTime = new Timestamp(System.currentTimeMillis()).toString();
+        val name = user.getName();
+        val email = user.getEmail();
+        val subject = "New login to OneStopBank";
+        val loginTime = new Timestamp(System.currentTimeMillis()).toString();
 
         return geolocationService.getGeolocation(ip).thenComposeAsync(geolocationResponse -> {
 
-            final String loginLocation = String.format("%s, %s",
+            val loginLocation = String.format("%s, %s",
                     geolocationResponse.getCity().getNames().get("en"),
                     geolocationResponse.getCountry().getNames().get("en"));
 
-            final String emailText = emailService.getLoginEmailTemplate(
+            val emailText = emailService.getLoginEmailTemplate(
                     name, loginTime, loginLocation);
 
             return emailService.sendEmail(email, subject, emailText)
@@ -134,7 +153,7 @@ public class UserServiceImpl implements UserService {
 
         }).exceptionallyComposeAsync(throwable -> {
 
-            final String emailText = emailService.getLoginEmailTemplate(
+            val emailText = emailService.getLoginEmailTemplate(
                     name, loginTime, "Unknown");
 
             return emailService.sendEmail(email, subject, emailText)

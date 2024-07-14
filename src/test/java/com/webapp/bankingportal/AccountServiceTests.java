@@ -1,16 +1,13 @@
 package com.webapp.bankingportal;
 
-import java.util.HashMap;
-
 import jakarta.validation.ConstraintViolationException;
+import lombok.val;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.webapp.bankingportal.entity.Account;
-import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.exception.InsufficientBalanceException;
 import com.webapp.bankingportal.exception.InvalidAmountException;
 import com.webapp.bankingportal.exception.InvalidPinException;
@@ -25,10 +22,10 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_create_account_with_valid_user() {
-        User user = createUser();
+        val user = createUser();
         userRepository.save(user);
 
-        Account account = accountService.createAccount(user);
+        val account = accountService.createAccount(user);
 
         Assertions.assertNotNull(account);
         Assertions.assertNotNull(account.getAccountNumber());
@@ -43,13 +40,13 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_create_pin_with_valid_details() {
-        HashMap<String, String> accountDetails = createAccount();
+        val accountDetails = createAccount();
 
-        String pin = getRandomPin();
+        val pin = getRandomPin();
 
         accountService.createPin(accountDetails.get("accountNumber"), accountDetails.get("password"), pin);
 
-        Account account = accountRepository
+        val account = accountRepository
                 .findByAccountNumber(accountDetails.get("accountNumber"));
 
         Assertions.assertTrue(passwordEncoder.matches(pin, account.getPin()));
@@ -64,7 +61,7 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_create_pin_with_invalid_password() {
-        String accountNumber = createAccount()
+        val accountNumber = createAccount()
                 .get("accountNumber");
 
         Assertions.assertThrows(UnauthorizedException.class, () -> {
@@ -74,7 +71,7 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_create_pin_with_existing_pin() {
-        HashMap<String, String> accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
+        val accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
 
         Assertions.assertThrows(UnauthorizedException.class, () -> {
             accountService.createPin(accountDetails.get("accountNumber"), accountDetails.get("password"),
@@ -85,7 +82,7 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_create_pin_with_missing_or_empty_pin() {
-        HashMap<String, String> accountDetails = createAccount();
+        val accountDetails = createAccount();
 
         Assertions.assertThrows(InvalidPinException.class, () -> {
             accountService.createPin(accountDetails.get("accountNumber"), accountDetails.get("password"), null);
@@ -98,7 +95,7 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_create_pin_with_invalid_format() {
-        HashMap<String, String> accountDetails = createAccount();
+        val accountDetails = createAccount();
 
         // Short pin
         Assertions.assertThrows(InvalidPinException.class, () -> {
@@ -121,14 +118,14 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_update_pin_with_valid_details() {
-        HashMap<String, String> accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
+        val accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
 
-        String newPin = getRandomPin();
+        val newPin = getRandomPin();
 
         accountService.updatePin(accountDetails.get("accountNumber"), accountDetails.get("pin"),
                 accountDetails.get("password"), newPin);
 
-        Account account = accountRepository
+        val account = accountRepository
                 .findByAccountNumber(accountDetails.get("accountNumber"));
 
         Assertions.assertTrue(passwordEncoder.matches(newPin, account.getPin()));
@@ -143,7 +140,7 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_update_pin_with_incorrect_password() {
-        HashMap<String, String> accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
+        val accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
 
         Assertions.assertThrows(UnauthorizedException.class, () -> {
             accountService.updatePin(accountDetails.get("accountNumber"), accountDetails.get("pin"),
@@ -153,7 +150,7 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_update_pin_with_missing_or_empty_password() {
-        HashMap<String, String> accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
+        val accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
 
         Assertions.assertThrows(UnauthorizedException.class, () -> {
             accountService.updatePin(accountDetails.get("accountNumber"), accountDetails.get("pin"), null,
@@ -168,7 +165,7 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_update_pin_with_incorrect_pin() {
-        HashMap<String, String> accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
+        val accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
 
         Assertions.assertThrows(UnauthorizedException.class, () -> {
             accountService.updatePin(accountDetails.get("accountNumber"), getRandomPin(),
@@ -178,7 +175,7 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_update_pin_for_account_with_no_pin() {
-        HashMap<String, String> accountDetails = createAccount();
+        val accountDetails = createAccount();
 
         Assertions.assertThrows(UnauthorizedException.class, () -> {
             accountService.updatePin(accountDetails.get("accountNumber"), getRandomPin(),
@@ -188,7 +185,7 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_update_pin_with_missing_or_empty_old_pin() {
-        HashMap<String, String> accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
+        val accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
 
         Assertions.assertThrows(UnauthorizedException.class, () -> {
             accountService.updatePin(accountDetails.get("accountNumber"), null, accountDetails.get("password"),
@@ -203,7 +200,7 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_update_pin_with_missing_or_empty_new_pin() {
-        HashMap<String, String> accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
+        val accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
 
         Assertions.assertThrows(InvalidPinException.class, () -> {
             accountService.updatePin(accountDetails.get("accountNumber"), accountDetails.get("pin"),
@@ -218,10 +215,10 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_deposit_cash_with_valid_details() {
-        double balance = 1000.0;
-        HashMap<String, String> accountDetails = createAccountWithInitialBalance(balance);
+        val balance = 1000.0;
+        val accountDetails = createAccountWithInitialBalance(balance);
 
-        Account account = accountRepository
+        val account = accountRepository
                 .findByAccountNumber(accountDetails.get("accountNumber"));
 
         Assertions.assertEquals(balance, account.getBalance(), 0.01);
@@ -236,7 +233,7 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_deposit_cash_with_invalid_pin() {
-        HashMap<String, String> accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
+        val accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
 
         Assertions.assertThrows(UnauthorizedException.class, () -> {
             accountService.cashDeposit(accountDetails.get("accountNumber"), getRandomPin(), 50.0);
@@ -245,7 +242,7 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_deposit_invalid_amount() {
-        HashMap<String, String> accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
+        val accountDetails = createAccountWithPin(passwordEncoder, userRepository, accountService);
 
         // Negative amount
         Assertions.assertThrows(InvalidAmountException.class, () -> {
@@ -270,13 +267,13 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_withdraw_cash_with_valid_details() {
-        double balance = 1000.0;
-        HashMap<String, String> accountDetails = createAccountWithInitialBalance(balance);
+        val balance = 1000.0;
+        val accountDetails = createAccountWithInitialBalance(balance);
 
-        double withdrawalAmount = 500.0;
+        val withdrawalAmount = 500.0;
         accountService.cashWithdrawal(accountDetails.get("accountNumber"), accountDetails.get("pin"), withdrawalAmount);
 
-        Account account = accountRepository
+        val account = accountRepository
                 .findByAccountNumber(accountDetails.get("accountNumber"));
 
         Assertions.assertEquals(balance - withdrawalAmount, account.getBalance(), 0.01);
@@ -284,7 +281,7 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_withdraw_insufficient_balance() {
-        HashMap<String, String> accountDetails = createAccountWithInitialBalance(500.0);
+        val accountDetails = createAccountWithInitialBalance(500.0);
 
         Assertions.assertThrows(InsufficientBalanceException.class, () -> {
             accountService.cashWithdrawal(accountDetails.get("accountNumber"), accountDetails.get("pin"), 1000.0);
@@ -293,19 +290,19 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_transfer_funds_with_valid_accounts() {
-        double sourceAccountBalance = 1000.0;
-        HashMap<String, String> sourceAccountDetails = createAccountWithInitialBalance(sourceAccountBalance);
+        val sourceAccountBalance = 1000.0;
+        val sourceAccountDetails = createAccountWithInitialBalance(sourceAccountBalance);
 
-        double targetAccountBalance = 500.0;
-        HashMap<String, String> targetAccountDetails = createAccountWithInitialBalance(targetAccountBalance);
+        val targetAccountBalance = 500.0;
+        val targetAccountDetails = createAccountWithInitialBalance(targetAccountBalance);
 
-        double transferAmount = 200;
+        val transferAmount = 200;
         accountService.fundTransfer(sourceAccountDetails.get("accountNumber"),
                 targetAccountDetails.get("accountNumber"), sourceAccountDetails.get("pin"), transferAmount);
 
-        Account sourceAccount = accountRepository
+        val sourceAccount = accountRepository
                 .findByAccountNumber(sourceAccountDetails.get("accountNumber"));
-        Account targetAccount = accountRepository
+        val targetAccount = accountRepository
                 .findByAccountNumber(targetAccountDetails.get("accountNumber"));
 
         Assertions.assertEquals(sourceAccountBalance - transferAmount, sourceAccount.getBalance(), 0.01);
@@ -315,7 +312,7 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_transfer_non_existent_target_account() {
-        HashMap<String, String> accountDetails = createAccountWithInitialBalance(500.0);
+        val accountDetails = createAccountWithInitialBalance(500.0);
 
         Assertions.assertThrows(NotFoundException.class, () -> {
             accountService.fundTransfer(accountDetails.get("accountNumber"), getRandomAccountNumber(),
@@ -325,13 +322,14 @@ public class AccountServiceTests extends BaseTest {
 
     @Test
     public void test_transfer_funds_insufficient_balance() {
-        HashMap<String, String> sourceAccountDetails = createAccountWithInitialBalance(500.0);
+        val sourceAccountDetails = createAccountWithInitialBalance(500.0);
 
-        HashMap<String, String> targetAccountDetails = createAccount();
+        val targetAccountDetails = createAccount();
 
         Assertions.assertThrows(InsufficientBalanceException.class, () -> {
             accountService.fundTransfer(sourceAccountDetails.get("accountNumber"),
                     targetAccountDetails.get("accountNumber"), sourceAccountDetails.get("pin"), 1000.0);
         });
     }
+
 }

@@ -7,6 +7,9 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+
+import lombok.val;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,7 +18,7 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-        final String securitySchemeName = "Bearer";
+        val securitySchemeName = "Bearer";
         return new OpenAPI()
                 .info(new Info().title("Banking Portal API")
                         .description("This is auth service use for validate the user.")
@@ -32,8 +35,7 @@ public class SwaggerConfig {
                                                 .name(securitySchemeName)
                                                 .type(SecurityScheme.Type.HTTP)
                                                 .scheme("bearer")
-                                                .bearerFormat("JWT")
-                                )
-                );
+                                                .bearerFormat("JWT")));
     }
+
 }
