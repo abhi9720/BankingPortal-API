@@ -10,6 +10,7 @@ import com.webapp.bankingportal.entity.Account;
 import com.webapp.bankingportal.entity.Transaction;
 import com.webapp.bankingportal.entity.TransactionType;
 import com.webapp.bankingportal.entity.User;
+import com.webapp.bankingportal.exception.FundTransferException;
 import com.webapp.bankingportal.exception.InsufficientBalanceException;
 import com.webapp.bankingportal.exception.InvalidAmountException;
 import com.webapp.bankingportal.exception.InvalidPinException;
@@ -17,6 +18,7 @@ import com.webapp.bankingportal.exception.NotFoundException;
 import com.webapp.bankingportal.exception.UnauthorizedException;
 import com.webapp.bankingportal.repository.AccountRepository;
 import com.webapp.bankingportal.repository.TransactionRepository;
+import com.webapp.bankingportal.util.ApiMessages;
 
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -28,8 +30,8 @@ import lombok.extern.slf4j.Slf4j;
 public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
-    private final TransactionRepository transactionRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TransactionRepository transactionRepository;
 
     @Override
     public Account createAccount(User user) {
@@ -44,7 +46,7 @@ public class AccountServiceImpl implements AccountService {
     public boolean isPinCreated(String accountNumber) {
         val account = accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
-            throw new NotFoundException("Account not found");
+            throw new NotFoundException(ApiMessages.ACCOUNT_NOT_FOUND.getMessage());
         }
 
         return account.getPin() != null;
@@ -63,34 +65,34 @@ public class AccountServiceImpl implements AccountService {
     private void validatePin(String accountNumber, String pin) {
         val account = accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
-            throw new NotFoundException("Account not found");
+            throw new NotFoundException(ApiMessages.ACCOUNT_NOT_FOUND.getMessage());
         }
 
         if (account.getPin() == null) {
-            throw new UnauthorizedException("PIN not created");
+            throw new UnauthorizedException(ApiMessages.PIN_NOT_CREATED.getMessage());
         }
 
         if (pin == null || pin.isEmpty()) {
-            throw new UnauthorizedException("PIN cannot be empty");
+            throw new UnauthorizedException(ApiMessages.PIN_EMPTY_ERROR.getMessage());
         }
 
         if (!passwordEncoder.matches(pin, account.getPin())) {
-            throw new UnauthorizedException("Invalid PIN");
+            throw new UnauthorizedException(ApiMessages.PIN_INVALID_ERROR.getMessage());
         }
     }
 
     private void validatePassword(String accountNumber, String password) {
         val account = accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
-            throw new NotFoundException("Account not found");
+            throw new NotFoundException(ApiMessages.ACCOUNT_NOT_FOUND.getMessage());
         }
 
         if (password == null || password.isEmpty()) {
-            throw new UnauthorizedException("Password cannot be empty");
+            throw new UnauthorizedException(ApiMessages.PASSWORD_EMPTY_ERROR.getMessage());
         }
 
         if (!passwordEncoder.matches(password, account.getUser().getPassword())) {
-            throw new UnauthorizedException("Invalid password");
+            throw new UnauthorizedException(ApiMessages.PASSWORD_INVALID_ERROR.getMessage());
         }
     }
 
@@ -100,15 +102,15 @@ public class AccountServiceImpl implements AccountService {
 
         val account = accountRepository.findByAccountNumber(accountNumber);
         if (account.getPin() != null) {
-            throw new UnauthorizedException("PIN already created");
+            throw new UnauthorizedException(ApiMessages.PIN_ALREADY_EXISTS.getMessage());
         }
 
         if (pin == null || pin.isEmpty()) {
-            throw new InvalidPinException("PIN cannot be empty");
+            throw new InvalidPinException(ApiMessages.PIN_EMPTY_ERROR.getMessage());
         }
 
         if (!pin.matches("[0-9]{4}")) {
-            throw new InvalidPinException("PIN must be 4 digits");
+            throw new InvalidPinException(ApiMessages.PIN_FORMAT_INVALID_ERROR.getMessage());
         }
 
         account.setPin(passwordEncoder.encode(pin));
@@ -125,11 +127,11 @@ public class AccountServiceImpl implements AccountService {
         val account = accountRepository.findByAccountNumber(accountNumber);
 
         if (newPin == null || newPin.isEmpty()) {
-            throw new InvalidPinException("New PIN cannot be empty");
+            throw new InvalidPinException(ApiMessages.PIN_EMPTY_ERROR.getMessage());
         }
 
         if (!newPin.matches("[0-9]{4}")) {
-            throw new InvalidPinException("New PIN must be 4 digits");
+            throw new InvalidPinException(ApiMessages.PIN_FORMAT_INVALID_ERROR.getMessage());
         }
 
         account.setPin(passwordEncoder.encode(newPin));
@@ -138,15 +140,15 @@ public class AccountServiceImpl implements AccountService {
 
     private void validateAmount(double amount) {
         if (amount <= 0) {
-            throw new InvalidAmountException("Amount must be greater than 0");
+            throw new InvalidAmountException(ApiMessages.AMOUNT_NEGATIVE_ERROR.getMessage());
         }
 
         if (amount % 100 != 0) {
-            throw new InvalidAmountException("Amount must be in multiples of 100");
+            throw new InvalidAmountException(ApiMessages.AMOUNT_NOT_MULTIPLE_OF_100_ERROR.getMessage());
         }
 
         if (amount > 100000) {
-            throw new InvalidAmountException("Amount cannot be greater than 100,000");
+            throw new InvalidAmountException(ApiMessages.AMOUNT_EXCEED_100_000_ERROR.getMessage());
         }
     }
 
@@ -177,7 +179,7 @@ public class AccountServiceImpl implements AccountService {
         val account = accountRepository.findByAccountNumber(accountNumber);
         val currentBalance = account.getBalance();
         if (currentBalance < amount) {
-            throw new InsufficientBalanceException("Insufficient balance");
+            throw new InsufficientBalanceException(ApiMessages.BALANCE_INSUFFICIENT_ERROR.getMessage());
         }
 
         val newBalance = currentBalance - amount;
@@ -197,15 +199,19 @@ public class AccountServiceImpl implements AccountService {
         validatePin(sourceAccountNumber, pin);
         validateAmount(amount);
 
+        if (sourceAccountNumber.equals(targetAccountNumber)) {
+            throw new FundTransferException(ApiMessages.CASH_TRANSFER_SAME_ACCOUNT_ERROR.getMessage());
+        }
+
         val targetAccount = accountRepository.findByAccountNumber(targetAccountNumber);
         if (targetAccount == null) {
-            throw new NotFoundException("Target account not found");
+            throw new NotFoundException(ApiMessages.ACCOUNT_NOT_FOUND.getMessage());
         }
 
         val sourceAccount = accountRepository.findByAccountNumber(sourceAccountNumber);
         val sourceBalance = sourceAccount.getBalance();
         if (sourceBalance < amount) {
-            throw new InsufficientBalanceException("Insufficient balance");
+            throw new InsufficientBalanceException(ApiMessages.BALANCE_INSUFFICIENT_ERROR.getMessage());
         }
 
         val newSourceBalance = sourceBalance - amount;

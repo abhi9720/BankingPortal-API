@@ -16,6 +16,7 @@ import com.webapp.bankingportal.dto.OtpRequest;
 import com.webapp.bankingportal.dto.OtpVerificationRequest;
 import com.webapp.bankingportal.dto.PinRequest;
 import com.webapp.bankingportal.service.TokenService;
+import com.webapp.bankingportal.util.ApiMessages;
 import com.webapp.bankingportal.util.JsonUtil;
 
 import lombok.val;
@@ -41,7 +42,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Name cannot be empty"));
+                        .string(ApiMessages.USER_NAME_EMPTY_ERROR.getMessage()));
     }
 
     @Test
@@ -55,7 +56,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Name cannot be empty"));
+                        .string(ApiMessages.USER_NAME_EMPTY_ERROR.getMessage()));
     }
 
     @Test
@@ -69,7 +70,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Email cannot be empty"));
+                        .string(ApiMessages.USER_EMAIL_EMPTY_ERROR.getMessage()));
     }
 
     @Test
@@ -83,7 +84,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Email cannot be empty"));
+                        .string(ApiMessages.USER_EMAIL_EMPTY_ERROR.getMessage()));
     }
 
     @Test
@@ -97,7 +98,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Country code cannot be empty"));
+                        .string(ApiMessages.USER_COUNTRY_CODE_EMPTY_ERROR.getMessage()));
     }
 
     @Test
@@ -111,7 +112,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Country code cannot be empty"));
+                        .string(ApiMessages.USER_COUNTRY_CODE_EMPTY_ERROR.getMessage()));
     }
 
     @Test
@@ -125,7 +126,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Phone number cannot be empty"));
+                        .string(ApiMessages.USER_PHONE_NUMBER_EMPTY_ERROR.getMessage()));
     }
 
     @Test
@@ -139,7 +140,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Phone number cannot be empty"));
+                        .string(ApiMessages.USER_PHONE_NUMBER_EMPTY_ERROR.getMessage()));
     }
 
     @Test
@@ -153,7 +154,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Address cannot be empty"));
+                        .string(ApiMessages.USER_ADDRESS_EMPTY_ERROR.getMessage()));
     }
 
     @Test
@@ -167,7 +168,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Address cannot be empty"));
+                        .string(ApiMessages.USER_ADDRESS_EMPTY_ERROR.getMessage()));
     }
 
     @Test
@@ -182,7 +183,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user2)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Email already exists"));
+                        .string(ApiMessages.USER_EMAIL_ALREADY_EXISTS_ERROR.getMessage()));
     }
 
     @Test
@@ -197,13 +198,14 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user2)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Phone number already exists"));
+                        .string(ApiMessages.USER_PHONE_NUMBER_ALREADY_EXISTS_ERROR.getMessage()));
     }
 
     @Test
     public void test_register_user_with_invalid_email() throws Exception {
         val user = createUser();
-        user.setEmail(faker.lorem().word());
+        val email = faker.lorem().word();
+        user.setEmail(email);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
@@ -211,13 +213,14 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string(StringContains.containsString("Invalid email")));
+                        .string(String.format(ApiMessages.USER_EMAIL_ADDRESS_INVALID_ERROR.getMessage(), email)));
     }
 
     @Test
     public void test_register_user_with_invalid_country_code() throws Exception {
         val user = createUser();
-        user.setCountryCode(faker.lorem().word());
+        val countryCode = faker.lorem().word();
+        user.setCountryCode(countryCode);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
@@ -225,21 +228,23 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Invalid country code: " + user.getCountryCode()));
+                        .string(String.format(ApiMessages.USER_COUNTRY_CODE_INVALID_ERROR.getMessage(), countryCode)));
     }
 
     @Test
     public void test_register_user_with_invalid_phone_number() throws Exception {
         val user = createUser();
-        user.setPhoneNumber(faker.number().digits(3));
+        val phoneNumber = faker.number().digits(3);
+        user.setPhoneNumber(phoneNumber);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(
-                        MockMvcResultMatchers.content().string(StringContains.containsString("Invalid phone number")));
+                .andExpect(MockMvcResultMatchers.content()
+                        .string(String.format(ApiMessages.USER_PHONE_NUMBER_INVALID_ERROR.getMessage(),
+                                phoneNumber, user.getCountryCode())));
     }
 
     @Test
@@ -253,7 +258,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Password cannot be empty"));
+                        .string(ApiMessages.PASSWORD_EMPTY_ERROR.getMessage()));
     }
 
     @Test
@@ -267,9 +272,8 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Password cannot be empty"));
+                        .string(ApiMessages.PASSWORD_EMPTY_ERROR.getMessage()));
     }
-
     @Test
     public void test_register_user_with_short_password() throws Exception {
         val user = createUser();
@@ -281,7 +285,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Password must be at least 8 characters long"));
+                        .string(ApiMessages.PASSWORD_TOO_SHORT_ERROR.getMessage()));
     }
 
     @Test
@@ -295,7 +299,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Password must be less than 128 characters long"));
+                        .string(ApiMessages.PASSWORD_TOO_LONG_ERROR.getMessage()));
     }
 
     @Test
@@ -309,7 +313,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Password cannot contain any whitespace characters"));
+                        .string(ApiMessages.PASSWORD_CONTAINS_WHITESPACE_ERROR.getMessage()));
     }
 
     @Test
@@ -323,7 +327,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Password must contain at least one uppercase letter"));
+                        .string(String.format(ApiMessages.PASSWORD_REQUIREMENTS_ERROR.getMessage(), "one uppercase letter")));
     }
 
     @Test
@@ -338,7 +342,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string(StringContains.containsString("Password must contain at least one lowercase letter")));
+                        .string(StringContains.containsString(String.format(ApiMessages.PASSWORD_REQUIREMENTS_ERROR.getMessage(), "one lowercase letter"))));
     }
 
     @Test
@@ -352,7 +356,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Password must contain at least one digit"));
+                        .string(String.format(ApiMessages.PASSWORD_REQUIREMENTS_ERROR.getMessage(), "one digit")));
     }
 
     @Test
@@ -366,7 +370,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Password must contain at least one special character"));
+                        .string(String.format(ApiMessages.PASSWORD_REQUIREMENTS_ERROR.getMessage(), "one special character")));
     }
 
     @Test
@@ -382,7 +386,7 @@ public class UserControllerTests extends BaseTest {
                 .post("/api/users/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.toJson(loginRequest)))
-                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
@@ -411,7 +415,7 @@ public class UserControllerTests extends BaseTest {
                 .post("/api/users/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.toJson(loginRequest)))
-                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
@@ -448,8 +452,8 @@ public class UserControllerTests extends BaseTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.toJson(otpRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("message")
-                        .value("OTP sent successfully to: " + user.getEmail()));
+                .andExpect(MockMvcResultMatchers.content()
+                        .string(String.format(ApiMessages.OTP_SENT_SUCCESS.getMessage(), user.getEmail())));
     }
 
     @Test
@@ -460,7 +464,7 @@ public class UserControllerTests extends BaseTest {
                 .post("/api/users/generate-otp")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.toJson(otpRequest)))
-                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
@@ -471,7 +475,7 @@ public class UserControllerTests extends BaseTest {
                 .post("/api/users/generate-otp")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.toJson(otpRequest)))
-                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
@@ -490,8 +494,8 @@ public class UserControllerTests extends BaseTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.toJson(otpRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("message")
-                        .value("OTP sent successfully to: " + user.getEmail()));
+                .andExpect(MockMvcResultMatchers.content()
+                        .string(String.format(ApiMessages.OTP_SENT_SUCCESS.getMessage(), user.getEmail())));
 
         val receivedMessages = GreenMailJavaMailSender.getReceivedMessagesForDomain(user.getEmail());
         val otpVerificationRequest = new OtpVerificationRequest(accountNumber, getOtpFromEmail(receivedMessages[0]));
@@ -535,7 +539,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(otpVerificationRequest)))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Invalid OTP"));
+                        .string(ApiMessages.OTP_INVALID_ERROR.getMessage()));
     }
 
     @Test
@@ -548,7 +552,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(otpVerificationRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Missing account number"));
+                        .string(ApiMessages.IDENTIFIER_MISSING_ERROR.getMessage()));
     }
 
     @Test
@@ -561,7 +565,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(otpVerificationRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Missing account number"));
+                        .string(ApiMessages.IDENTIFIER_MISSING_ERROR.getMessage()));
     }
 
     @Test
@@ -581,7 +585,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(otpVerificationRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Missing OTP"));
+                        .string(ApiMessages.OTP_MISSING_ERROR.getMessage()));
     }
 
     @Test
@@ -601,9 +605,8 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(otpVerificationRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Missing OTP"));
+                        .string(ApiMessages.OTP_MISSING_ERROR.getMessage()));
     }
-
     @Test
     public void test_update_user_with_valid_details() throws Exception {
         val userDetails = createAndLoginUser();
@@ -644,7 +647,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(updatedUser)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Name cannot be empty"));
+                        .string(ApiMessages.USER_NAME_EMPTY_ERROR.getMessage()));
     }
 
     @Test
@@ -663,7 +666,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(updatedUser)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Address cannot be empty"));
+                        .string(ApiMessages.USER_ADDRESS_EMPTY_ERROR.getMessage()));
     }
 
     @Test
@@ -682,7 +685,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(updatedUser)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Email cannot be empty"));
+                        .string(ApiMessages.USER_EMAIL_EMPTY_ERROR.getMessage()));
     }
 
     @Test
@@ -700,7 +703,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(updatedUser)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Phone number cannot be empty"));
+                        .string(ApiMessages.USER_PHONE_NUMBER_EMPTY_ERROR.getMessage()));
     }
 
     @Test

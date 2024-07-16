@@ -16,6 +16,7 @@ import com.webapp.bankingportal.exception.InvalidTokenException;
 import com.webapp.bankingportal.repository.AccountRepository;
 import com.webapp.bankingportal.repository.TokenRepository;
 import com.webapp.bankingportal.repository.UserRepository;
+import com.webapp.bankingportal.util.ApiMessages;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -73,7 +74,7 @@ public class TokenServiceImpl implements TokenService {
     public UserDetails loadUserByUsername(String accountNumber) throws UsernameNotFoundException {
         val user = userRepository.findByAccountAccountNumber(accountNumber)
                 .orElseThrow(() -> new UsernameNotFoundException(
-                        "User not found with account number: " + accountNumber));
+                        String.format(ApiMessages.USER_NOT_FOUND_BY_ACCOUNT.getMessage(), accountNumber)));
 
         return withUsername(accountNumber).password(user.getPassword()).build();
     }
@@ -99,26 +100,26 @@ public class TokenServiceImpl implements TokenService {
             // Delete expired token
             invalidateToken(token);
 
-            throw new InvalidTokenException("Token has expired");
+            throw new InvalidTokenException(ApiMessages.TOKEN_EXPIRED_ERROR.getMessage());
 
         } catch (UnsupportedJwtException e) {
-            throw new InvalidTokenException("Token is not supported");
+            throw new InvalidTokenException(ApiMessages.TOKEN_UNSUPPORTED_ERROR.getMessage());
 
         } catch (MalformedJwtException e) {
-            throw new InvalidTokenException("Token is malformed");
+            throw new InvalidTokenException(ApiMessages.TOKEN_MALFORMED_ERROR.getMessage());
 
         } catch (SignatureException e) {
-            throw new InvalidTokenException("Token signature is invalid");
+            throw new InvalidTokenException(ApiMessages.TOKEN_SIGNATURE_INVALID_ERROR.getMessage());
 
         } catch (IllegalArgumentException e) {
-            throw new InvalidTokenException("Token is empty");
+            throw new InvalidTokenException(ApiMessages.TOKEN_EMPTY_ERROR.getMessage());
         }
     }
 
     @Override
     public void saveToken(String token) throws InvalidTokenException {
         if (tokenRepository.findByToken(token) != null) {
-            throw new InvalidTokenException("Token already exists");
+            throw new InvalidTokenException(ApiMessages.TOKEN_ALREADY_EXISTS_ERROR.getMessage());
         }
 
         val account = accountRepository.findByAccountNumber(
@@ -137,7 +138,7 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public void validateToken(String token) throws InvalidTokenException {
         if (tokenRepository.findByToken(token) == null) {
-            throw new InvalidTokenException("Token not found");
+            throw new InvalidTokenException(ApiMessages.TOKEN_NOT_FOUND_ERROR.getMessage());
         }
     }
 

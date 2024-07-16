@@ -7,6 +7,7 @@ import com.webapp.bankingportal.dto.UserResponse;
 import com.webapp.bankingportal.exception.NotFoundException;
 import com.webapp.bankingportal.repository.AccountRepository;
 import com.webapp.bankingportal.repository.UserRepository;
+import com.webapp.bankingportal.util.ApiMessages;
 
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -22,7 +23,7 @@ public class DashboardServiceImpl implements DashboardService {
     public UserResponse getUserDetails(String accountNumber) {
         val user = userRepository.findByAccountAccountNumber(accountNumber)
                 .orElseThrow(() -> new NotFoundException(
-                        "User not found for the provided account number."));
+                        String.format(ApiMessages.USER_NOT_FOUND_BY_ACCOUNT.getMessage(), accountNumber)));
 
         return new UserResponse(user);
     }
@@ -31,7 +32,7 @@ public class DashboardServiceImpl implements DashboardService {
     public AccountResponse getAccountDetails(String accountNumber) {
         val account = accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
-            throw new NotFoundException("Account not found for the provided account number.");
+            throw new NotFoundException(String.format(ApiMessages.USER_NOT_FOUND_BY_ACCOUNT.getMessage(), accountNumber));
         }
 
         return new AccountResponse(account);

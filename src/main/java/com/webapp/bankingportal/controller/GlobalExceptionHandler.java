@@ -10,6 +10,7 @@ import org.springframework.web.context.request.WebRequest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.webapp.bankingportal.exception.AccountDoesNotExistException;
+import com.webapp.bankingportal.exception.FundTransferException;
 import com.webapp.bankingportal.exception.GeolocationException;
 import com.webapp.bankingportal.exception.InsufficientBalanceException;
 import com.webapp.bankingportal.exception.InvalidAmountException;
@@ -36,8 +37,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
     }
 
+    @ExceptionHandler(FundTransferException.class)
+    public ResponseEntity<String> handleFundTransferException(FundTransferException ex) {
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
     @ExceptionHandler(GeolocationException.class)
     public ResponseEntity<String> handleGeolocationException(GeolocationException ex) {
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgumentException(
+            IllegalArgumentException ex) {
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
 
@@ -83,6 +95,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
 
+    @ExceptionHandler(PasswordResetException.class)
+    public ResponseEntity<String> handlePasswordResetException(PasswordResetException ex, WebRequest request) {
+        return ResponseEntity.internalServerError()
+                .body("{\"message\": \"" + ex.getMessage() + "\"}");
+    }
+
     @ExceptionHandler(RestClientException.class)
     public ResponseEntity<String> handleRestClientException(RestClientException ex) {
         return ResponseEntity.internalServerError().body(ex.getMessage());
@@ -96,12 +114,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserInvalidException.class)
     public ResponseEntity<String> handleUserInvalidException(UserInvalidException ex) {
         return ResponseEntity.badRequest().body(ex.getMessage());
-    }
-
-    @ExceptionHandler(PasswordResetException.class)
-    public ResponseEntity<String> handlePasswordResetException(PasswordResetException ex, WebRequest request) {
-        return ResponseEntity.internalServerError()
-                .body("{\"message\": \"" + ex.getMessage() + "\"}");
     }
 
     @ExceptionHandler(Exception.class)

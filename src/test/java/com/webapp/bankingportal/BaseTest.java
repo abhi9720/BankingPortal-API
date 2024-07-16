@@ -30,6 +30,7 @@ import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.repository.UserRepository;
 import com.webapp.bankingportal.service.AccountService;
 import com.webapp.bankingportal.service.TokenService;
+import com.webapp.bankingportal.util.ApiMessages;
 import com.webapp.bankingportal.util.JsonUtil;
 
 import jakarta.mail.MessagingException;
@@ -182,7 +183,7 @@ public abstract class BaseTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.toJson(pinRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.msg").value("PIN created successfully"));
+                .andExpect(MockMvcResultMatchers.content().string(ApiMessages.PIN_CREATION_SUCCESS.getMessage()));
 
         userDetails.put("pin", pinRequest.pin());
         return userDetails;
@@ -198,7 +199,7 @@ public abstract class BaseTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.toJson(amountRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.msg").value("Cash deposited successfully"));
+                .andExpect(MockMvcResultMatchers.content().string(ApiMessages.CASH_DEPOSIT_SUCCESS.getMessage()));
 
         return userDetails;
     }
