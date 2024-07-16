@@ -13,6 +13,7 @@ import com.webapp.bankingportal.exception.AccountDoesNotExistException;
 import com.webapp.bankingportal.exception.InvalidOtpException;
 import com.webapp.bankingportal.exception.OtpRetryLimitExceededException;
 import com.webapp.bankingportal.repository.OtpInfoRepository;
+import com.webapp.bankingportal.util.ValidationUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -26,16 +27,16 @@ public class OtpServiceImpl implements OtpService {
     public static final int OTP_RESET_WAITING_TIME_MINUTES = 10;
     public static final int OTP_RETRY_LIMIT_WINDOW_MINUTES = 15;
 
+    private final CacheManager cacheManager;
     private final EmailService emailService;
     private final OtpInfoRepository otpInfoRepository;
-    private final UserService userService;
-    private final CacheManager cacheManager;
+    private final ValidationUtil validationUtil;
 
     private LocalDateTime otpLimitReachedTime = null;
 
     @Override
     public String generateOTP(String accountNumber) {
-        if (!userService.doesAccountExist(accountNumber)) {
+        if (!validationUtil.doesAccountExist(accountNumber)) {
             throw new AccountDoesNotExistException("Account does not exist");
         }
 
@@ -98,7 +99,7 @@ public class OtpServiceImpl implements OtpService {
     }
 
     private void incrementOtpAttempts(String accountNumber) {
-        if (!userService.doesAccountExist(accountNumber)) {
+        if (!validationUtil.doesAccountExist(accountNumber)) {
             throw new AccountDoesNotExistException("Account does not exist");
         }
 

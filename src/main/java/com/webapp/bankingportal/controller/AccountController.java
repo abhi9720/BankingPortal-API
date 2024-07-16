@@ -84,12 +84,6 @@ public class AccountController {
 
     @PostMapping("/fund-transfer")
     public ResponseEntity<String> fundTransfer(@RequestBody FundTransferRequest fundTransferRequest) {
-        if (LoggedinUser.getAccountNumber()
-                .equals(fundTransferRequest.targetAccountNumber())) {
-            return ResponseEntity.badRequest()
-                    .body("Source and target account cannot be the same");
-        }
-
         accountService.fundTransfer(
                 LoggedinUser.getAccountNumber(),
                 fundTransferRequest.targetAccountNumber(),

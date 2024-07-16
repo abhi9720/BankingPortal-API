@@ -1,165 +1,97 @@
 package com.webapp.bankingportal.service;
 
 import java.sql.Timestamp;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.ModelAndView;
 
+import com.webapp.bankingportal.dto.LoginRequest;
+import com.webapp.bankingportal.dto.OtpRequest;
+import com.webapp.bankingportal.dto.OtpVerificationRequest;
+import com.webapp.bankingportal.dto.UserResponse;
 import com.webapp.bankingportal.entity.User;
+import com.webapp.bankingportal.exception.InvalidTokenException;
 import com.webapp.bankingportal.exception.PasswordResetException;
+import com.webapp.bankingportal.exception.UnauthorizedException;
 import com.webapp.bankingportal.exception.UserInvalidException;
 import com.webapp.bankingportal.mapper.UserMapper;
 import com.webapp.bankingportal.repository.UserRepository;
+import com.webapp.bankingportal.util.JsonUtil;
 import com.webapp.bankingportal.util.LoggedinUser;
 import com.webapp.bankingportal.util.ValidationUtil;
 
+import jakarta.servlet.http.HttpServletRequest;
+
+import lombok.RequiredArgsConstructor;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository userRepository;
     private final AccountService accountService;
-    private final PasswordEncoder passwordEncoder;
-    private final UserMapper userMapper;
+    private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
     private final GeolocationService geolocationService;
+    private final OtpService otpService;
+    private final PasswordEncoder passwordEncoder;
+    private final TokenService tokenService;
+    private final UserDetailsService userDetailsService;
+    private final UserMapper userMapper;
+    private final UserRepository userRepository;
+    private final ValidationUtil validationUtil;
 
-    public UserServiceImpl(
-            UserRepository userRepository,
-            AccountService accountService,
-            PasswordEncoder passwordEncoder,
-            UserMapper userMapper,
-            EmailService emailService,
-            GeolocationService geolocationService) {
-
-        this.userRepository = userRepository;
-        this.accountService = accountService;
-        this.passwordEncoder = passwordEncoder;
-        this.userMapper = userMapper;
-        this.emailService = emailService;
-        this.geolocationService = geolocationService;
+    @Override
+    public ResponseEntity<String> registerUser(User user) {
+        validationUtil.validateNewUser(user);
+        encodePassword(user);
+        val savedUser = saveUserWithAccount(user);
+        return ResponseEntity.ok(JsonUtil.toJson(new UserResponse(savedUser)));
     }
 
     @Override
-    public User registerUser(User user) {
-        ValidationUtil.validateUserDetails(user);
-
-        if (doesEmailExist(user.getEmail())) {
-            throw new UserInvalidException("Email already exists");
-        }
-
-        if (doesPhoneNumberExist(user.getPhoneNumber())) {
-            throw new UserInvalidException("Phone number already exists");
-        }
-
-        ValidationUtil.validateUserDetails(user);
-
-        user.setCountryCode(user.getCountryCode().toUpperCase());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        val savedUser = saveUser(user);
-
-        val account = accountService.createAccount(savedUser);
-        savedUser.setAccount(account);
-
-        return saveUser(savedUser);
+    public ResponseEntity<String> login(LoginRequest loginRequest, HttpServletRequest request)
+            throws InvalidTokenException {
+        val user = authenticateUser(loginRequest);
+        sendLoginNotification(user, request.getRemoteAddr());
+        val token = generateAndSaveToken(user.getAccount().getAccountNumber());
+        return ResponseEntity.ok("{ \"token\": \"" + token + "\" }");
     }
 
     @Override
-    public User saveUser(User user) {
-        return userRepository.save(user);
+    public ResponseEntity<String> generateOtp(OtpRequest otpRequest) {
+        val user = getUserByIdentifier(otpRequest.identifier());
+        val otp = otpService.generateOTP(user.getAccount().getAccountNumber());
+        return sendOtpEmail(user, otp);
     }
 
     @Override
-    public User updateUser(User source) {
+    public ResponseEntity<String> verifyOtpAndLogin(OtpVerificationRequest otpVerificationRequest)
+            throws InvalidTokenException {
+        validateOtpRequest(otpVerificationRequest);
+        val user = getUserByIdentifier(otpVerificationRequest.identifier());
+        validateOtp(user, otpVerificationRequest.otp());
+        val token = generateAndSaveToken(user.getAccount().getAccountNumber());
+        return ResponseEntity.ok("{ \"token\": \"" + token + "\" }");
+    }
+
+    @Override
+    public ResponseEntity<String> updateUser(User updatedUser) {
         val accountNumber = LoggedinUser.getAccountNumber();
-        val target = userRepository.findByAccountAccountNumber(accountNumber)
-                .orElseThrow(() -> new UserInvalidException(
-                        "User with account number " + accountNumber + " does not exist"));
-
-        ValidationUtil.validateUserDetails(source);
-
-        source.setPassword(target.getPassword());
-        userMapper.updateUser(source, target);
-
-        return saveUser(target);
-    }
-
-    @Override
-    public boolean doesEmailExist(String email) {
-        return userRepository.findByEmail(email).isPresent();
-    }
-
-    @Override
-    public boolean doesPhoneNumberExist(String phoneNumber) {
-        return userRepository.findByPhoneNumber(phoneNumber).isPresent();
-    }
-
-    @Override
-    public boolean doesAccountExist(String accountNumber) {
-        return userRepository.findByAccountAccountNumber(accountNumber).isPresent();
-    }
-
-    @Override
-    public boolean doesIdentifierExist(String identifier) {
-        return doesAccountExist(identifier) || doesEmailExist(identifier);
-    }
-
-    @Override
-    public Optional<User> getUserByAccountNumber(String accountNo) {
-        return userRepository.findByAccountAccountNumber(accountNo);
-    }
-
-    @Override
-    public Optional<User> getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
-
-    @Override
-    public Optional<User> getUserByIdentifier(String identifier) {
-        Optional<User> user = Optional.empty();
-
-        if (doesEmailExist(identifier)) {
-            user = getUserByEmail(identifier);
-        } else if (doesAccountExist(identifier)) {
-            user = getUserByAccountNumber(identifier);
-        }
-
-        return user;
-    }
-
-    @Override
-    public CompletableFuture<Boolean> sendLoginNotificationEmail(User user, String ip) {
-        val name = user.getName();
-        val email = user.getEmail();
-        val subject = "New login to OneStopBank";
-        val loginTime = new Timestamp(System.currentTimeMillis()).toString();
-
-        return geolocationService.getGeolocation(ip).thenComposeAsync(geolocationResponse -> {
-
-            val loginLocation = String.format("%s, %s",
-                    geolocationResponse.getCity().getNames().get("en"),
-                    geolocationResponse.getCountry().getNames().get("en"));
-
-            val emailText = emailService.getLoginEmailTemplate(
-                    name, loginTime, loginLocation);
-
-            return emailService.sendEmail(email, subject, emailText)
-                    .thenApplyAsync(result -> true)
-                    .exceptionally(ex -> false);
-
-        }).exceptionallyComposeAsync(throwable -> {
-
-            val emailText = emailService.getLoginEmailTemplate(
-                    name, loginTime, "Unknown");
-
-            return emailService.sendEmail(email, subject, emailText)
-                    .thenApplyAsync(result -> true)
-                    .exceptionally(ex -> false);
-        });
+        authenticateUser(accountNumber, updatedUser.getPassword());
+        val existingUser = getUserByAccountNumber(accountNumber);
+        updateUserDetails(existingUser, updatedUser);
+        val savedUser = saveUser(existingUser);
+        return ResponseEntity.ok(JsonUtil.toJson(new UserResponse(savedUser)));
     }
 
     @Override
@@ -172,6 +104,133 @@ public class UserServiceImpl implements UserService {
         } catch (Exception e) {
             throw new PasswordResetException("Failed to reset password", e);
         }
+    }
+
+    @Override
+    public ModelAndView logout(String token) throws InvalidTokenException {
+        token = token.substring(7);
+        tokenService.validateToken(token);
+        tokenService.invalidateToken(token);
+
+        log.info("User logged out successfully {}", tokenService.getUsernameFromToken(token));
+
+        return new ModelAndView("redirect:/logout");
+    }
+
+    @Override
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User getUserByIdentifier(String identifier) {
+        User user = null;
+
+        if (validationUtil.doesEmailExist(identifier)) {
+            user = getUserByEmail(identifier);
+        } else if (validationUtil.doesAccountExist(identifier)) {
+            user = getUserByAccountNumber(identifier);
+        } else {
+            throw new UserInvalidException("User not found for the given identifier: " + identifier);
+        }
+
+        return user;
+    }
+
+    @Override
+    public User getUserByAccountNumber(String accountNo) {
+        return userRepository.findByAccountAccountNumber(accountNo).orElseThrow(
+                () -> new UserInvalidException("User not found for the given account number: " + accountNo));
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(
+                () -> new UserInvalidException("User not found for the given email: " + email));
+    }
+
+    private void encodePassword(User user) {
+        user.setCountryCode(user.getCountryCode().toUpperCase());
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+    }
+
+    private User saveUserWithAccount(User user) {
+        val savedUser = saveUser(user);
+        savedUser.setAccount(accountService.createAccount(savedUser));
+        return saveUser(savedUser);
+    }
+
+    private User authenticateUser(LoginRequest loginRequest) {
+        val user = getUserByIdentifier(loginRequest.identifier());
+        val accountNumber = user.getAccount().getAccountNumber();
+        authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(accountNumber, loginRequest.password()));
+        return user;
+    }
+
+    private void authenticateUser(String accountNumber, String password) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(accountNumber, password));
+    }
+
+    private String generateAndSaveToken(String accountNumber) throws InvalidTokenException {
+        val userDetails = userDetailsService.loadUserByUsername(accountNumber);
+        val token = tokenService.generateToken(userDetails);
+        tokenService.saveToken(token);
+        return token;
+    }
+
+    private ResponseEntity<String> sendOtpEmail(User user, String otp) {
+        val emailSendingFuture = otpService.sendOTPByEmail(
+                user.getEmail(), user.getName(), user.getAccount().getAccountNumber(), otp);
+
+        ResponseEntity<String> successResponse = ResponseEntity
+                .ok(String.format("{\"message\": \"OTP sent successfully to: %s\"}", user.getEmail()));
+        ResponseEntity<String> failureResponse = ResponseEntity.internalServerError()
+                .body(String.format("{\"message\": \"Failed to send OTP to: %s\"}", user.getEmail()));
+
+        return emailSendingFuture.thenApply(result -> successResponse)
+                .exceptionally(e -> failureResponse).join();
+    }
+
+    private void validateOtpRequest(OtpVerificationRequest request) {
+        if (request.identifier() == null || request.identifier().isEmpty()) {
+            throw new IllegalArgumentException("Missing identifier");
+        }
+        if (request.otp() == null || request.otp().isEmpty()) {
+            throw new IllegalArgumentException("Missing OTP");
+        }
+    }
+
+    private void validateOtp(User user, String otp) {
+        if (!otpService.validateOTP(user.getAccount().getAccountNumber(), otp)) {
+            throw new UnauthorizedException("Invalid OTP");
+        }
+    }
+
+    private void updateUserDetails(User existingUser, User updatedUser) {
+        ValidationUtil.validateUserDetails(updatedUser);
+        updatedUser.setPassword(existingUser.getPassword());
+        userMapper.updateUser(updatedUser, existingUser);
+    }
+
+    private CompletableFuture<Boolean> sendLoginNotification(User user, String ip) {
+        val loginTime = new Timestamp(System.currentTimeMillis()).toString();
+
+        return geolocationService.getGeolocation(ip)
+                .thenComposeAsync(geolocationResponse -> {
+                    val loginLocation = String.format("%s, %s",
+                            geolocationResponse.getCity().getNames().get("en"),
+                            geolocationResponse.getCountry().getNames().get("en"));
+                    return sendLoginEmail(user, loginTime, loginLocation);
+                })
+                .exceptionallyComposeAsync(throwable -> sendLoginEmail(user, loginTime, "Unknown"));
+    }
+
+    private CompletableFuture<Boolean> sendLoginEmail(User user, String loginTime, String loginLocation) {
+        val emailText = emailService.getLoginEmailTemplate(user.getName(), loginTime, loginLocation);
+        return emailService.sendEmail(user.getEmail(), "New login to OneStopBank", emailText)
+                .thenApplyAsync(result -> true)
+                .exceptionally(ex -> false);
     }
 
 }

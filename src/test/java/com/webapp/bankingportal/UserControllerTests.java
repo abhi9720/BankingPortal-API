@@ -382,7 +382,7 @@ public class UserControllerTests extends BaseTest {
                 .post("/api/users/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.toJson(loginRequest)))
-                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
@@ -411,7 +411,7 @@ public class UserControllerTests extends BaseTest {
                 .post("/api/users/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.toJson(loginRequest)))
-                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
@@ -460,7 +460,7 @@ public class UserControllerTests extends BaseTest {
                 .post("/api/users/generate-otp")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.toJson(otpRequest)))
-                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
@@ -471,7 +471,7 @@ public class UserControllerTests extends BaseTest {
                 .post("/api/users/generate-otp")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.toJson(otpRequest)))
-                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
@@ -548,7 +548,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(otpVerificationRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Missing account number"));
+                        .string("Missing identifier"));
     }
 
     @Test
@@ -561,7 +561,7 @@ public class UserControllerTests extends BaseTest {
                 .content(JsonUtil.toJson(otpVerificationRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content()
-                        .string("Missing account number"));
+                        .string("Missing identifier"));
     }
 
     @Test

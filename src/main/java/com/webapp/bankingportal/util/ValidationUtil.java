@@ -2,6 +2,7 @@ package com.webapp.bankingportal.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -9,15 +10,22 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.exception.UserInvalidException;
+import com.webapp.bankingportal.repository.UserRepository;
 
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
+
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 
-public interface ValidationUtil {
+@Component
+@RequiredArgsConstructor
+public class ValidationUtil {
 
     public static final Logger log = LoggerFactory.getLogger(ValidationUtil.class);
     public static final PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
+
+    private final UserRepository userRepository;
 
     public static boolean isValidEmail(String identifier) {
         try {
@@ -156,6 +164,28 @@ public interface ValidationUtil {
         }
 
         validatePassword(user.getPassword());
+    }
+
+    public void validateNewUser(User user) {
+        validateUserDetails(user);
+        if (doesEmailExist(user.getEmail())) {
+            throw new UserInvalidException("Email already exists");
+        }
+        if (doesPhoneNumberExist(user.getPhoneNumber())) {
+            throw new UserInvalidException("Phone number already exists");
+        }
+    }
+
+    public boolean doesAccountExist(String accountNumber) {
+        return userRepository.findByAccountAccountNumber(accountNumber).isPresent();
+    }
+
+    public boolean doesEmailExist(String email) {
+        return userRepository.findByEmail(email).isPresent();
+    }
+
+    public boolean doesPhoneNumberExist(String phoneNumber) {
+        return userRepository.findByPhoneNumber(phoneNumber).isPresent();
     }
 
 }

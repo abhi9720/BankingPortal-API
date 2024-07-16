@@ -10,6 +10,7 @@ import com.webapp.bankingportal.entity.Account;
 import com.webapp.bankingportal.entity.Transaction;
 import com.webapp.bankingportal.entity.TransactionType;
 import com.webapp.bankingportal.entity.User;
+import com.webapp.bankingportal.exception.FundTransferException;
 import com.webapp.bankingportal.exception.InsufficientBalanceException;
 import com.webapp.bankingportal.exception.InvalidAmountException;
 import com.webapp.bankingportal.exception.InvalidPinException;
@@ -28,8 +29,8 @@ import lombok.extern.slf4j.Slf4j;
 public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
-    private final TransactionRepository transactionRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TransactionRepository transactionRepository;
 
     @Override
     public Account createAccount(User user) {
@@ -196,6 +197,10 @@ public class AccountServiceImpl implements AccountService {
     public void fundTransfer(String sourceAccountNumber, String targetAccountNumber, String pin, double amount) {
         validatePin(sourceAccountNumber, pin);
         validateAmount(amount);
+
+        if (sourceAccountNumber.equals(targetAccountNumber)) {
+            throw new FundTransferException("Source and target account cannot be the same");
+        }
 
         val targetAccount = accountRepository.findByAccountNumber(targetAccountNumber);
         if (targetAccount == null) {
