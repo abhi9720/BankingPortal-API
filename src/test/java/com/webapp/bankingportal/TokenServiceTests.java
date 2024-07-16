@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.webapp.bankingportal.exception.InvalidTokenException;
 import com.webapp.bankingportal.repository.TokenRepository;
+import com.webapp.bankingportal.util.ApiMessages;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -33,7 +34,7 @@ public class TokenServiceTests extends BaseTest {
 
         Assertions.assertThrows(InvalidTokenException.class,
                 () -> tokenService.validateToken(token),
-                "Token not found");
+                ApiMessages.TOKEN_NOT_FOUND_ERROR.getMessage());
     }
 
     @Test
@@ -71,7 +72,7 @@ public class TokenServiceTests extends BaseTest {
         Assertions.assertNotNull(tokenRepository.findByToken(token));
         Assertions.assertThrows(InvalidTokenException.class,
                 () -> tokenService.saveToken(token),
-                "Token already exists");
+                ApiMessages.TOKEN_ALREADY_EXISTS_ERROR.getMessage());
 
         tokenService.invalidateToken(token);
         Assertions.assertNull(tokenRepository.findByToken(token));
@@ -94,7 +95,7 @@ public class TokenServiceTests extends BaseTest {
 
         Assertions.assertThrows(InvalidTokenException.class,
                 () -> tokenService.getUsernameFromToken(token),
-                "Token has expired");
+                ApiMessages.TOKEN_EXPIRED_ERROR.getMessage());
     }
 
     @Test
@@ -104,7 +105,7 @@ public class TokenServiceTests extends BaseTest {
 
         Assertions.assertThrows(InvalidTokenException.class,
                 () -> tokenService.getUsernameFromToken(token),
-                "Token is not supported");
+                ApiMessages.TOKEN_UNSUPPORTED_ERROR.getMessage());
     }
 
     @Test
@@ -113,7 +114,7 @@ public class TokenServiceTests extends BaseTest {
 
         Assertions.assertThrows(InvalidTokenException.class,
                 () -> tokenService.getUsernameFromToken(token),
-                "Token is malformed");
+                ApiMessages.TOKEN_MALFORMED_ERROR.getMessage());
     }
 
     @Test
@@ -125,14 +126,14 @@ public class TokenServiceTests extends BaseTest {
 
         Assertions.assertThrows(InvalidTokenException.class,
                 () -> tokenService.getUsernameFromToken(token),
-                "Token signature is invalid");
+                ApiMessages.TOKEN_SIGNATURE_INVALID_ERROR.getMessage());
     }
 
     @Test
     public void test_get_username_from_token_with_empty_token() {
         Assertions.assertThrows(InvalidTokenException.class,
                 () -> tokenService.getUsernameFromToken(null),
-                "Token is empty");
+                ApiMessages.TOKEN_EMPTY_ERROR.getMessage());
     }
 
 }

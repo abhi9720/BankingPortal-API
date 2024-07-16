@@ -13,6 +13,7 @@ import com.webapp.bankingportal.dto.ResetPasswordRequest;
 import com.webapp.bankingportal.entity.PasswordResetToken;
 import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.repository.PasswordResetTokenRepository;
+import com.webapp.bankingportal.util.ApiMessages;
 
 import jakarta.transaction.Transactional;
 
@@ -79,11 +80,11 @@ public class AuthServiceImpl implements AuthService {
         val accountNumber = user.getAccount().getAccountNumber();
 
         if (!otpService.validateOTP(accountNumber, otpVerificationRequest.otp())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid OTP");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiMessages.OTP_INVALID_ERROR.getMessage());
         }
 
         String resetToken = generatePasswordResetToken(user);
-        return ResponseEntity.ok("{\"passwordResetToken\": \"" + resetToken + "\"}");
+        return ResponseEntity.ok(String.format(ApiMessages.PASSWORD_RESET_TOKEN_ISSUED.getMessage(), resetToken));
     }
 
     @Override
@@ -91,19 +92,19 @@ public class AuthServiceImpl implements AuthService {
         val user = userService.getUserByIdentifier(resetPasswordRequest.identifier());
 
         if (!verifyPasswordResetToken(resetPasswordRequest.resetToken(), user)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid reset token");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiMessages.TOKEN_INVALID_ERROR.getMessage());
         }
 
         try {
             boolean passwordResetSuccessful = userService.resetPassword(user, resetPasswordRequest.newPassword());
             if (passwordResetSuccessful) {
-                return ResponseEntity.ok("{\"message\": \"Password reset successfully\"}");
+                return ResponseEntity.ok(ApiMessages.PASSWORD_RESET_SUCCESS.getMessage());
             } else {
-                return ResponseEntity.internalServerError().body("Failed to reset password");
+                return ResponseEntity.internalServerError().body(ApiMessages.PASSWORD_RESET_FAILURE.getMessage());
             }
         } catch (Exception e) {
             log.error("Error resetting password for user: {}", user.getId(), e);
-            return ResponseEntity.internalServerError().body("Failed to reset password");
+            return ResponseEntity.internalServerError().body(ApiMessages.PASSWORD_RESET_FAILURE.getMessage());
         }
     }
 
@@ -116,9 +117,9 @@ public class AuthServiceImpl implements AuthService {
                 generatedOtp);
 
         val successResponse = ResponseEntity
-                .ok(String.format("{\"message\": \"OTP sent successfully to: %s\"}", user.getEmail()));
+                .ok(String.format(ApiMessages.OTP_SENT_SUCCESS.getMessage(), user.getEmail()));
         val failureResponse = ResponseEntity.internalServerError()
-                .body(String.format("{\"message\": \"Failed to send OTP to: %s\"}", user.getEmail()));
+                .body(String.format(ApiMessages.OTP_SENT_FAILURE.getMessage(), user.getEmail()));
 
         return emailSendingFuture.thenApply(result -> successResponse)
                 .exceptionally(e -> failureResponse).join();
@@ -126,10 +127,10 @@ public class AuthServiceImpl implements AuthService {
 
     private void validateOtpRequest(OtpVerificationRequest otpVerificationRequest) {
         if (otpVerificationRequest.identifier() == null || otpVerificationRequest.identifier().isEmpty()) {
-            throw new IllegalArgumentException("Missing identifier");
+            throw new IllegalArgumentException(ApiMessages.IDENTIFIER_MISSING_ERROR.getMessage());
         }
         if (otpVerificationRequest.otp() == null || otpVerificationRequest.otp().isEmpty()) {
-            throw new IllegalArgumentException("Missing OTP");
+            throw new IllegalArgumentException(ApiMessages.OTP_MISSING_ERROR.getMessage());
         }
     }
 

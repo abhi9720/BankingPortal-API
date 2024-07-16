@@ -14,6 +14,7 @@ import com.webapp.bankingportal.exception.InvalidOtpException;
 import com.webapp.bankingportal.exception.OtpRetryLimitExceededException;
 import com.webapp.bankingportal.repository.OtpInfoRepository;
 import com.webapp.bankingportal.util.ValidationUtil;
+import com.webapp.bankingportal.util.ApiMessages;
 
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -37,7 +38,7 @@ public class OtpServiceImpl implements OtpService {
     @Override
     public String generateOTP(String accountNumber) {
         if (!validationUtil.doesAccountExist(accountNumber)) {
-            throw new AccountDoesNotExistException("Account does not exist");
+            throw new AccountDoesNotExistException(ApiMessages.ACCOUNT_NOT_FOUND.getMessage());
         }
 
         val existingOtpInfo = otpInfoRepository.findByAccountNumber(accountNumber);
@@ -73,7 +74,7 @@ public class OtpServiceImpl implements OtpService {
         val waitingMinutes = OTP_RESET_WAITING_TIME_MINUTES - otpLimitReachedTime.until(now, ChronoUnit.MINUTES);
 
         throw new OtpRetryLimitExceededException(
-                "OTP generation limit exceeded. Please try again after " + waitingMinutes + " minutes");
+                String.format(ApiMessages.OTP_GENERATION_LIMIT_EXCEEDED.getMessage(), waitingMinutes));
     }
 
     private boolean isOtpRetryLimitExceeded(OtpInfo otpInfo) {
@@ -100,7 +101,7 @@ public class OtpServiceImpl implements OtpService {
 
     private void incrementOtpAttempts(String accountNumber) {
         if (!validationUtil.doesAccountExist(accountNumber)) {
-            throw new AccountDoesNotExistException("Account does not exist");
+            throw new AccountDoesNotExistException(ApiMessages.ACCOUNT_NOT_FOUND.getMessage());
         }
 
         val cache = cacheManager.getCache("otpAttempts");
@@ -144,19 +145,15 @@ public class OtpServiceImpl implements OtpService {
 
     @Override
     public CompletableFuture<Void> sendOTPByEmail(String email, String name, String accountNumber, String otp) {
-        val subject = "OTP Verification";
         val emailText = emailService.getOtpLoginEmailTemplate(name, "xxx" + accountNumber.substring(3), otp);
-
-        val emailSendingFuture = emailService.sendEmail(email, subject, emailText);
-
-        return emailSendingFuture;
+        return emailService.sendEmail(email, ApiMessages.EMAIL_SUBJECT_OTP.getMessage(), emailText);
     }
 
     @Override
     public boolean validateOTP(String accountNumber, String otp) {
         val otpInfo = otpInfoRepository.findByAccountNumberAndOtp(accountNumber, otp);
         if (otpInfo == null) {
-            throw new InvalidOtpException("Invalid OTP");
+            throw new InvalidOtpException(ApiMessages.OTP_INVALID_ERROR.getMessage());
         }
 
         return !isOtpExpired(otpInfo);

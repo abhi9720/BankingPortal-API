@@ -26,6 +26,7 @@ import com.webapp.bankingportal.repository.UserRepository;
 import com.webapp.bankingportal.util.JsonUtil;
 import com.webapp.bankingportal.util.LoggedinUser;
 import com.webapp.bankingportal.util.ValidationUtil;
+import com.webapp.bankingportal.util.ApiMessages;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -64,7 +65,7 @@ public class UserServiceImpl implements UserService {
         val user = authenticateUser(loginRequest);
         sendLoginNotification(user, request.getRemoteAddr());
         val token = generateAndSaveToken(user.getAccount().getAccountNumber());
-        return ResponseEntity.ok("{ \"token\": \"" + token + "\" }");
+        return ResponseEntity.ok(String.format(ApiMessages.TOKEN_ISSUED_SUCCESS.getMessage(), token));
     }
 
     @Override
@@ -81,7 +82,7 @@ public class UserServiceImpl implements UserService {
         val user = getUserByIdentifier(otpVerificationRequest.identifier());
         validateOtp(user, otpVerificationRequest.otp());
         val token = generateAndSaveToken(user.getAccount().getAccountNumber());
-        return ResponseEntity.ok("{ \"token\": \"" + token + "\" }");
+        return ResponseEntity.ok(String.format(ApiMessages.TOKEN_ISSUED_SUCCESS.getMessage(), token));
     }
 
     @Override
@@ -102,7 +103,7 @@ public class UserServiceImpl implements UserService {
             userRepository.save(user);
             return true;
         } catch (Exception e) {
-            throw new PasswordResetException("Failed to reset password", e);
+            throw new PasswordResetException(ApiMessages.PASSWORD_RESET_FAILURE.getMessage(), e);
         }
     }
 
@@ -131,7 +132,8 @@ public class UserServiceImpl implements UserService {
         } else if (validationUtil.doesAccountExist(identifier)) {
             user = getUserByAccountNumber(identifier);
         } else {
-            throw new UserInvalidException("User not found for the given identifier: " + identifier);
+            throw new UserInvalidException(
+                    String.format(ApiMessages.USER_NOT_FOUND_BY_IDENTIFIER.getMessage(), identifier));
         }
 
         return user;
@@ -140,13 +142,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserByAccountNumber(String accountNo) {
         return userRepository.findByAccountAccountNumber(accountNo).orElseThrow(
-                () -> new UserInvalidException("User not found for the given account number: " + accountNo));
+                () -> new UserInvalidException(
+                        String.format(ApiMessages.USER_NOT_FOUND_BY_ACCOUNT.getMessage(), accountNo)));
     }
 
     @Override
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email).orElseThrow(
-                () -> new UserInvalidException("User not found for the given email: " + email));
+                () -> new UserInvalidException(String.format(ApiMessages.USER_NOT_FOUND_BY_EMAIL.getMessage(), email)));
     }
 
     private void encodePassword(User user) {
@@ -184,9 +187,9 @@ public class UserServiceImpl implements UserService {
                 user.getEmail(), user.getName(), user.getAccount().getAccountNumber(), otp);
 
         ResponseEntity<String> successResponse = ResponseEntity
-                .ok(String.format("{\"message\": \"OTP sent successfully to: %s\"}", user.getEmail()));
+                .ok(String.format(ApiMessages.OTP_SENT_SUCCESS.getMessage(), user.getEmail()));
         ResponseEntity<String> failureResponse = ResponseEntity.internalServerError()
-                .body(String.format("{\"message\": \"Failed to send OTP to: %s\"}", user.getEmail()));
+                .body(String.format(ApiMessages.OTP_SENT_FAILURE.getMessage(), user.getEmail()));
 
         return emailSendingFuture.thenApply(result -> successResponse)
                 .exceptionally(e -> failureResponse).join();
@@ -194,16 +197,16 @@ public class UserServiceImpl implements UserService {
 
     private void validateOtpRequest(OtpVerificationRequest request) {
         if (request.identifier() == null || request.identifier().isEmpty()) {
-            throw new IllegalArgumentException("Missing identifier");
+            throw new IllegalArgumentException(ApiMessages.IDENTIFIER_MISSING_ERROR.getMessage());
         }
         if (request.otp() == null || request.otp().isEmpty()) {
-            throw new IllegalArgumentException("Missing OTP");
+            throw new IllegalArgumentException(ApiMessages.OTP_MISSING_ERROR.getMessage());
         }
     }
 
     private void validateOtp(User user, String otp) {
         if (!otpService.validateOTP(user.getAccount().getAccountNumber(), otp)) {
-            throw new UnauthorizedException("Invalid OTP");
+            throw new UnauthorizedException(ApiMessages.OTP_INVALID_ERROR.getMessage());
         }
     }
 
@@ -228,7 +231,7 @@ public class UserServiceImpl implements UserService {
 
     private CompletableFuture<Boolean> sendLoginEmail(User user, String loginTime, String loginLocation) {
         val emailText = emailService.getLoginEmailTemplate(user.getName(), loginTime, loginLocation);
-        return emailService.sendEmail(user.getEmail(), "New login to OneStopBank", emailText)
+        return emailService.sendEmail(user.getEmail(), ApiMessages.EMAIL_SUBJECT_LOGIN.getMessage(), emailText)
                 .thenApplyAsync(result -> true)
                 .exceptionally(ex -> false);
     }

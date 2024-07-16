@@ -13,6 +13,7 @@ import com.webapp.bankingportal.dto.PinRequest;
 import com.webapp.bankingportal.dto.PinUpdateRequest;
 import com.webapp.bankingportal.service.AccountService;
 import com.webapp.bankingportal.service.TransactionService;
+import com.webapp.bankingportal.util.ApiMessages;
 import com.webapp.bankingportal.util.JsonUtil;
 import com.webapp.bankingportal.util.LoggedinUser;
 
@@ -30,13 +31,8 @@ public class AccountController {
     @GetMapping("/pin/check")
     public ResponseEntity<String> checkAccountPIN() {
         val isPINValid = accountService.isPinCreated(LoggedinUser.getAccountNumber());
-
-        String response;
-        if (isPINValid) {
-            response = "{\"hasPIN\": true, \"msg\": \"PIN Created\"}";
-        } else {
-            response = "{\"hasPIN\": false, \"msg\": \"PIN Not Created\"}";
-        }
+        val response = isPINValid ? ApiMessages.PIN_CREATED.getMessage()
+                : ApiMessages.PIN_NOT_CREATED.getMessage();
 
         return ResponseEntity.ok(response);
     }
@@ -48,7 +44,7 @@ public class AccountController {
                 pinRequest.password(),
                 pinRequest.pin());
 
-        return ResponseEntity.ok("{\"msg\": \"PIN created successfully\"}");
+        return ResponseEntity.ok(ApiMessages.PIN_CREATION_SUCCESS.getMessage());
     }
 
     @PostMapping("/pin/update")
@@ -59,7 +55,7 @@ public class AccountController {
                 pinUpdateRequest.password(),
                 pinUpdateRequest.newPin());
 
-        return ResponseEntity.ok("{\"msg\": \"PIN updated successfully\"}");
+        return ResponseEntity.ok(ApiMessages.PIN_UPDATE_SUCCESS.getMessage());
     }
 
     @PostMapping("/deposit")
@@ -69,7 +65,7 @@ public class AccountController {
                 amountRequest.pin(),
                 amountRequest.amount());
 
-        return ResponseEntity.ok("{\"msg\": \"Cash deposited successfully\"}");
+        return ResponseEntity.ok(ApiMessages.CASH_DEPOSIT_SUCCESS.getMessage());
     }
 
     @PostMapping("/withdraw")
@@ -79,7 +75,7 @@ public class AccountController {
                 amountRequest.pin(),
                 amountRequest.amount());
 
-        return ResponseEntity.ok("{\"msg\": \"Cash withdrawn successfully\"}");
+        return ResponseEntity.ok(ApiMessages.CASH_WITHDRAWAL_SUCCESS.getMessage());
     }
 
     @PostMapping("/fund-transfer")
@@ -90,7 +86,7 @@ public class AccountController {
                 fundTransferRequest.pin(),
                 fundTransferRequest.amount());
 
-        return ResponseEntity.ok("{\"msg\": \"Fund transferred successfully\"}");
+        return ResponseEntity.ok(ApiMessages.CASH_TRANSFER_SUCCESS.getMessage());
     }
 
     @GetMapping("/transactions")
