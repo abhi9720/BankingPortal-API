@@ -144,7 +144,7 @@ public abstract class BaseTest {
             throws Exception {
         val user = createAndRegisterUser();
         val accountNumber = userRepository.findByEmail(user.getEmail()).get().getAccount().getAccountNumber();
-        val loginRequest = new LoginRequest(accountNumber, user.getPassword(), false);
+        val loginRequest = new LoginRequest(accountNumber, user.getPassword());
 
         val loginResult = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/login")

@@ -380,7 +380,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_login_with_invalid_account_number() throws Exception {
-        val loginRequest = new LoginRequest(getRandomAccountNumber(), getRandomPassword(), false);
+        val loginRequest = new LoginRequest(getRandomAccountNumber(), getRandomPassword());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/login")
@@ -398,7 +398,7 @@ public class UserControllerTests extends BaseTest {
                 .getAccount()
                 .getAccountNumber();
 
-        val loginRequest = new LoginRequest(accountNumber, getRandomPassword(), false);
+        val loginRequest = new LoginRequest(accountNumber, getRandomPassword());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/login")
@@ -409,7 +409,7 @@ public class UserControllerTests extends BaseTest {
 
     @Test
     public void test_login_with_missing_account_number() throws Exception {
-        val loginRequest = new LoginRequest("", getRandomPassword(), false);
+        val loginRequest = new LoginRequest("", getRandomPassword());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/login")
@@ -427,7 +427,7 @@ public class UserControllerTests extends BaseTest {
                 .getAccount()
                 .getAccountNumber();
 
-        val loginRequest = new LoginRequest(accountNumber, "", false);
+        val loginRequest = new LoginRequest(accountNumber, "");
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/users/login")

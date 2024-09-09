@@ -1,4 +1,4 @@
 package com.webapp.bankingportal.dto;
 
-public record LoginRequest(String identifier, String password, boolean useOtp) {
+public record LoginRequest(String identifier, String password) {
 }
