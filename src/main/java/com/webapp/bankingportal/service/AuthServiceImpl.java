@@ -15,11 +15,10 @@ import com.webapp.bankingportal.entity.User;
 import com.webapp.bankingportal.repository.PasswordResetTokenRepository;
 import com.webapp.bankingportal.util.ApiMessages;
 
-import jakarta.transaction.Transactional;
-
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -48,7 +47,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @Transactional
     public boolean verifyPasswordResetToken(String token, User user) {
         return passwordResetTokenRepository.findByToken(token)
                 .map(resetToken -> {
@@ -88,6 +86,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<String> resetPassword(ResetPasswordRequest resetPasswordRequest) {
         val user = userService.getUserByIdentifier(resetPasswordRequest.identifier());
 
