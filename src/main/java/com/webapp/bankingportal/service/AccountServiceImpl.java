@@ -23,6 +23,7 @@ import com.webapp.bankingportal.util.ApiMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -152,6 +153,7 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
+    @Transactional
     @Override
     public void cashDeposit(String accountNumber, String pin, double amount) {
         validatePin(accountNumber, pin);
@@ -171,6 +173,7 @@ public class AccountServiceImpl implements AccountService {
         transactionRepository.save(transaction);
     }
 
+    @Transactional
     @Override
     public void cashWithdrawal(String accountNumber, String pin, double amount) {
         validatePin(accountNumber, pin);
@@ -194,6 +197,7 @@ public class AccountServiceImpl implements AccountService {
         transactionRepository.save(transaction);
     }
 
+    @Transactional
     @Override
     public void fundTransfer(String sourceAccountNumber, String targetAccountNumber, String pin, double amount) {
         validatePin(sourceAccountNumber, pin);
