@@ -1,0 +1,19 @@
+version = 1
+
+[[analyzers]]
+name = "java"
+enabled = true
+
+[analyzers.meta]
+runtime_version = "17"
+
+[analyzers.config]
+test_patterns = ["src/test/**"]
+exclude_patterns = ["src/main/resources/**"]
+
+[[analyzers]]
+name = "docker"
+enabled = true
+
+[analyzers.config]
+exclude_patterns = ["target/**"]
