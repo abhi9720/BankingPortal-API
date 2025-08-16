@@ -3,6 +3,7 @@ package com.webapp.bankingportal.service;
 import java.util.Date;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,9 +30,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
-
+@Autowired
     private final AccountRepository accountRepository;
+    @Autowired
     private final PasswordEncoder passwordEncoder;
+    @Autowired
     private final TransactionRepository transactionRepository;
 
     @Override

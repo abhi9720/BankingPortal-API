@@ -1,5 +1,7 @@
 package com.webapp.bankingportal.entity;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,9 +10,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
@@ -26,15 +32,17 @@ public class User {
     private String password;
 
     @Email
-    @NotEmpty
-    @Column(unique = true)
+   // @NotEmpty
+    //@Column(unique = true)
     private String email;
 
     @NotEmpty
     private String countryCode;
 
-    @NotEmpty
-    @Column(unique = true)
+   // @NotEmpty
+    //@Column(unique = true)
+   @NotBlank(message = "Phone number cannot be empty")
+   @JsonAlias({"phone_number","phone","phoneNo"})
     private String phoneNumber;
 
     @NotEmpty

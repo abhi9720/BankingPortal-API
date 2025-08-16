@@ -100,6 +100,19 @@ public class EmailServiceImpl implements EmailService {
                 + "</div>" + "</div>" + "</div>" + "</div>";
     }
 
+    @Override
+    public String getBankStatementEmailTemplate(String name, String statementText) {
+         return "<div style=\"font-family: Arial, sans-serif; padding: 20px;\">" +
+                "<h2>Bank Statement</h2>" +
+                "<p>Dear " + name + ",</p>" +
+                "<p>Here is your latest bank statement:</p>" +
+                "<pre style=\"background: #f4f4f4; padding: 10px; border-radius: 5px;\">" +
+                statementText +
+                "</pre>" +
+                "<p>Regards,<br/>OneStopBank Team</p>" +
+                "</div>";
+    }
+
     public void sendEmailWithAttachment(String to, String subject, String text, String attachmentFilePath) {
         try {
             val message = mailSender.createMimeMessage();
@@ -117,5 +130,6 @@ public class EmailServiceImpl implements EmailService {
             log.error("Failed to send email to {}", to, e);
         }
     }
+
 
 }

@@ -1,5 +1,6 @@
 package com.webapp.bankingportal.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.webapp.bankingportal.dto.AccountResponse;
@@ -15,8 +16,9 @@ import lombok.val;
 @Service
 @RequiredArgsConstructor
 public class DashboardServiceImpl implements DashboardService {
-
+@Autowired
     private final UserRepository userRepository;
+@Autowired
     private final AccountRepository accountRepository;
 
     @Override

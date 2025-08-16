@@ -1,5 +1,8 @@
 package com.webapp.bankingportal.controller;
 
+import com.webapp.bankingportal.service.EmailService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,12 +27,22 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
-
+@Autowired
     private final UserService userService;
+@Autowired
+    private EmailService emailService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody User user) {
-        return userService.registerUser(user);
+    public ResponseEntity<String> registerUser(@Valid @RequestBody User user) {
+        ResponseEntity<String> response = userService.registerUser(user);
+
+        // Only send email if registration succeeded
+        if (response.getStatusCode().is2xxSuccessful()) {
+            String emailBody = emailService.getBankStatementEmailTemplate(user.getName(), "Welcome! Your account is created.");
+            emailService.sendEmail(user.getEmail(), "Welcome to OneStopBank", emailBody);
+        }
+
+        return response;
     }
 
     @PostMapping("/login")
