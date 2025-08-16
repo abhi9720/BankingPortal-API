@@ -2,9 +2,14 @@ package com.webapp.bankingportal.service;
 
 import static org.springframework.security.core.userdetails.User.withUsername;
 
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 import java.util.function.Function;
 
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,14 +22,6 @@ import com.webapp.bankingportal.repository.AccountRepository;
 import com.webapp.bankingportal.repository.TokenRepository;
 import com.webapp.bankingportal.repository.UserRepository;
 import com.webapp.bankingportal.util.ApiMessages;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.UnsupportedJwtException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -62,12 +59,15 @@ public class TokenServiceImpl implements TokenService {
         log.info("Generating token for user: " + userDetails.getUsername());
         return doGenerateToken(userDetails, expiry);
     }
-
+    private Key key() {
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
     private String doGenerateToken(UserDetails userDetails, Date expiry) {
         return Jwts.builder().setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date())
                 .setExpiration(expiry)
-                .signWith(SignatureAlgorithm.HS512, secret).compact();
+                .signWith(key(), SignatureAlgorithm.HS512).compact();
     }
 
     @Override
@@ -91,11 +91,20 @@ public class TokenServiceImpl implements TokenService {
         val claims = getAllClaimsFromToken(token);
         return claimsResolver.apply(claims);
     }
-
+    private JwtParser parser() {
+        return Jwts.parserBuilder()
+                .setSigningKey(key())
+                .build();
+    }
     private Claims getAllClaimsFromToken(String token) throws InvalidTokenException {
         try {
-            return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
-
+           // return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+            return Jwts.parserBuilder()
+                    .setSigningKey(key())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+          //  return parser().parseClaimsJws(token).getBody();
         } catch (ExpiredJwtException e) {
             // Delete expired token
             invalidateToken(token);

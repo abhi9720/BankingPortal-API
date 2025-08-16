@@ -12,4 +12,6 @@ public interface EmailService {
     public String getLoginEmailTemplate(String name, String loginTime, String loginLocation);
 
     public String getOtpLoginEmailTemplate(String name, String accountNumber, String otp);
+
+    public String getBankStatementEmailTemplate(String name, String statementText);
 }
