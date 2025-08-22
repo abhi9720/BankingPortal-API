@@ -78,8 +78,7 @@ public class WebSecurityConfig {
                 .sessionManagement(management -> {
                     management.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 })
-             // .httpBasic(b -> b.disable())     // <-- stop Basic from Base64-decoding
-              // .formLogin(f -> f.disable())
+
                 .logout(logout -> logout
                         .logoutSuccessHandler((request, response, authentication) -> {
                             response.setStatus(HttpServletResponse.SC_OK);
