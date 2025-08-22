@@ -32,17 +32,15 @@ public class User {
     private String password;
 
     @Email
-   // @NotEmpty
-    //@Column(unique = true)
+   @NotEmpty
+    @Column(unique = true)
     private String email;
 
     @NotEmpty
     private String countryCode;
 
-   // @NotEmpty
-    //@Column(unique = true)
-   @NotBlank(message = "Phone number cannot be empty")
-   @JsonAlias({"phone_number","phone","phoneNo"})
+    @NotEmpty
+    @Column(unique = true)
     private String phoneNumber;
 
     @NotEmpty
