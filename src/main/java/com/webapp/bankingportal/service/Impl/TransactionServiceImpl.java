@@ -1,8 +1,9 @@
-package com.webapp.bankingportal.service;
+package com.webapp.bankingportal.service.Impl;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.webapp.bankingportal.service.TransactionService;
 import org.springframework.stereotype.Service;
 
 import com.webapp.bankingportal.dto.TransactionDTO;

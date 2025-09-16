@@ -1,8 +1,9 @@
-package com.webapp.bankingportal.service;
+package com.webapp.bankingportal.service.Impl;
 
 import java.util.Date;
 import java.util.UUID;
 
+import com.webapp.bankingportal.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

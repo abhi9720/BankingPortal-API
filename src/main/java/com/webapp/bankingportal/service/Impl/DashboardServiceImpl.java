@@ -1,5 +1,6 @@
-package com.webapp.bankingportal.service;
+package com.webapp.bankingportal.service.Impl;
 
+import com.webapp.bankingportal.service.DashboardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

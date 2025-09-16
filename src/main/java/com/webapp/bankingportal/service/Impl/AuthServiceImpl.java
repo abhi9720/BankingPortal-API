@@ -1,8 +1,11 @@
-package com.webapp.bankingportal.service;
+package com.webapp.bankingportal.service.Impl;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.webapp.bankingportal.service.AuthService;
+import com.webapp.bankingportal.service.OtpService;
+import com.webapp.bankingportal.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

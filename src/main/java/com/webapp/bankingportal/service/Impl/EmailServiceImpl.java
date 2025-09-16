@@ -1,8 +1,9 @@
-package com.webapp.bankingportal.service;
+package com.webapp.bankingportal.service.Impl;
 
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
 
+import com.webapp.bankingportal.service.EmailService;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
