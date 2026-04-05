@@ -30,3 +30,8 @@ spring.mail.properties.mail.smtp.starttls.enable=true
 # Geolocation API
 geo.api.url=https://api.findip.net/
 geo.api.key=your-api-key
+
+# LLM API
+groq.api.key = your-api-key
+groq.api.model = your-model
+groq.api.endpoint = your-model-endpoint

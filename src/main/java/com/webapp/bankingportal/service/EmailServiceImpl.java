@@ -3,6 +3,7 @@ package com.webapp.bankingportal.service;
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
 
+import com.webapp.bankingportal.dto.UserResponse;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -102,7 +103,7 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public String getBankStatementEmailTemplate(String name, String statementText) {
-         return "<div style=\"font-family: Arial, sans-serif; padding: 20px;\">" +
+        return "<div style=\"font-family: Arial, sans-serif; padding: 20px;\">" +
                 "<h2>Bank Statement</h2>" +
                 "<p>Dear " + name + ",</p>" +
                 "<p>Here is your latest bank statement:</p>" +
@@ -111,6 +112,25 @@ public class EmailServiceImpl implements EmailService {
                 "</pre>" +
                 "<p>Regards,<br/>OneStopBank Team</p>" +
                 "</div>";
+    }
+
+    public String getReconciliationReportTemplate(String user,
+                                                  String introSentence,
+                                                  String reportContent) {
+        return """
+                <html>
+                  <body style="font-family: Arial, sans-serif;">
+                    <h2>Dear %s,</h2>
+                    <p>%s</p>
+                    <h3>Your Reconciliation Report</h3>
+                    <pre style="background-color:#f4f4f4;padding:10px;border:1px solid #ddd;">
+                    %s
+                    </pre>
+                    <p>Thank you for banking with OneStopBank.</p>
+                    <p>Regards,<br/>OneStopBank Team</p>
+                  </body>
+                </html>
+                """.formatted(user, introSentence, reportContent);
     }
 
     public void sendEmailWithAttachment(String to, String subject, String text, String attachmentFilePath) {

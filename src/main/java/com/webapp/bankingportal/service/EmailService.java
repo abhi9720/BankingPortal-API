@@ -2,6 +2,7 @@ package com.webapp.bankingportal.service;
 
 import java.util.concurrent.CompletableFuture;
 
+import com.webapp.bankingportal.dto.UserResponse;
 import org.springframework.scheduling.annotation.Async;
 
 public interface EmailService {
@@ -14,4 +15,8 @@ public interface EmailService {
     public String getOtpLoginEmailTemplate(String name, String accountNumber, String otp);
 
     public String getBankStatementEmailTemplate(String name, String statementText);
+
+    String getReconciliationReportTemplate(String user,
+                                           String introSentence,
+                                           String reportContent);
 }
