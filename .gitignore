@@ -43,6 +43,7 @@ application.properties
 application.yml
 application-*.properties
 application-*.yml
+!application-test.properties
 
 # Database
 *.h2.db
