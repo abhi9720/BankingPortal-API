@@ -20,11 +20,18 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Default implementation of {@link AuthService}.
+ *
+ * <p>Orchestrates the OTP-based password-reset flow: OTP generation and dispatch,
+ * OTP verification and reset-token issuance, and the final password update.</p>
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
+    /** Number of hours before a password-reset token expires. */
     private static final int EXPIRATION_HOURS = 24;
 
     private final OtpService otpService;
@@ -107,10 +114,25 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    /**
+     * Returns {@code true} if an existing {@link PasswordResetToken} is non-null and still
+     * has more than 5 minutes of validity remaining.
+     *
+     * @param existingToken the token to evaluate, or {@code null}
+     * @return {@code true} if the token is present and sufficiently valid for reuse
+     */
     private boolean isExistingTokenValid(PasswordResetToken existingToken) {
         return existingToken != null && existingToken.getExpiryDateTime().isAfter(LocalDateTime.now().plusMinutes(5));
     }
 
+    /**
+     * Sends the OTP to the user's email address and returns the appropriate HTTP response.
+     *
+     * @param user          the user who will receive the OTP
+     * @param accountNumber the account number associated with the user
+     * @param generatedOtp  the OTP to include in the email
+     * @return {@code 200 OK} on successful dispatch, or {@code 500} on email delivery failure
+     */
     private ResponseEntity<String> sendOtpEmail(User user, String accountNumber, String generatedOtp) {
         val emailSendingFuture = otpService.sendOTPByEmail(user.getEmail(), user.getName(), accountNumber,
                 generatedOtp);
@@ -124,6 +146,12 @@ public class AuthServiceImpl implements AuthService {
                 .exceptionally(e -> failureResponse).join();
     }
 
+    /**
+     * Validates that the identifier and OTP fields of an {@link OtpVerificationRequest} are non-null and non-empty.
+     *
+     * @param otpVerificationRequest the request to validate
+     * @throws IllegalArgumentException if either field is missing
+     */
     private void validateOtpRequest(OtpVerificationRequest otpVerificationRequest) {
         if (otpVerificationRequest.identifier() == null || otpVerificationRequest.identifier().isEmpty()) {
             throw new IllegalArgumentException(ApiMessages.IDENTIFIER_MISSING_ERROR.getMessage());

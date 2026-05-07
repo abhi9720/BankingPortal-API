@@ -9,11 +9,19 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+/**
+ * Redis-backed implementation of {@link CacheService}.
+ *
+ * <p>Uses a {@link RedisTemplate} configured with JSON serialization for values
+ * and string serialization for keys. All operations gracefully handle Redis
+ * unavailability by logging errors and returning empty optionals where possible.</p>
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CacheServiceImpl implements CacheService {
 
+    /** Redis template used for all cache read/write operations. */
     private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
@@ -84,6 +92,14 @@ public class CacheServiceImpl implements CacheService {
         }
     }
 
+    /**
+     * Computes the final cache key by formatting the {@code cacheKeyType}'s pattern with
+     * any provided arguments, or returns the bare pattern when no arguments are given.
+     *
+     * @param cacheKeyType the key type whose pattern is used
+     * @param keyArguments variable arguments substituted into the key pattern
+     * @return the resolved cache key string
+     */
     private String acquireKey(CacheKeyType cacheKeyType, String... keyArguments) {
         String key = cacheKeyType.generateKey();
         if (keyArguments.length != 0) {

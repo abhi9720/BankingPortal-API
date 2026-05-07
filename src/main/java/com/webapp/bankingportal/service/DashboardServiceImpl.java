@@ -13,6 +13,12 @@ import com.webapp.bankingportal.util.ApiMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
+/**
+ * Default implementation of {@link DashboardService}.
+ *
+ * <p>Fetches user and account data from their respective repositories
+ * and returns read-only DTO projections suitable for the dashboard API.</p>
+ */
 @Service
 @RequiredArgsConstructor
 public class DashboardServiceImpl implements DashboardService {

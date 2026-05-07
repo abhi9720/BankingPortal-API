@@ -26,6 +26,13 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Default implementation of {@link AccountService}.
+ *
+ * <p>Handles account creation, PIN lifecycle management, and the three types
+ * of fund movements (deposit, withdrawal, fund transfer). All state-changing
+ * operations are wrapped in database transactions to ensure atomicity.</p>
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -56,16 +63,29 @@ public class AccountServiceImpl implements AccountService {
         return account.getPin() != null;
     }
 
+    /**
+     * Generates a unique 6-character account number by repeatedly producing random
+     * UUID-derived strings until one that does not already exist in the database is found.
+     *
+     * @return a unique 6-character alphanumeric account number
+     */
     private String generateUniqueAccountNumber() {
         String accountNumber;
         do {
-            // Generate a UUID as the account number
             accountNumber = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 6);
         } while (accountRepository.findByAccountNumber(accountNumber) != null);
 
         return accountNumber;
     }
 
+    /**
+     * Validates that the provided PIN matches the stored hashed PIN for the given account.
+     *
+     * @param accountNumber the account number whose PIN is to be checked
+     * @param pin           the plain-text PIN to verify
+     * @throws NotFoundException     if the account does not exist
+     * @throws UnauthorizedException if no PIN has been set, the PIN is blank, or the PIN does not match
+     */
     private void validatePin(String accountNumber, String pin) {
         val account = accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
@@ -85,6 +105,15 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
+    /**
+     * Validates that the provided password matches the hashed password of the user
+     * who owns the given account.
+     *
+     * @param accountNumber the account number whose owner's password is to be checked
+     * @param password      the plain-text password to verify
+     * @throws NotFoundException     if the account does not exist
+     * @throws UnauthorizedException if the password is blank or does not match
+     */
     private void validatePassword(String accountNumber, String password) {
         val account = accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
@@ -142,6 +171,13 @@ public class AccountServiceImpl implements AccountService {
         accountRepository.save(account);
     }
 
+    /**
+     * Validates that a transaction amount satisfies the business rules:
+     * must be positive, a multiple of 100, and no greater than 100,000.
+     *
+     * @param amount the amount to validate
+     * @throws InvalidAmountException if any rule is violated
+     */
     private void validateAmount(double amount) {
         if (amount <= 0) {
             throw new InvalidAmountException(ApiMessages.AMOUNT_NEGATIVE_ERROR.getMessage());

@@ -18,6 +18,13 @@ import jakarta.mail.internet.InternetAddress;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
+/**
+ * Utility class providing validation helpers for user registration and profile updates.
+ *
+ * <p>Static methods perform format validation (email, phone number, country code,
+ * password complexity) and can be used without a Spring context. Instance methods
+ * perform database-backed uniqueness checks and require dependency injection.</p>
+ */
 @Component
 @RequiredArgsConstructor
 public class ValidationUtil {
@@ -27,6 +34,12 @@ public class ValidationUtil {
 
     private final UserRepository userRepository;
 
+    /**
+     * Returns {@code true} if the given string is a syntactically valid email address.
+     *
+     * @param identifier the string to validate as an email address
+     * @return {@code true} if valid, {@code false} otherwise
+     */
     public static boolean isValidEmail(String identifier) {
         try {
             new InternetAddress(identifier).validate();
@@ -38,11 +51,22 @@ public class ValidationUtil {
         return false;
     }
 
+    /**
+     * Returns {@code true} if the given string is a valid 6-character account number.
+     *
+     * @param identifier the string to validate as an account number
+     * @return {@code true} if non-null and exactly 6 characters long
+     */
     public static boolean isValidAccountNumber(String identifier) {
-        // Account number validation logic (e.g., length check)
         return identifier != null && identifier.length() == 6;
     }
 
+    /**
+     * Returns {@code true} if the given country code is a recognized ISO 3166-1 alpha-2 region.
+     *
+     * @param countryCode the country code to validate (e.g., "US", "IN")
+     * @return {@code true} if the code is supported by {@link PhoneNumberUtil}
+     */
     public static boolean isValidCountryCode(String countryCode) {
         if (!phoneNumberUtil.getSupportedRegions().contains(countryCode)) {
             return false;
@@ -51,6 +75,14 @@ public class ValidationUtil {
         return true;
     }
 
+    /**
+     * Returns {@code true} if the given phone number is valid for the specified country.
+     *
+     * @param phoneNumber the national subscriber number to validate
+     * @param countryCode the ISO 3166-1 alpha-2 country code used for parsing
+     * @return {@code true} if the number is valid
+     * @throws com.webapp.bankingportal.exception.UserInvalidException if the number cannot be parsed
+     */
     public static boolean isValidPhoneNumber(String phoneNumber, String countryCode) {
         PhoneNumber parsedNumber = null;
 
@@ -63,6 +95,14 @@ public class ValidationUtil {
         return phoneNumberUtil.isValidNumber(parsedNumber);
     }
 
+    /**
+     * Validates that a plain-text password meets all complexity requirements:
+     * 8–127 characters, no whitespace, at least one uppercase letter, one lowercase
+     * letter, one digit, and one special character.
+     *
+     * @param password the plain-text password to validate
+     * @throws com.webapp.bankingportal.exception.UserInvalidException if any requirement is not met
+     */
     public static void validatePassword(String password) {
         if (password.length() < 8) {
             throw new UserInvalidException(ApiMessages.PASSWORD_TOO_SHORT_ERROR.getMessage());
@@ -117,6 +157,12 @@ public class ValidationUtil {
         }
     }
 
+    /**
+     * Checks that all required {@link com.webapp.bankingportal.entity.User User} fields are present and non-empty.
+     *
+     * @param user the user object to check
+     * @throws com.webapp.bankingportal.exception.UserInvalidException if the user is null or any required field is blank
+     */
     public static void validateUserDetailsNotEmpty(User user) {
         if (user == null) {
             throw new UserInvalidException(ApiMessages.USER_DETAILS_EMPTY_ERROR.getMessage());
@@ -147,6 +193,13 @@ public class ValidationUtil {
         }
     }
 
+    /**
+     * Validates all user details: checks for non-empty fields and then validates
+     * the email format, country code, phone number, and password complexity.
+     *
+     * @param user the user object to validate
+     * @throws com.webapp.bankingportal.exception.UserInvalidException if any field is invalid
+     */
     public static void validateUserDetails(User user) {
         validateUserDetailsNotEmpty(user);
 
@@ -165,6 +218,13 @@ public class ValidationUtil {
         validatePassword(user.getPassword());
     }
 
+    /**
+     * Validates user details and additionally checks that the email and phone number
+     * are not already registered in the database.
+     *
+     * @param user the new user to validate
+     * @throws com.webapp.bankingportal.exception.UserInvalidException if any field is invalid or the email/phone already exists
+     */
     public void validateNewUser(User user) {
         validateUserDetails(user);
         if (doesEmailExist(user.getEmail())) {
@@ -175,14 +235,32 @@ public class ValidationUtil {
         }
     }
 
+    /**
+     * Returns {@code true} if an account with the given account number exists in the database.
+     *
+     * @param accountNumber the account number to look up
+     * @return {@code true} if a matching account is found
+     */
     public boolean doesAccountExist(String accountNumber) {
         return userRepository.findByAccountAccountNumber(accountNumber).isPresent();
     }
 
+    /**
+     * Returns {@code true} if a user with the given email address already exists in the database.
+     *
+     * @param email the email address to check
+     * @return {@code true} if the email is already registered
+     */
     public boolean doesEmailExist(String email) {
         return userRepository.findByEmail(email).isPresent();
     }
 
+    /**
+     * Returns {@code true} if a user with the given phone number already exists in the database.
+     *
+     * @param phoneNumber the phone number to check
+     * @return {@code true} if the phone number is already registered
+     */
     public boolean doesPhoneNumberExist(String phoneNumber) {
         return userRepository.findByPhoneNumber(phoneNumber).isPresent();
     }

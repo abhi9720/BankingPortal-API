@@ -7,9 +7,22 @@ import org.springframework.stereotype.Repository;
 
 import com.webapp.bankingportal.entity.Transaction;
 
+/**
+ * Spring Data JPA repository for {@link Transaction} entities.
+ */
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
-    // Add any custom query methods here, if needed
-	
-    List<Transaction> findBySourceAccount_AccountNumberOrTargetAccount_AccountNumber(String sourceAccountNumber, String targetAccountNumber);
+
+    /**
+     * Returns all transactions in which the given account number appears as either
+     * the source or the target account.
+     *
+     * @param sourceAccountNumber the account number to match against the source account
+     * @param targetAccountNumber the account number to match against the target account
+     *                            (pass the same value as {@code sourceAccountNumber} to retrieve
+     *                            all transactions for a single account)
+     * @return a list of matching {@link Transaction} records, possibly empty
+     */
+    List<Transaction> findBySourceAccount_AccountNumberOrTargetAccount_AccountNumber(
+            String sourceAccountNumber, String targetAccountNumber);
 }

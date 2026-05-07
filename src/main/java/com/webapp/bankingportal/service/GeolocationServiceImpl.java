@@ -16,13 +16,22 @@ import com.webapp.bankingportal.exception.GeolocationException;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Default implementation of {@link GeolocationService}.
+ *
+ * <p>Calls the external IP geolocation REST API configured via {@code geo.api.url}
+ * and {@code geo.api.key} to resolve a given IP address to a city and country.
+ * The call is made asynchronously so it does not block the login response path.</p>
+ */
 @Service
 @Slf4j
 public class GeolocationServiceImpl implements GeolocationService {
 
+    /** Base URL of the external geolocation API (injected from application properties). */
     @Value("${geo.api.url}")
     private String apiUrl;
 
+    /** API key for authenticating with the external geolocation service. */
     @Value("${geo.api.key}")
     private String apiKey;
 

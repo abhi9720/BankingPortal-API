@@ -13,9 +13,22 @@ import lombok.val;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * OpenAPI (Swagger) configuration for the banking portal.
+ *
+ * <p>Registers the API metadata and configures a Bearer JWT security scheme
+ * so that the Swagger UI allows developers to authenticate and test secured endpoints
+ * directly from the browser.</p>
+ */
 @Configuration
 public class SwaggerConfig {
 
+    /**
+     * Creates the {@link OpenAPI} bean with API title, description, version,
+     * and a global Bearer token security requirement.
+     *
+     * @return the configured {@link OpenAPI} definition
+     */
     @Bean
     public OpenAPI customOpenAPI() {
         val securitySchemeName = "Bearer";

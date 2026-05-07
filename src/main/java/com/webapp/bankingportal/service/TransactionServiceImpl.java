@@ -13,6 +13,12 @@ import com.webapp.bankingportal.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
+/**
+ * Default implementation of {@link TransactionService}.
+ *
+ * <p>Retrieves transaction history from the database and composes
+ * bank-statement emails for the account holder.</p>
+ */
 @Service
 @RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {

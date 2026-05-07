@@ -3,6 +3,14 @@ package com.webapp.bankingportal.util;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Centralised enumeration of all user-facing message strings used across the application.
+ *
+ * <p>Using an enum rather than scattered string literals ensures consistency,
+ * prevents typos, and makes messages easy to localise in the future.
+ * Messages that contain format specifiers (e.g., {@code %s}, {@code %d}) must be
+ * formatted with {@link String#format} before use.</p>
+ */
 @RequiredArgsConstructor
 public enum ApiMessages {
     ACCOUNT_NOT_FOUND("Account does not exist"),

@@ -26,6 +26,13 @@ import org.springframework.data.redis.RedisConnectionFailureException;
 import java.util.Map;
 import com.webapp.bankingportal.util.ApiMessages;
 
+/**
+ * Centralized exception handler for the entire application.
+ *
+ * <p>Intercepts exceptions thrown by controllers and service methods and converts
+ * them into appropriate HTTP responses. Each handler method maps one exception type
+ * to a specific HTTP status code and returns the exception message as the response body.</p>
+ */
 @ControllerAdvice
 public class GlobalExceptionHandler {
 

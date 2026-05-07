@@ -24,12 +24,27 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Spring Security configuration for the banking portal.
+ *
+ * <p>Configures a stateless JWT-based security model:
+ * <ul>
+ *   <li>CSRF protection is disabled (not needed for stateless REST APIs).</li>
+ *   <li>A set of public URLs (registration, login, OTP, Swagger) are accessible
+ *       without authentication.</li>
+ *   <li>All other requests require a valid JWT processed by {@link JwtAuthenticationFilter}.</li>
+ *   <li>Unauthenticated access is handled by {@link JwtAuthenticationEntryPoint}.</li>
+ *   <li>Sessions are never created (STATELESS policy).</li>
+ * </ul>
+ * </p>
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
+    /** URL patterns that do not require a JWT. */
     private static final String[] PUBLIC_URLS = {
             "/api/users/register",
             "/api/users/login",
@@ -48,16 +63,36 @@ public class WebSecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final TokenService tokenService;
 
+    /**
+     * Wires the {@link TokenService} (which implements {@link org.springframework.security.core.userdetails.UserDetailsService})
+     * and the BCrypt password encoder into the global authentication manager.
+     *
+     * @param auth the authentication manager builder
+     * @throws Exception if configuration fails
+     */
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(tokenService).passwordEncoder(passwordEncoder());
     }
 
+    /**
+     * Provides a {@link BCryptPasswordEncoder} for hashing user passwords and PINs.
+     *
+     * @return the configured {@link PasswordEncoder} bean
+     */
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Exposes the {@link AuthenticationManager} as a Spring bean so it can be
+     * injected into service classes that need to authenticate programmatically.
+     *
+     * @param authenticationConfiguration the auto-configured authentication configuration
+     * @return the application's {@link AuthenticationManager}
+     * @throws Exception if the manager cannot be obtained
+     */
     @Bean
     AuthenticationManager authenticationManager(
             AuthenticationConfiguration authenticationConfiguration)
@@ -65,6 +100,15 @@ public class WebSecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+    /**
+     * Configures the HTTP security filter chain: disables CSRF, defines public vs
+     * authenticated URL patterns, sets up the JWT entry point and filter, and
+     * enforces stateless session management.
+     *
+     * @param http the {@link HttpSecurity} builder
+     * @return the built {@link SecurityFilterChain}
+     * @throws Exception if configuration fails
+     */
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())

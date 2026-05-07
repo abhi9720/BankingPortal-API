@@ -14,6 +14,14 @@ import jakarta.mail.MessagingException;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Default implementation of {@link EmailService} using Spring's {@link JavaMailSender}.
+ *
+ * <p>All emails are sent as HTML MIME messages. The {@link #sendEmail} method
+ * runs asynchronously (annotated with {@link org.springframework.scheduling.annotation.Async})
+ * and returns a {@link java.util.concurrent.CompletableFuture} that callers can use
+ * to react to success or failure without blocking.</p>
+ */
 @Service
 @Slf4j
 public class EmailServiceImpl implements EmailService {
@@ -113,6 +121,17 @@ public class EmailServiceImpl implements EmailService {
                 "</div>";
     }
 
+    /**
+     * Sends an HTML email with a file attachment.
+     *
+     * <p>This method is synchronous and does not return a {@link java.util.concurrent.CompletableFuture}.
+     * Errors are logged but not propagated to the caller.</p>
+     *
+     * @param to                 the recipient's email address
+     * @param subject            the email subject line
+     * @param text               the HTML email body
+     * @param attachmentFilePath the absolute path of the file to attach
+     */
     public void sendEmailWithAttachment(String to, String subject, String text, String attachmentFilePath) {
         try {
             val message = mailSender.createMimeMessage();
