@@ -4,10 +4,12 @@ import java.util.Date;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.webapp.bankingportal.entity.Account;
+import com.webapp.bankingportal.entity.Currency;
 import com.webapp.bankingportal.entity.Transaction;
 import com.webapp.bankingportal.entity.TransactionType;
 import com.webapp.bankingportal.entity.User;
@@ -18,6 +20,7 @@ import com.webapp.bankingportal.exception.InvalidPinException;
 import com.webapp.bankingportal.exception.NotFoundException;
 import com.webapp.bankingportal.exception.UnauthorizedException;
 import com.webapp.bankingportal.repository.AccountRepository;
+import com.webapp.bankingportal.repository.CurrencyRepository;
 import com.webapp.bankingportal.repository.TransactionRepository;
 import com.webapp.bankingportal.util.ApiMessages;
 
@@ -36,14 +39,35 @@ public class AccountServiceImpl implements AccountService {
     private final PasswordEncoder passwordEncoder;
     @Autowired
     private final TransactionRepository transactionRepository;
+    @Autowired
+    private final CurrencyRepository currencyRepository;
+
+    @Value("${app.default-currency:INR}")
+    private String defaultCurrencyCode;
 
     @Override
     public Account createAccount(User user) {
+        return createAccount(user, defaultCurrencyCode);
+    }
+
+    @Override
+    public Account createAccount(User user, String currencyCode) {
         val account = new Account();
         account.setAccountNumber(generateUniqueAccountNumber());
         account.setBalance(0.0);
         account.setUser(user);
+        account.setCurrency(resolveCurrency(currencyCode));
         return accountRepository.save(account);
+    }
+
+    private Currency resolveCurrency(String currencyCode) {
+        String code = (currencyCode == null || currencyCode.isBlank())
+                ? defaultCurrencyCode
+                : currencyCode.toUpperCase();
+        return currencyRepository.findByCode(code)
+                .orElseGet(() -> currencyRepository.findByCode(defaultCurrencyCode)
+                        .orElseThrow(() -> new NotFoundException(
+                                "Currency not found: " + code)));
     }
 
     @Override
@@ -219,6 +243,16 @@ public class AccountServiceImpl implements AccountService {
         val sourceBalance = sourceAccount.getBalance();
         if (sourceBalance < amount) {
             throw new InsufficientBalanceException(ApiMessages.BALANCE_INSUFFICIENT_ERROR.getMessage());
+        }
+
+        // Reject cross-currency transfers; FX conversion can be added later.
+        val sourceCurrency = sourceAccount.getCurrency();
+        val targetCurrency = targetAccount.getCurrency();
+        if (sourceCurrency != null && targetCurrency != null
+                && !sourceCurrency.getCode().equals(targetCurrency.getCode())) {
+            throw new FundTransferException(
+                    "Cross-currency transfers are not supported: "
+                            + sourceCurrency.getCode() + " -> " + targetCurrency.getCode());
         }
 
         val newSourceBalance = sourceBalance - amount;

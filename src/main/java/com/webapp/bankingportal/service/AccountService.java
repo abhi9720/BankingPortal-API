@@ -6,6 +6,7 @@ import com.webapp.bankingportal.entity.User;
 public interface AccountService {
 
 	public Account createAccount(User user);
+	public Account createAccount(User user, String currencyCode);
 	public boolean isPinCreated(String accountNumber) ;
 	public void createPin(String accountNumber, String password, String pin) ;
 	public void updatePin(String accountNumber, String oldPIN, String password, String newPIN);
