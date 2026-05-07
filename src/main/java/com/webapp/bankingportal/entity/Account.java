@@ -6,10 +6,12 @@ import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotEmpty;
@@ -41,6 +43,16 @@ public class Account {
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    /**
+     * Currency this account is denominated in. Nullable to allow safe
+     * schema migration on existing databases; new accounts always have
+     * a currency assigned by the service layer (see
+     * {@code AccountServiceImpl#createAccount}).
+     */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "currency_id")
+    private Currency currency;
 
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
     private List<Token> tokens = new ArrayList<>();

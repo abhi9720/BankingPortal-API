@@ -30,3 +30,9 @@ spring.mail.properties.mail.smtp.starttls.enable=true
 # Geolocation API
 geo.api.url=https://api.findip.net/
 geo.api.key=your-api-key
+
+# Multi-currency support: ISO 4217 code used as the default for newly
+# created accounts and to back-fill existing accounts on startup.
+# Supported out-of-the-box: USD, EUR, GBP, INR, JPY, AUD, CAD.
+app.default-currency=INR
+
